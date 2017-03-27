@@ -109,7 +109,7 @@ public class BezierCurveEditor extends Panel {
 		public void setControls(CtrlPoints ctrls) {
 			this.ctrls = ctrls;
 		}
-		
+
 		public CtrlPoints getControls() {
 			return ctrls;
 		}
@@ -141,7 +141,7 @@ public class BezierCurveEditor extends Panel {
 				Point cp = cl == null ? null : cl.p;
 
 				boolean addedAPoint = cp == null;
-				double x = diagram.realX(e.getX());
+				int x = (int)Math.round(diagram.realX(e.getX()));
 				double y = diagram.realY(e.getY());
 				if(!addedAPoint) {
 					x = cp.x;
@@ -150,21 +150,21 @@ public class BezierCurveEditor extends Panel {
 				}
 
 				GenericDialog gd = new GenericDialog("");
-				gd.addNumericField("x", x, 3);
+				gd.addNumericField("x", x, 0);
 				gd.addNumericField("y", y, 3);
 				gd.showDialog();
 				if(gd.wasCanceled()) {
 //					if(addedAPoint)
 //						ctrls.remove(cp);
 				} else {
-					x = gd.getNextNumber();
+					x = (int)gd.getNextNumber();
 					y = gd.getNextNumber();
 					// if it's a line point and we move it to another line point, remove the old one
 					// TODO implement this
 //					Point tmp = ctrls.getClosestPointWithin(x, inc, cp);
 //					if(tmp != null)
 //						ctrls.remove(tmp);
-					
+
 					if(addedAPoint)
 						cp = ctrls.add(x, y);
 					else {
@@ -239,7 +239,7 @@ public class BezierCurveEditor extends Panel {
 				ctrls.add(temporarilyReplaced);
 			temporarilyReplaced = null;
 
-			double x = diagram.realX(e.getX());
+			int x = (int)Math.round(diagram.realX(e.getX()));
 //			int x = clamp((int)Math.round(x), 1, values.length - 2);
 //			if(draggedCtrl.getX() == 0 || draggedCtrl.getX() == values.length - 1)
 //				x = draggedCtrl.getPlane();
@@ -256,8 +256,8 @@ public class BezierCurveEditor extends Panel {
 				}
 			}
 
-			Point lower = new Point(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY); // new Point(diagram.getXMin(), diagram.getYMin());
-			Point upper = new Point(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY); // new Point(diagram.getXMax(), diagram.getYMax());
+			Point lower = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY); // new Point(diagram.getXMin(), diagram.getYMin());
+			Point upper = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY); // new Point(diagram.getXMax(), diagram.getYMax());
 			getLowerAndUpper(draggedCtrl, lower, upper);
 			System.out.println(lower);
 			System.out.println(upper);

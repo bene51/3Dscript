@@ -1,15 +1,15 @@
 package animation2;
 
 public class Point implements Comparable<Point> {
-	protected double x;
+	protected int x;
 	protected double y;
 
-	public Point(double x, double y) {
+	public Point(int x, double y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	public double getX() {
+	public int getX() {
 		return x;
 	}
 
@@ -17,7 +17,7 @@ public class Point implements Comparable<Point> {
 		return y;
 	}
 
-	public void set(double x, double y) {
+	public void set(int x, double y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -29,12 +29,12 @@ public class Point implements Comparable<Point> {
 		return 0;
 	}
 
-	public void moveTo(double x, double y, Point lower, Point upper) {
+	public void moveTo(int x, double y, Point lower, Point upper) {
 		x = Math.max(lower.x, Math.min(upper.x, x));
 		set(x, y);
 	}
 
-	public void moveBy(double dx, double dy) {
+	public void moveBy(int dx, double dy) {
 		this.x += dx;
 		this.y += dy;
 	}

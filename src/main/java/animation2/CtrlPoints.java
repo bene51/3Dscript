@@ -30,7 +30,7 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		return list.listIterator();
 	}
 
-	public LinePoint add(double x, double y) {
+	public LinePoint add(int x, double y) {
 		LinePoint c = new LinePoint(x, y);
 		return add(c);
 	}
@@ -169,8 +169,8 @@ public class CtrlPoints implements Iterable<LinePoint> {
 			if(lp.c2.x > xmax) xmax = lp.c2.x;
 			if(lp.c2.y > ymax) ymax = lp.c2.y;
 		}
-		lowerleft.set(xmin, ymin);
-		upperright.set(xmax, ymax);
+		lowerleft.set((int)Math.floor(xmin), ymin);
+		upperright.set((int)Math.ceil(xmax), ymax);
 	}
 
 	public ClosestPoint getClosestPoint(double x, Point exclude) {

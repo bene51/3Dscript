@@ -6,7 +6,7 @@ public class CtrlPoint extends Point {
 
 	public final LinePoint parent;
 
-	public CtrlPoint(double x, double y, LinePoint parent) {
+	public CtrlPoint(int x, double y, LinePoint parent) {
 		super(x, y);
 		this.parent = parent;
 	}
