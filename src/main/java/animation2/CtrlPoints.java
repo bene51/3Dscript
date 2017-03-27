@@ -31,6 +31,21 @@ public class CtrlPoints implements Iterable<LinePoint> {
 	}
 
 	public LinePoint add(int x, double y) {
+		LinePoint existing = null;
+		for(LinePoint lp : list) { // TODO replace with binary search
+			if(lp.x == x) {
+				existing = lp;
+				break;
+			}
+		}
+		if(existing == null)
+			return add(new LinePoint(x, y));
+		else {
+			Point ll = new Point(0, 0);
+			Point ur = new Point(0, 0);
+			getBoundingBox(ll, ur);
+			existing.moveTo(x, y, ll, ur);
+		}
 		LinePoint c = new LinePoint(x, y);
 		return add(c);
 	}
