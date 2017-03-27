@@ -1,0 +1,358 @@
+package animation2;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Panel;
+import java.awt.RenderingHints;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.GeneralPath;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import ij.gui.GenericDialog;
+
+public class BezierCurveEditor extends Panel {
+
+	public static void main(String[] args) {
+		Frame frame = new Frame();
+		double[] histo = new double[100];
+		for(int i = 0; i < 100; i++)
+			histo[i] = 50 + i * 0.5;
+		CtrlPoints ctrls = new CtrlPoints();
+		ctrls.add(0, 0);
+		ctrls.add(99, 99);
+		BezierCurveEditor slider = new BezierCurveEditor(histo, ctrls);
+		frame.add(slider);
+		frame.pack();
+		frame.setVisible(true);
+	}
+
+	public static interface Listener {
+		public void curveChanged();
+	}
+
+	private static final long serialVersionUID = 1L;
+
+	private CurveChangerCanvas slider;
+
+	private ArrayList<Listener> listeners = new ArrayList<Listener>();
+
+	public BezierCurveEditor(double[] histogram, CtrlPoints ctrls) {
+		this(histogram, ctrls, new Color(255, 0, 0, 100));
+	}
+
+	public BezierCurveEditor(double[] histogram, CtrlPoints ctrls, Color color) {
+		super();
+
+		this.slider = new CurveChangerCanvas(histogram, color, ctrls, this);
+		GridBagLayout gridbag = new GridBagLayout();
+		GridBagConstraints c = new GridBagConstraints();
+		setLayout(gridbag);
+
+		c.gridx = c.gridy = 0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.insets = new Insets(0, 2, 0, 5);
+		c.weightx = 1.0;
+		add(slider, c);
+	}
+
+	public void set(double[] histogram, Color color, CtrlPoints ctrls) {
+		slider.set(histogram, color, ctrls);
+	}
+
+	public void addCurveChangeListener(Listener l) {
+		listeners.add(l);
+	}
+
+	public void removeCurveChangeListener(Listener l) {
+		listeners.remove(l);
+	}
+
+	private void fireCurveChanged() {
+		for(Listener l : listeners)
+			l.curveChanged();
+	}
+
+	private static class CurveChangerCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
+
+		private static final long serialVersionUID = 1L;
+		private double[] values;
+		private Color color;
+		private CtrlPoints ctrls;
+
+		private int MARGIN_LEFT = 40;
+		private final int MARGIN_RIGHT = 2;
+		private final int MARGIN_TOP = 2;
+		private final int MARGIN_BOTTOM = 30;
+
+		private BezierCurveEditor slider;
+
+		int w, h, avWidth, avHeight;
+		double inc;
+		double maxv;
+
+		public CurveChangerCanvas(double[] values, Color color, CtrlPoints ctrls, BezierCurveEditor slider) {
+			this.values = values;
+			this.color = color;
+			this.slider = slider;
+			this.ctrls = ctrls;
+			this.addMouseMotionListener(this);
+			this.addMouseListener(this);
+			this.setPreferredSize(new Dimension(258, 128));
+			this.setBackground(Color.WHITE);
+			this.maxv = getMaxV(values);
+			this.setFont(new Font("Helvetica", Font.PLAIN, 10));
+			MARGIN_LEFT = this.getFontMetrics(getFont()).stringWidth(Double.toString(maxv)) + 5;
+			this.addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					w = getWidth();
+					h = getHeight();
+					avWidth = w - MARGIN_RIGHT - MARGIN_LEFT - 2;
+					avHeight = h - MARGIN_TOP - MARGIN_BOTTOM - 2;
+					inc = (double)avWidth / (CurveChangerCanvas.this.values.length - 1);
+				}
+			});
+		}
+
+		void set(final double[] values, Color color, CtrlPoints ctrls) {
+			this.values = values;
+			this.color = color;
+			this.ctrls = ctrls;
+			this.maxv = getMaxV(values);
+			MARGIN_LEFT = getFontMetrics(getFont()).stringWidth(Double.toString(maxv)) + 5;
+			repaint();
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if(e.isShiftDown()) {
+				// check if there's already a control point
+				double pw = inc;
+				double ph = maxv / avHeight;
+				Point p = ctrls.getClosestPointWithin(realx(e.getX()), realy(e.getY()), pw, ph, 3);
+				if(p != null) {
+					ctrls.remove(p);
+					slider.fireCurveChanged();
+					repaint();
+				}
+			}
+			else if(e.getClickCount() == 2) {
+				Point cp = ctrls.getClosestPoint(realx(e.getX()), realy(e.getY()));
+
+				boolean addedAPoint = cp == null;
+				if(cp == null) {
+					double x = realx(e.getX());
+					double y = realy(e.getY());
+					cp = ctrls.add(x, y);
+				}
+
+				GenericDialog gd = new GenericDialog("");
+				gd.addNumericField("x", cp.getX(), 3);
+				gd.addNumericField("y", cp.getY(), 3);
+				gd.showDialog();
+				if(gd.wasCanceled()) {
+					if(addedAPoint)
+						ctrls.remove(cp);
+				} else {
+					double x = gd.getNextNumber();
+					double y = gd.getNextNumber();
+					// if it's a line point and we move it to another line point, remove the old one
+					// TODO implement this
+//					Point tmp = ctrls.getClosestPointWithin(x, inc, cp);
+//					if(tmp != null)
+//						ctrls.remove(tmp);
+					cp.set(x, y);
+					ctrls.sort();
+				}
+				slider.fireCurveChanged();
+				repaint();
+			}
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {}
+		@Override
+		public void mouseExited(MouseEvent e) {}
+
+		private Point draggedCtrl = null;
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			if(e.isConsumed())
+				return;
+
+			double x = realx(e.getX());
+			double y = realy(e.getY());
+
+			double pw = inc;
+			double ph = avHeight / maxv;
+			Point tmp = ctrls.getClosestPointWithin(x, y, pw, ph, 3); // all points, not only line points
+			if(tmp != null) {
+				tmp.moveTo(tmp.getX(), realy(e.getY()));
+				draggedCtrl = tmp;
+			} else {
+				draggedCtrl = ctrls.add(x, realy(e.getY()));
+			}
+			slider.fireCurveChanged();
+			repaint();
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			draggedCtrl = null;
+			temporarilyReplaced = null;
+		}
+
+		private LinePoint temporarilyReplaced = null;
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if(e.isConsumed())
+				return;
+			if(draggedCtrl == null)
+				return;
+
+			// if a point was temporarily removed previously while dragging,
+			// add it again
+			if(temporarilyReplaced != null)
+				ctrls.add(temporarilyReplaced);
+			temporarilyReplaced = null;
+
+			double x = realx(e.getX());
+//			int x = clamp((int)Math.round(x), 1, values.length - 2);
+//			if(draggedCtrl.getX() == 0 || draggedCtrl.getX() == values.length - 1)
+//				x = draggedCtrl.getPlane();
+			double y = realy(e.getY());
+//			y = clamp(y, 0, maxv);
+
+			// check if there's already a point with that plane, if that's the case
+			// remove the existing one temporarily
+			if(draggedCtrl instanceof LinePoint) {
+				Point closest = ctrls.getClosestPointWithin(x, 1/inc, draggedCtrl);
+				if(closest != null && (closest instanceof LinePoint)) {
+					temporarilyReplaced = (LinePoint)closest;
+					ctrls.remove(temporarilyReplaced);
+				}
+			}
+
+			draggedCtrl.moveTo(x, y);
+			ctrls.sort();
+			slider.fireCurveChanged();
+			repaint();
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {}
+
+		double getMaxV(double[] values) {
+			double max = 0;
+			for(int i = 0; i < values.length; i++)
+				if(values[i] > max)
+					max = values[i];
+			return max;
+		}
+
+		double realx(double canvasx) {
+			return (canvasx - MARGIN_LEFT - 1) / inc;
+		}
+
+		int canvasx(double realx) {
+			return MARGIN_LEFT + 1 + (int)Math.round(realx * inc);
+		}
+
+		int canvasyOfx(double realx) {
+			return canvasy(getInterpolated(values, realx));
+		}
+
+		int canvasy(double realy) {
+			int bh = (int)Math.round(realy * avHeight / maxv);
+			int by = MARGIN_TOP + 1 + avHeight - bh;
+			return by;
+		}
+
+		double realy(double canvasy) {
+			// canvasy = YOFFS + avHeight - (realy * avHeight / maxv);
+			return (MARGIN_TOP + 1 + avHeight - canvasy) * maxv / avHeight;
+		}
+
+		double getInterpolated(double[] values, double realx) {
+			if(realx <= 0)
+				return values[0];
+			if(realx >= values.length - 1)
+				return values[values.length - 1];
+
+			int l = (int)Math.floor(realx);
+			int u = l + 1; // (int)Math.ceil(realx);
+			return values[l] + (realx - l) * (values[u] - values[l]) / (u - l);
+		}
+
+		@Override
+		public void paintBuffer(Graphics gx) {
+			System.out.println(ctrls);
+			Graphics2D g = (Graphics2D)gx;
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.clearRect(0, 0, w, h);
+
+			g.setColor(color);
+
+			for(int i = MARGIN_LEFT; i < w - MARGIN_RIGHT; i++) {
+				double rx = realx(i);
+				int cy = canvasyOfx(rx);
+				int y0 = canvasy(0);
+				g.drawLine(i, y0 /*YOFFS + 1 + avHeight*/, i, cy);
+			}
+
+			int nPoints = ctrls.size();
+			g.setColor(Color.DARK_GRAY);
+			Iterator<LinePoint> it = ctrls.iterator();
+			GeneralPath path = new GeneralPath();
+			int c2x = -1;
+			int c2y = -1;
+			for(int i = 0; i < nPoints; i++) {
+				LinePoint p = it.next();
+				int x = canvasx(p.getX());
+				int y = canvasy(p.getY());
+				g.fillOval(x - 3, y - 3, 7, 7);
+				int c1x = canvasx(p.c1.getX());
+				int c1y = canvasy(p.c1.getY());
+
+				if(i == 0)
+					path.moveTo(x, y);
+				else
+					path.curveTo(c2x, c2y, c1x, c1y, x, y);
+
+				c2x = canvasx(p.c2.getX());
+				c2y = canvasy(p.c2.getY());
+
+				if(i > 0) {
+					g.drawOval(c1x - 3, c1y - 3, 7, 7);
+					g.drawLine(c1x, c1y, x, y);
+				}
+
+				if(i < nPoints - 1) {
+					g.drawOval(c2x - 3, c2y - 3, 7, 7);
+					g.drawLine(x, y, c2x, c2y);
+				}
+			}
+			g.draw(path);
+
+			g.drawString(Double.toString(maxv), 2, canvasy(maxv) + 10);
+
+			g.setColor(Color.BLACK);
+			g.drawRect(MARGIN_LEFT - 1, MARGIN_TOP - 1, w-MARGIN_LEFT-MARGIN_RIGHT, h-MARGIN_TOP-MARGIN_BOTTOM);
+		}
+	}
+}
