@@ -45,9 +45,8 @@ public class CtrlPoints implements Iterable<LinePoint> {
 			Point ur = new Point(0, 0);
 			getBoundingBox(ll, ur);
 			existing.moveTo(x, y, ll, ur);
+			return existing;
 		}
-		LinePoint c = new LinePoint(x, y);
-		return add(c);
 	}
 
 	public LinePoint add(LinePoint c) {
