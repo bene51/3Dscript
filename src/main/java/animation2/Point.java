@@ -30,7 +30,7 @@ public class Point implements Comparable<Point> {
 	}
 
 	public void moveTo(int x, double y, Point lower, Point upper) {
-		x = Math.max(lower.x, Math.min(upper.x, x));
+		x = Math.max(lower.x + 1, Math.min(upper.x - 1, x));
 		set(x, y);
 	}
 
