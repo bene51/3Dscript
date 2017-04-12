@@ -587,6 +587,29 @@ public class InteractiveRaycaster implements PlugInFilter {
 				bbx, bby, bbz, bbw, bbh, bbd);
 	}
 
+	private Keyframe createUnsetKeyframe(int frame, int nChannels) {
+		RenderingSettings[] rs = new RenderingSettings[nChannels];
+		int us = Keyframe.UNSET;
+		for(int i = 0; i < rs.length; i++)
+			rs[i] = new RenderingSettings(us, us, us, us, us, us);
+
+		int bbx, bby, bbz, bbw, bbh, bbd;
+		bbx = bby = bbz = bbw = bbh = bbd = us;
+
+		float near, far, scale, dx, dy, dz;
+		near = far = scale = dx = dy = dz = us;
+
+		double ax, ay, az;
+		ax = ay = az = us;
+		return new Keyframe(
+				frame, rs,
+				near, far,
+				scale,
+				dx, dy, dz,
+				ax, ay, az,
+				bbx, bby, bbz, bbw, bbh, bbd);
+	}
+
 	private Color getLUTColor(LUT lut) {
 		int index = lut.getMapSize() - 1;
 		int r = lut.getRed(index);
