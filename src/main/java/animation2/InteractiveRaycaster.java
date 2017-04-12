@@ -79,7 +79,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
 		Color col = getLUTColor(luts[0]);
-		final HistogramSlider histogramSlider = gd.addHistogramSlider(null, histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
+		final ContrastPanel histogramSlider = gd.addHistogramSlider(null, histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
 		int d = image.getNSlices();
@@ -343,7 +343,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		yRangeSlider.addSliderChangeListener(rangeListener);
 		zRangeSlider.addSliderChangeListener(rangeListener);
 
-		histogramSlider.addRenderingSettingsChangeListener(new RenderingSettingsChangeListener() {
+		histogramSlider.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged() {
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);

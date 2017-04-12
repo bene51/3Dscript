@@ -20,7 +20,7 @@ public class AnimatorDialog extends GenericDialog {
 	private static final long serialVersionUID = 1L;
 
 	private ActionListener listener;
-	private List<HistogramSlider> HistogramSliders = new ArrayList<HistogramSlider>();
+	private List<ContrastPanel> HistogramSliders = new ArrayList<ContrastPanel>();
 	private List<DoubleSlider> doubleSliders = new ArrayList<DoubleSlider>();
 	private List<TimelineSlider> timelineSliders = new ArrayList<TimelineSlider>();
 	private int cIdx = 0;
@@ -60,11 +60,11 @@ public class AnimatorDialog extends GenericDialog {
 			super.actionPerformed(e);
 	}
 
-	public HistogramSlider getNextHistogramSlider() {
+	public ContrastPanel getNextHistogramSlider() {
 		return HistogramSliders.get(cIdx++);
 	}
 
-	public List<HistogramSlider> getHistogramSliders() {
+	public List<ContrastPanel> getHistogramSliders() {
 		return HistogramSliders;
 	}
 
@@ -80,8 +80,8 @@ public class AnimatorDialog extends GenericDialog {
 		super.addChoice(label, choice, choice[0]);
 	}
 
-	public HistogramSlider addHistogramSlider(String label, int[] histo8, Color color, double min, double max, RenderingSettings r, int nChannels) {
-		HistogramSlider slider = new HistogramSlider(histo8, color, min, max, r, nChannels);
+	public ContrastPanel addHistogramSlider(String label, int[] histo8, Color color, double min, double max, RenderingSettings r, int nChannels) {
+		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, r, nChannels);
 		HistogramSliders.add(slider);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();

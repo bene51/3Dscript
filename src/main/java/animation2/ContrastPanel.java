@@ -22,7 +22,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
-public class HistogramSlider extends Panel implements NumberField.Listener, FocusListener {
+public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
 
 	public static void main(String[] args) {
 		Frame frame = new Frame();
@@ -30,7 +30,7 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 		for(int i = 0; i < 256; i++)
 			histo[i] = i;
 		RenderingSettings r = new RenderingSettings(0, 255, 1, 0, 255, 1);
-		HistogramSlider slider = new HistogramSlider(histo, Color.RED, 0, 255, r, 2);
+		ContrastPanel slider = new ContrastPanel(histo, Color.RED, 0, 255, r, 2);
 		frame.add(slider);
 		frame.pack();
 		frame.setVisible(true);
@@ -51,10 +51,15 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 
 	private DoubleSliderCanvas slider;
 
-	private ArrayList<RenderingSettingsChangeListener> listeners =
-			new ArrayList<RenderingSettingsChangeListener>();
+	public static interface Listener {
+		public void renderingSettingsChanged();
+		public void channelChanged();
+	}
 
-	public HistogramSlider(int[] histogram, Color color, double min, double max, RenderingSettings r, int nChannels) {
+	private ArrayList<Listener> listeners =
+			new ArrayList<Listener>();
+
+	public ContrastPanel(int[] histogram, Color color, double min, double max, RenderingSettings r, int nChannels) {
 		super();
 		minCTF.addListener(this);
 		minCTF.addFocusListener(this);
@@ -153,17 +158,17 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 		repaint();
 	}
 
-	public void addRenderingSettingsChangeListener(RenderingSettingsChangeListener l) {
+	public void addContrastPanelListener(Listener l) {
         listeners.add(l);
     }
 
 	private void fireRenderingSettingsChanged() {
-		for(RenderingSettingsChangeListener l : listeners)
+		for(Listener l : listeners)
 			l.renderingSettingsChanged();
 	}
 
 	private void fireChannelChanged() {
-		for(RenderingSettingsChangeListener l : listeners)
+		for(Listener l : listeners)
 			l.channelChanged();
 	}
 
@@ -217,9 +222,9 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 		private static final int DRAGGING_ALPHA_LEFT  = 3;
 		private static final int DRAGGING_ALPHA_RIGHT = 4;
 
-		private HistogramSlider slider;
+		private ContrastPanel slider;
 
-		public DoubleSliderCanvas(int[] histogram, Color color, double min, double max, RenderingSettings r, HistogramSlider slider) {
+		public DoubleSliderCanvas(int[] histogram, Color color, double min, double max, RenderingSettings r, ContrastPanel slider) {
 			set(histogram, color, min, max, r);
 			this.slider = slider;
 			this.addMouseMotionListener(this);
