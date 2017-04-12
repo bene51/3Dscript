@@ -471,8 +471,8 @@ public class Transform {
 			return;
 		}
 		parameters[0] = Math.atan2(-m[a20], m[a00]);
-		parameters[1] = Math.atan2(-m[a12], m[a11]);
-		parameters[2] = Math.asin(m[a10]);
+		parameters[2] = Math.atan2(-m[a12], m[a11]);
+		parameters[1] = Math.asin(m[a10]);
 	}
 
 	/** this conversion uses NASA standard aeroplane conventions as described on page:
