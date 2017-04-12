@@ -2,6 +2,8 @@ package animation2;
 
 public class Keyframe implements Comparable<Keyframe> {
 
+	public static int UNSET = Integer.MIN_VALUE;
+
 	private int frame;
 
 	public RenderingSettings[] renderingSettings;
