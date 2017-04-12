@@ -103,6 +103,13 @@ public class Timelines {
 		}
 	}
 
+	public boolean isEmpty() {
+		for(CtrlPoints ctrls : timelines)
+			if(ctrls.size() > 0)
+				return false;
+		return true;
+	}
+
 	private void record(int i, int t, double v) {
 		if(v != Keyframe.UNSET)
 			timelines.get(i).add(t, v);

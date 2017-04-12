@@ -395,6 +395,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		timeline.addTimelineListener(new TimelineSlider.Listener() {
 			@Override
 			public void currentTimepointChanged(int t) {
+				if(timelines.isEmpty())
+					return;
 				Keyframe k = timelines.getInterpolatedFrame(t);
 				for(int i = 0; i < renderingSettings.length; i++) {
 					renderingSettings[i].set(k.renderingSettings[i]);
