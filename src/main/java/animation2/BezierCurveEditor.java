@@ -352,14 +352,16 @@ public class BezierCurveEditor extends Panel {
 					g.drawLine(x, y, c2x, c2y);
 //				}
 			}
-			LinePoint first = ctrls.get(0);
-			int cy = diagram.canvasY(first.y);
-			if(first.x > diagram.getXMin())
-				g.drawLine(diagram.getLeftPixel(), cy, diagram.canvasX(first.x), cy);
-			LinePoint last = ctrls.get(ctrls.size() - 1);
-			cy = diagram.canvasY(last.y);
-			if(last.x < diagram.getXMax())
-				g.drawLine(diagram.canvasX(last.x), cy, diagram.getRightPixel(), cy);
+			if(ctrls.size() > 0) {
+				LinePoint first = ctrls.get(0);
+				int cy = diagram.canvasY(first.y);
+				if(first.x > diagram.getXMin())
+					g.drawLine(diagram.getLeftPixel(), cy, diagram.canvasX(first.x), cy);
+				LinePoint last = ctrls.get(ctrls.size() - 1);
+				cy = diagram.canvasY(last.y);
+				if(last.x < diagram.getXMax())
+					g.drawLine(diagram.canvasX(last.x), cy, diagram.getRightPixel(), cy);
+			}
 			g.draw(path);
 
 //			paintControl(g);
