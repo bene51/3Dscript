@@ -376,7 +376,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 //		keyframes.put(99, createKeyframe(99, xRangeSlider, yRangeSlider, zRangeSlider, renderingSettings, rotation, translation, scale, nearfar));
 
 
-		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99, kf);
+		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 
 		final String[] timelineNames = timelines.getNames();
 		gd.addChoice("Timeline", timelineNames, timelineNames[0]);
