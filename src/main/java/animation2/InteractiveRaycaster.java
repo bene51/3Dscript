@@ -658,6 +658,21 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	public static void main(String... args) {
+		float[] m = new float[12];
+		double[] p = new double[] {
+				90 * Math.random(),
+				90 * Math.random(),
+				90 * Math.random(),
+		};
+		System.out.println(Arrays.toString(p));
+		Transform.fromEulerAngles(m, new double[] {
+				p[0] * Math.PI / 180,
+				p[1] * Math.PI / 180,
+				p[2] * Math.PI / 180});
+		Transform.guessEulerAngles(m, p);
+		for(int i = 0; i < 3; i++)
+			p[i] = 180 * p[i] / Math.PI;
+		System.out.println(Arrays.toString(p));
 		new ij.ImageJ();
 		String dir = "D:\\VLanger\\20161205-Intravital-Darm\\";
 		String name = "cy5-shg-2p-maus3919-gecleart-20x-big-stack1.resampled.tif";
