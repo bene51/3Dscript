@@ -79,7 +79,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
 		Color col = getLUTColor(luts[0]);
-		final ContrastPanel histogramSlider = gd.addHistogramSlider(null, histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
+		final ContrastPanel histogramSlider = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
 		int d = image.getNSlices();

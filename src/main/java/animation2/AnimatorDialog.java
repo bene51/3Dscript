@@ -20,10 +20,8 @@ public class AnimatorDialog extends GenericDialog {
 	private static final long serialVersionUID = 1L;
 
 	private ActionListener listener;
-	private List<ContrastPanel> HistogramSliders = new ArrayList<ContrastPanel>();
 	private List<DoubleSlider> doubleSliders = new ArrayList<DoubleSlider>();
 	private List<TimelineSlider> timelineSliders = new ArrayList<TimelineSlider>();
-	private int cIdx = 0;
 	private int sliderIdx = 0;
 	private Button okButton;
 
@@ -60,14 +58,6 @@ public class AnimatorDialog extends GenericDialog {
 			super.actionPerformed(e);
 	}
 
-	public ContrastPanel getNextHistogramSlider() {
-		return HistogramSliders.get(cIdx++);
-	}
-
-	public List<ContrastPanel> getHistogramSliders() {
-		return HistogramSliders;
-	}
-
 	public DoubleSlider getNextDoubleSlider() {
 		return doubleSliders.get(sliderIdx);
 	}
@@ -80,22 +70,12 @@ public class AnimatorDialog extends GenericDialog {
 		super.addChoice(label, choice, choice[0]);
 	}
 
-	public ContrastPanel addHistogramSlider(String label, int[] histo8, Color color, double min, double max, RenderingSettings r, int nChannels) {
+	public ContrastPanel addContrastPanel(int[] histo8, Color color, double min, double max, RenderingSettings r, int nChannels) {
 		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, r, nChannels);
-		HistogramSliders.add(slider);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints c = getConstraints();
 
-		if(label != null) {
-			Label theLabel = new Label(label);
-			c.gridx = 0;
-			c.anchor = GridBagConstraints.EAST;
-			c.gridwidth = 1;
-			layout.setConstraints(theLabel, c);
-			add(theLabel);
-			c.gridx++;
-		}
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
 		layout.setConstraints(slider, c);
