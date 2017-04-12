@@ -82,31 +82,33 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final ContrastPanel histogramSlider = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
-		int d = image.getNSlices();
-		final float[] nearfar = new float[] {0, 2 * d};
-		final DoubleSlider nearfarSlider = gd.addDoubleSlider(
-				"near/far",
-				new int[] {-5 * d, 5 * d},
-				new int[] {Math.round(nearfar[0]), Math.round(nearfar[1])},
-				new Color(255, 0, 0, 100));
 
-		final DoubleSlider xRangeSlider = gd.addDoubleSlider(
-				"x_range",
-				new int[] {0, image.getWidth()},
-				new int[] {0, image.getWidth()},
-				new Color(255, 0, 0, 100));
-		final DoubleSlider yRangeSlider = gd.addDoubleSlider(
-				"y_range",
-				new int[] {0, image.getHeight()},
-				new int[] {0, image.getHeight()},
-				new Color(255, 0, 0, 100));
-		final DoubleSlider zRangeSlider = gd.addDoubleSlider(
-				"z_range",
-				new int[] {0, image.getNSlices()},
-				new int[] {0, image.getNSlices()},
-				new Color(255, 0, 0, 100));
-//		gd.addSlider("near", -5 * d, 5 * d, nearfar[0]);
-//		gd.addSlider("far", -5 * d, 5 * d, nearfar[1]);
+
+//		int d = image.getNSlices();
+//		final float[] nearfar = new float[] {, 2 * d};
+//		final DoubleSlider nearfarSlider = gd.addDoubleSlider(
+//				"near/far",
+//				new int[] {-5 * d, 5 * d},
+//				new int[] {Math.round(nearfar[0]), Math.round(nearfar[1])},
+//				new Color(255, 0, 0, 100));
+//
+//		final DoubleSlider xRangeSlider = gd.addDoubleSlider(
+//				"x_range",
+//				new int[] {0, image.getWidth()},
+//				new int[] {0, image.getWidth()},
+//				new Color(255, 0, 0, 100));
+//		final DoubleSlider yRangeSlider = gd.addDoubleSlider(
+//				"y_range",
+//				new int[] {0, image.getHeight()},
+//				new int[] {0, image.getHeight()},
+//				new Color(255, 0, 0, 100));
+//		final DoubleSlider zRangeSlider = gd.addDoubleSlider(
+//				"z_range",
+//				new int[] {0, image.getNSlices()},
+//				new int[] {0, image.getNSlices()},
+//				new Color(255, 0, 0, 100));
+		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
+		final float[] nearfar = new float[] {croppingPanel.getNear(), croppingPanel.getFar()};
 
 		final float[] scale = new float[] {1};
 		final float[] translation = new float[3];
@@ -311,37 +313,37 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
-		nearfarSlider.addSliderChangeListener(new DoubleSlider.Listener() {
-
-			@Override
-			public void sliderChanged() {
-				try {
-					nearfar[0] = nearfarSlider.getMin();
-					nearfar[1] = nearfarSlider.getMax();
-				} catch(Throwable t) {
-					t.printStackTrace();
-				}
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
-			}
-		});
-
-		DoubleSlider.Listener rangeListener = new DoubleSlider.Listener() {
-			@Override
-			public void sliderChanged() {
-				int x = xRangeSlider.getMin();
-				int y = yRangeSlider.getMin();
-				int z = zRangeSlider.getMin();
-				int w = xRangeSlider.getMax() - x;
-				int h = yRangeSlider.getMax() - y;
-				int d = zRangeSlider.getMax() - z;
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar, x, y, z, w, h, d);
-			}
-		};
-		xRangeSlider.addSliderChangeListener(rangeListener);
-		yRangeSlider.addSliderChangeListener(rangeListener);
-		zRangeSlider.addSliderChangeListener(rangeListener);
+//		nearfarSlider.addSliderChangeListener(new DoubleSlider.Listener() {
+//
+//			@Override
+//			public void sliderChanged() {
+//				try {
+//					nearfar[0] = nearfarSlider.getMin();
+//					nearfar[1] = nearfarSlider.getMax();
+//				} catch(Throwable t) {
+//					t.printStackTrace();
+//				}
+//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+//				worker.push(renderingSettings, inverse, nearfar);
+//			}
+//		});
+//
+//		DoubleSlider.Listener rangeListener = new DoubleSlider.Listener() {
+//			@Override
+//			public void sliderChanged() {
+//				int x = xRangeSlider.getMin();
+//				int y = yRangeSlider.getMin();
+//				int z = zRangeSlider.getMin();
+//				int w = xRangeSlider.getMax() - x;
+//				int h = yRangeSlider.getMax() - y;
+//				int d = zRangeSlider.getMax() - z;
+//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+//				worker.push(renderingSettings, inverse, nearfar, x, y, z, w, h, d);
+//			}
+//		};
+//		xRangeSlider.addSliderChangeListener(rangeListener);
+//		yRangeSlider.addSliderChangeListener(rangeListener);
+//		zRangeSlider.addSliderChangeListener(rangeListener);
 
 		histogramSlider.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
@@ -358,6 +360,20 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
+		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
+			@Override
+			public void nearFarChanged(int near, int far) {
+				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.push(renderingSettings, inverse, nearfar);
+			}
+
+			@Override
+			public void boundingBoxChanged(int bbx, int bby, int bbz, int bbw, int bbh, int bbd) {
+				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.push(renderingSettings, inverse, nearfar, bbx, bby, bbz, bbw, bbh, bbd);
+			}
+		});
+
 		gd.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -366,7 +382,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		});
 
 //		final TreeMap<Integer, Keyframe> keyframes = new TreeMap<Integer, Keyframe>();
-		Keyframe kf = createKeyframe(0, xRangeSlider, yRangeSlider, zRangeSlider, renderingSettings, rotation, translation, scale, nearfar);
+		Keyframe kf = createKeyframe(0, croppingPanel, renderingSettings, rotation, translation, scale, nearfar);
 //		keyframes.put(0, kf);
 //		keyframes.put(99, createKeyframe(99, xRangeSlider, yRangeSlider, zRangeSlider, renderingSettings, rotation, translation, scale, nearfar));
 
@@ -396,9 +412,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 				for(int i = 0; i < renderingSettings.length; i++) {
 					renderingSettings[i].set(k.renderingSettings[i]);
 				}
-				xRangeSlider.setMinAndMax(k.bbx, k.bbx + k.bbw);
-				yRangeSlider.setMinAndMax(k.bby, k.bby + k.bbh);
-				zRangeSlider.setMinAndMax(k.bbz, k.bbz + k.bbd);
+
+				croppingPanel.setBoundingBox(k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
 
 				translation[0] = k.dx;
 				translation[1] = k.dy;
@@ -408,7 +423,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 				nearfar[0] = k.near;
 				nearfar[1] = k.far;
-				nearfarSlider.setMinAndMax(Math.round(k.near), Math.round(k.far));
+
+				croppingPanel.setNearAndFar(Math.round(k.near), Math.round(k.far));
+//				nearfarSlider.setMinAndMax(Math.round(k.near), Math.round(k.far));
 
 				Transform.fromEulerAngles(rotation, new double[] {
 						Math.PI * k.angleX / 180,
@@ -429,9 +446,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int t = timeline.getCurrentFrame();
 				Keyframe previous = timelines.getKeyframeNoInterpol(t);
 				Keyframe current  = createKeyframe(t,
-						xRangeSlider,
-						yRangeSlider,
-						zRangeSlider,
+						croppingPanel,
 						renderingSettings,
 						rotation,
 						translation,
@@ -605,9 +620,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private Keyframe createKeyframe(int frame,
-			DoubleSlider xRangeSlider,
-			DoubleSlider yRangeSlider,
-			DoubleSlider zRangeSlider,
+			CroppingPanel croppingPanel,
 			RenderingSettings[] renderingSettings,
 			float[] rotation,
 			float[] translation,
@@ -616,12 +629,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 		RenderingSettings[] rs = new RenderingSettings[renderingSettings.length];
 		for(int i = 0; i < rs.length; i++)
 			rs[i] = new RenderingSettings(renderingSettings[i]);
-		int bbx = xRangeSlider.getMin();
-		int bby = yRangeSlider.getMin();
-		int bbz = zRangeSlider.getMin();
-		int bbw = xRangeSlider.getMax() - bbx;
-		int bbh = yRangeSlider.getMax() - bby;
-		int bbd = zRangeSlider.getMax() - bbz;
+		int bbx = croppingPanel.getBBX();
+		int bby = croppingPanel.getBBY();
+		int bbz = croppingPanel.getBBZ();
+		int bbw = croppingPanel.getBBW();
+		int bbh = croppingPanel.getBBH();
+		int bbd = croppingPanel.getBBD();
 
 		double[] eulerAngles = new double[3];
 		Transform.guessEulerAngles(rotation, eulerAngles);

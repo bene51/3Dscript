@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import ij.ImagePlus;
 import ij.gui.GenericDialog;
 
 
@@ -78,8 +79,23 @@ public class AnimatorDialog extends GenericDialog {
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
-		layout.setConstraints(slider, c);
-		add(slider);
+		SwitchablePanel sp = new SwitchablePanel("Contrast", slider);
+		layout.setConstraints(sp, c);
+		add(sp);
+		return slider;
+	}
+
+	public CroppingPanel addCroppingPanel(ImagePlus imp) {
+		CroppingPanel slider = new CroppingPanel(imp);
+
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		GridBagConstraints c = getConstraints();
+
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0;
+		SwitchablePanel sp = new SwitchablePanel("Cropping", slider);
+		layout.setConstraints(sp, c);
+		add(sp);
 		return slider;
 	}
 
