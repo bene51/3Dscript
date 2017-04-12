@@ -431,8 +431,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 		but.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int f = timeline.getCurrentFrame();
-				timelines.recordFrame(createKeyframe(f,
+				int t = timeline.getCurrentFrame();
+				Keyframe previous = timelines.getKeyframeNoInterpol(t);
+				Keyframe current  = createKeyframe(t,
 						xRangeSlider,
 						yRangeSlider,
 						zRangeSlider,
@@ -440,7 +441,15 @@ public class InteractiveRaycaster implements PlugInFilter {
 						rotation,
 						translation,
 						scale,
-						nearfar));
+						nearfar);
+				KeyframePanel panel = new KeyframePanel(current, previous);
+				GenericDialog gd = new GenericDialog("Record time point");
+				gd.addPanel(panel);
+				gd.showDialog();
+				if(gd.wasCanceled())
+					return;
+				panel.apply();
+				timelines.recordFrame(current);
 				timeline.repaint();
 			}
 		});

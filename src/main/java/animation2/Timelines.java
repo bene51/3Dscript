@@ -193,6 +193,52 @@ public class Timelines {
 		return kf;
 	}
 
+	private double get(int i, int t) {
+		LinePoint lp = timelines.get(i).getPointAt(t);
+		if(lp == null)
+			return Keyframe.UNSET;
+		return lp.y;
+	}
+
+	public Keyframe getKeyframeNoInterpol(int t) {
+		Keyframe kf = new Keyframe(t);
+		int i = 0;
+
+		kf.dx = (float)get(i++, t);
+		kf.dy = (float)get(i++, t);
+		kf.dz = (float)get(i++, t);
+
+		kf.angleX = get(i++, t);
+		kf.angleY = get(i++, t);
+		kf.angleZ = get(i++, t);
+
+		kf.scale = (float)get(i++, t);
+
+		kf.bbx = (int)Math.round(get(i++, t));
+		kf.bby = (int)Math.round(get(i++, t));
+		kf.bbz = (int)Math.round(get(i++, t));
+		kf.bbw = (int)Math.round(get(i++, t));
+		kf.bbh = (int)Math.round(get(i++, t));
+		kf.bbd = (int)Math.round(get(i++, t));
+
+		kf.near = (float)get(i++, t);
+		kf.far  = (float)get(i++, t);
+
+		kf.renderingSettings = new RenderingSettings[nChannels];
+		for(int c = 0; c < nChannels; c++) {
+			kf.renderingSettings[c] = new RenderingSettings(
+					(float)get(i + 3, t), // alphamin
+					(float)get(i + 4, t), // alphamax
+					(float)get(i + 5, t), // alphagamma
+					(float)get(i + 0, t), // colormin
+					(float)get(i + 1, t), // colormax
+					(float)get(i + 2, t)  // colorgamma
+			);
+			i += 6;
+		}
+		return kf;
+	}
+
 	public String getName(int i) {
 		return names.get(i);
 	}
