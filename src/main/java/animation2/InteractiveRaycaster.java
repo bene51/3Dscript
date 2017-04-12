@@ -415,7 +415,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 				nearfar[1] = k.far;
 				nearfarSlider.setMinAndMax(Math.round(k.near), Math.round(k.far));
 
-				Transform.fromEulerAngles(rotation, new double[] {k.angleX, k.angleY, k.angleZ});
+				Transform.fromEulerAngles(rotation, new double[] {
+						Math.PI * k.angleX / 180,
+						Math.PI * k.angleY / 180,
+						Math.PI * k.angleZ / 180});
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar, k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
@@ -572,6 +575,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		double[] eulerAngles = new double[3];
 		Transform.guessEulerAngles(rotation, eulerAngles);
+		eulerAngles[0] = eulerAngles[0] * 180 / Math.PI;
+		eulerAngles[1] = eulerAngles[1] * 180 / Math.PI;
+		eulerAngles[2] = eulerAngles[2] * 180 / Math.PI;
 		return new Keyframe(
 				frame, rs,
 				nearfar[0], nearfar[1],
