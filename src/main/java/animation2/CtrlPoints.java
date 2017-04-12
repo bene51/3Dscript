@@ -77,6 +77,10 @@ public class CtrlPoints implements Iterable<LinePoint> {
 	}
 
 	public double getInterpolatedValue(double x) {
+		if(size() == 0)
+			return 0;
+		if(size() == 1)
+			return list.get(0).getY();
 		Iterator<LinePoint> it = iterator();
 		LinePoint p1 = it.next();
 		if(x <= p1.getX())
@@ -162,6 +166,12 @@ public class CtrlPoints implements Iterable<LinePoint> {
 	}
 
 	public void getBoundingBox(Point lowerleft, Point upperright) {
+		if(list.size() == 0) {
+			lowerleft.set(0, 0);
+			upperright.set(100, 1);
+			return;
+		}
+
 		double xmin = Double.POSITIVE_INFINITY;
 		double xmax = Double.NEGATIVE_INFINITY;
 		double ymin = Double.POSITIVE_INFINITY;
@@ -183,6 +193,7 @@ public class CtrlPoints implements Iterable<LinePoint> {
 			if(lp.c2.x > xmax) xmax = lp.c2.x;
 			if(lp.c2.y > ymax) ymax = lp.c2.y;
 		}
+
 		lowerleft.set((int)Math.floor(xmin), ymin);
 		upperright.set((int)Math.ceil(xmax), ymax);
 	}
