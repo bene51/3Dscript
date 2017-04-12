@@ -97,6 +97,17 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		return p1.getY();
 	}
 
+	public LinePoint getPointAt(int x) {
+		LinePoint existing = null;
+		for(LinePoint lp : list) { // TODO replace with binary search
+			if(lp.x == x) {
+				existing = lp;
+				break;
+			}
+		}
+		return existing;
+	}
+
 	public double getInterpolatedValue(double x, Point p1, Point p2, Point p3, Point p4) {
 		// P(t) = (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3 with t running
 		// from 0 to 1.

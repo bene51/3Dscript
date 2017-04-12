@@ -103,41 +103,47 @@ public class Timelines {
 		}
 	}
 
+	private void record(int i, int t, double v) {
+		if(v != Keyframe.UNSET)
+			timelines.get(i).add(t, v);
+		else {
+			LinePoint lp = timelines.get(i).getPointAt(t);
+			timelines.get(i).remove(lp);
 		}
 	}
 
 	public void recordFrame(Keyframe kf) {
 		int i = 0;
 		int t = kf.getFrame();
-		
-		timelines.get(i++).add(t, kf.dx);
-		timelines.get(i++).add(t, kf.dy);
-		timelines.get(i++).add(t, kf.dz);
 
-		timelines.get(i++).add(t, kf.angleX);
-		timelines.get(i++).add(t, kf.angleY);
-		timelines.get(i++).add(t, kf.angleZ);
+		record(i++, t, kf.dx);
+		record(i++, t, kf.dy);
+		record(i++, t, kf.dz);
 
-		timelines.get(i++).add(t, kf.scale);
+		record(i++, t, kf.angleX);
+		record(i++, t, kf.angleY);
+		record(i++, t, kf.angleZ);
 
-		timelines.get(i++).add(t, kf.bbx);
-		timelines.get(i++).add(t, kf.bby);
-		timelines.get(i++).add(t, kf.bbz);
-		timelines.get(i++).add(t, kf.bbw);
-		timelines.get(i++).add(t, kf.bbh);
-		timelines.get(i++).add(t, kf.bbd);
-		
-		timelines.get(i++).add(t, kf.near);
-		timelines.get(i++).add(t, kf.far);
-		
+		record(i++, t, kf.scale);
+
+		record(i++, t, kf.bbx);
+		record(i++, t, kf.bby);
+		record(i++, t, kf.bbz);
+		record(i++, t, kf.bbw);
+		record(i++, t, kf.bbh);
+		record(i++, t, kf.bbd);
+
+		record(i++, t, kf.near);
+		record(i++, t, kf.far);
+
 		for(int c = 0; c < nChannels; c++) {
 			RenderingSettings rs = kf.renderingSettings[c];
-			timelines.get(i++).add(t, rs.colorMin);
-			timelines.get(i++).add(t, rs.colorMax);
-			timelines.get(i++).add(t, rs.colorGamma);
-			timelines.get(i++).add(t, rs.alphaMin);
-			timelines.get(i++).add(t, rs.alphaMax);
-			timelines.get(i++).add(t, rs.alphaGamma);
+			record(i++, t, rs.colorMin);
+			record(i++, t, rs.colorMax);
+			record(i++, t, rs.colorGamma);
+			record(i++, t, rs.alphaMin);
+			record(i++, t, rs.alphaMax);
+			record(i++, t, rs.alphaGamma);
 		}
 	}
 
