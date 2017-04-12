@@ -55,22 +55,6 @@ public class TimelineSlider extends Panel implements NumberField.Listener, Focus
 		public void currentTimepointChanged(int t);
 	}
 
-//	private static CtrlPoints makeDefault(TreeMap<Integer, Keyframe> keyframes) {
-//		CtrlPoints ctrls = new CtrlPoints();
-//		ctrls.add(keyframes.firstKey(), 0);
-//		ctrls.add(keyframes.lastKey(), 0);
-//		return ctrls;
-//	}
-//
-//	/**
-//	 * TODO temporary, remove again
-//	 * @param keyframes
-//	 * @param slider
-//	 */
-//	public TimelineSlider(TreeMap<Integer, Keyframe> keyframes, int currentTimepoint) {
-//		this(keyframes, makeDefault(keyframes), currentTimepoint);
-//	}
-
 	public TimelineSlider(CtrlPoints ctrls, int currentTimepoint) {
 		super();
 		currentTimepointTF.setIntegersOnly(true);
