@@ -146,33 +146,29 @@ public class BezierCurveEditor extends Panel {
 				if(!addedAPoint) {
 					x = cp.x;
 					y = cp.y;
-//					cp = ctrls.add(x, y);
 				}
 
 				GenericDialog gd = new GenericDialog("");
 				gd.addNumericField("x", x, 0);
 				gd.addNumericField("y", y, 3);
 				gd.showDialog();
-				if(gd.wasCanceled()) {
-//					if(addedAPoint)
-//						ctrls.remove(cp);
-				} else {
-					x = (int)gd.getNextNumber();
-					y = gd.getNextNumber();
-					// if it's a line point and we move it to another line point, remove the old one
-					// TODO implement this
+				if(gd.wasCanceled())
+					return;
+				x = (int)gd.getNextNumber();
+				y = gd.getNextNumber();
+				// if it's a line point and we move it to another line point, remove the old one
+				// TODO implement this
 //					Point tmp = ctrls.getClosestPointWithin(x, inc, cp);
 //					if(tmp != null)
 //						ctrls.remove(tmp);
 
-					if(addedAPoint)
-						cp = ctrls.add(x, y);
-					else {
-						Point ll = new Point(0, 0);
-						Point ur = new Point(0, 0);
-						ctrls.getBoundingBox(ll, ur);
-						cp.moveTo(x, y, ll, ur);
-					}
+				if(addedAPoint)
+					cp = ctrls.add(x, y);
+				else {
+					Point ll = new Point(0, 0);
+					Point ur = new Point(0, 0);
+					ctrls.getBoundingBox(ll, ur);
+					cp.moveTo(x, y, ll, ur);
 				}
 				fireCurveChanged(true);
 			}
