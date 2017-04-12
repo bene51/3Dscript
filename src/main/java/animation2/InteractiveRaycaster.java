@@ -454,6 +454,52 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 		p.add(but);
+		but = new Button("Spin");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int t = timeline.getCurrentFrame();
+				GenericDialog gd = new GenericDialog("");
+				gd.addNumericField("#frames", 180, 0);
+				gd.addNumericField("angle", 360, 2);
+				String[] axisChoice = new String[] {"x-axis", "y-axis"};
+				gd.addChoice("axis", axisChoice, axisChoice[1]);
+				gd.showDialog();
+				if(gd.wasCanceled())
+					return;
+
+				int nFrames = (int)gd.getNextNumber();
+				double angle = gd.getNextNumber();
+				int axisI = gd.getNextChoiceIndex();
+				float[] axis = axisI == 0 ? new float[] {1, 0, 0} : new float[] {0, 1, 0};
+
+				// calculate euler angle increments for 1 degree
+				double[] eulerAngles0 = new double[3];
+				Transform.guessEulerAngles(rotation, eulerAngles0);
+				float[] r = Transform.fromAngleAxis(axis, (float)(1 * Math.PI) / 180f, null);
+				float[] rot = Transform.mul(r, rotation);
+				double[] eulerAngles1 = new double[3];
+				Transform.guessEulerAngles(rot, eulerAngles1);
+				double dEx = eulerAngles1[0] - eulerAngles0[0];
+				double dEy = eulerAngles1[1] - eulerAngles0[1];
+				double dEz = eulerAngles1[2] - eulerAngles0[2];
+
+				double a = 0;
+				Keyframe kf = timelines.getKeyframeNoInterpol(t);
+				kf.angleX = 180 * (eulerAngles0[0] + dEx * a) / Math.PI;
+				kf.angleY = 180 * (eulerAngles0[1] + dEy * a) / Math.PI;
+				kf.angleZ = 180 * (eulerAngles0[2] + dEz * a) / Math.PI;
+				timelines.recordFrame(kf);
+				kf = timelines.getKeyframeNoInterpol(t + nFrames);
+				kf.angleX = 180 * (eulerAngles0[0] + dEx * angle) / Math.PI;
+				kf.angleY = 180 * (eulerAngles0[1] + dEy * angle) / Math.PI;
+				kf.angleZ = 180 * (eulerAngles0[2] + dEz * angle) / Math.PI;
+				timelines.recordFrame(kf);
+
+				timeline.repaint();
+			}
+		});
+		p.add(but);
 		gd.addPanel(p);
 
 
