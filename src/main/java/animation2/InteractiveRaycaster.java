@@ -72,11 +72,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		Transform.invert(toTransform);
 
 		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster");
-		String[] channels = new String[nC];
-		for(int i = 0; i < nC; i++)
-			channels[i] = "Channel " + (i + 1);
-		gd.addChoice("Channel", channels);
-		final Choice channelChoice = (Choice)gd.getChoices().lastElement();
 
 		for(int c = 0; c < nC; c++) {
 			renderingSettings[c] = new RenderingSettings(
@@ -84,7 +79,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
 		Color col = getLUTColor(luts[0]);
-		final HistogramSlider histogramSlider = gd.addHistogramSlider(null, histo8[0], col, min[0], max[0], renderingSettings[0]);
+		final HistogramSlider histogramSlider = gd.addHistogramSlider(null, histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
 		int d = image.getNSlices();
@@ -312,13 +307,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 					cal.pixelHeight = pdOut[1] / scale[0];
 					return true;
 				}
-				else if(e != null && e.getSource() == channelChoice) {
-					int c = channelChoice.getSelectedIndex();
-
-					Color col = getLUTColor(luts[c]);
-					((AnimatorDialog)gd).getHistogramSliders().get(0).set(histo8[c], col, min[c], max[c], renderingSettings[c]);
-					return true;
-				}
 				return false;
 			}
 		});
@@ -360,6 +348,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void renderingSettingsChanged() {
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar);
+			}
+
+			@Override
+			public void channelChanged() {
+				int c = histogramSlider.getChannel();
+				Color col = getLUTColor(luts[c]);
+				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
 			}
 		});
 
@@ -594,9 +589,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 					renderingSettings[c].colorGamma = 1;
 				}
 
-				int c = channelChoice.getSelectedIndex();
+				int c = histogramSlider.getChannel();
 				Color col = getLUTColor(luts[c]);
-				gd.getHistogramSliders().get(0).set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar);
 			}

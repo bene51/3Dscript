@@ -1,5 +1,6 @@
 package animation2;
 
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -14,6 +15,8 @@ import java.awt.Panel;
 import java.awt.TextField;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -27,7 +30,7 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 		for(int i = 0; i < 256; i++)
 			histo[i] = i;
 		RenderingSettings r = new RenderingSettings(0, 255, 1, 0, 255, 1);
-		HistogramSlider slider = new HistogramSlider(histo, Color.RED, 0, 255, r);
+		HistogramSlider slider = new HistogramSlider(histo, Color.RED, 0, 255, r, 2);
 		frame.add(slider);
 		frame.pack();
 		frame.setVisible(true);
@@ -44,12 +47,14 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 	private NumberField maxATF = new NumberField(4);
 	private NumberField gammaATF = new NumberField(4);
 
+	private Choice channelChoice;
+
 	private DoubleSliderCanvas slider;
 
 	private ArrayList<RenderingSettingsChangeListener> listeners =
 			new ArrayList<RenderingSettingsChangeListener>();
 
-	public HistogramSlider(int[] histogram, Color color, double min, double max, RenderingSettings r) {
+	public HistogramSlider(int[] histogram, Color color, double min, double max, RenderingSettings r, int nChannels) {
 		super();
 		minCTF.addListener(this);
 		minCTF.addFocusListener(this);
@@ -74,6 +79,20 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 		setLayout(gridbag);
 
 		c.gridx = c.gridy = 0;
+		c.insets = new Insets(5, 2, 10, 5);
+		channelChoice = new Choice();
+		for(int i = 0; i < nChannels; i++)
+			channelChoice.add("Channel " + (i + 1));
+		add(channelChoice, c);
+		channelChoice.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				fireChannelChanged();
+			}
+		});
+
+		c.gridx = 0;
+		c.gridy++;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.insets = new Insets(0, 2, 0, 5);
@@ -122,11 +141,16 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 		updateTextfieldsFromSliders();
 	}
 
+	public int getChannel() {
+		return channelChoice.getSelectedIndex();
+	}
+
 	public void set(int[] histogram, Color color, double min, double max, RenderingSettings r) {
 		gammaATF.setText(Double.toString(r.alphaGamma));
 		gammaCTF.setText(Double.toString(r.colorGamma));
 		slider.set(histogram, color, min, max, r);
 		updateTextfieldsFromSliders();
+		repaint();
 	}
 
 	public void addRenderingSettingsChangeListener(RenderingSettingsChangeListener l) {
@@ -136,6 +160,11 @@ public class HistogramSlider extends Panel implements NumberField.Listener, Focu
 	private void fireRenderingSettingsChanged() {
 		for(RenderingSettingsChangeListener l : listeners)
 			l.renderingSettingsChanged();
+	}
+
+	private void fireChannelChanged() {
+		for(RenderingSettingsChangeListener l : listeners)
+			l.channelChanged();
 	}
 
 	@Override

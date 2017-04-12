@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
 import ij.gui.GenericDialog;
 
@@ -81,8 +80,8 @@ public class AnimatorDialog extends GenericDialog {
 		super.addChoice(label, choice, choice[0]);
 	}
 
-	public HistogramSlider addHistogramSlider(String label, int[] histo8, Color color, double min, double max, RenderingSettings r) {
-		HistogramSlider slider = new HistogramSlider(histo8, color, min, max, r);
+	public HistogramSlider addHistogramSlider(String label, int[] histo8, Color color, double min, double max, RenderingSettings r, int nChannels) {
+		HistogramSlider slider = new HistogramSlider(histo8, color, min, max, r, nChannels);
 		HistogramSliders.add(slider);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
