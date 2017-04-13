@@ -22,7 +22,7 @@ public class AnimatorDialog extends GenericDialog {
 
 	private ActionListener listener;
 	private List<DoubleSlider> doubleSliders = new ArrayList<DoubleSlider>();
-	private List<TimelineSlider> timelineSliders = new ArrayList<TimelineSlider>();
+	private List<AnimationPanel> timelineSliders = new ArrayList<AnimationPanel>();
 	private int sliderIdx = 0;
 	private Button okButton;
 
@@ -136,8 +136,8 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public TimelineSlider addTimelineSlider(String[] timelineNames, CtrlPoints ctrls, int current) {
-		final TimelineSlider timeline = new TimelineSlider(timelineNames, ctrls, current);
+	public AnimationPanel addAnimationPanel(String[] timelineNames, CtrlPoints ctrls, int current) {
+		final AnimationPanel timeline = new AnimationPanel(timelineNames, ctrls, current);
 		timelineSliders.add(timeline);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();

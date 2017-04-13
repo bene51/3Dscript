@@ -304,9 +304,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 		final String[] timelineNames = timelines.getNames();
-		final TimelineSlider timeline = gd.addTimelineSlider(timelineNames, timelines.get(0), 0);
+		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines.get(0), 0);
 
-		timeline.addTimelineListener(new TimelineSlider.Listener() {
+		animationPanel.addTimelineListener(new AnimationPanel.Listener() {
 			@Override
 			public void currentTimepointChanged(int t) {
 				if(timelines.isEmpty())
@@ -340,7 +340,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void recordKeyframe() {
-				int t = timeline.getCurrentFrame();
+				int t = animationPanel.getCurrentFrame();
 				Keyframe previous = timelines.getKeyframeNoInterpol(t);
 				Keyframe current  = createKeyframe(t,
 						croppingPanel,
@@ -357,12 +357,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 					return;
 				panel.apply();
 				timelines.recordFrame(current);
-				timeline.repaint();
+				animationPanel.repaint();
 			}
 
 			@Override
 			public void insertSpin() {
-				int t = timeline.getCurrentFrame();
+				int t = animationPanel.getCurrentFrame();
 				GenericDialog gd = new GenericDialog("");
 				gd.addNumericField("#frames", 180, 0);
 				gd.addNumericField("angle", 360, 2);
@@ -400,7 +400,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				kf.angleZ = 180 * (eulerAngles0[2] + dEz * angle) / Math.PI;
 				timelines.recordFrame(kf);
 
-				timeline.repaint();
+				animationPanel.repaint();
 			}
 		});
 

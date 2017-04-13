@@ -26,7 +26,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
-public class TimelineSlider extends Panel implements NumberField.Listener, FocusListener {
+public class AnimationPanel extends Panel implements NumberField.Listener, FocusListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -40,7 +40,7 @@ public class TimelineSlider extends Panel implements NumberField.Listener, Focus
 		public void insertSpin();
 	}
 
-	public TimelineSlider(String[] timelineNames, CtrlPoints ctrls, int currentTimepoint) {
+	public AnimationPanel(String[] timelineNames, CtrlPoints ctrls, int currentTimepoint) {
 		super();
 		currentTimepointTF.setIntegersOnly(true);
 		currentTimepointTF.addListener(this);
@@ -179,11 +179,11 @@ public class TimelineSlider extends Panel implements NumberField.Listener, Focus
 
 		private boolean dragging = false;
 
-		private TimelineSlider slider;
+		private AnimationPanel slider;
 
 		private BezierCurveEditor.CurveChangerCanvas bezier;
 
-		public DoubleSliderCanvas(final CtrlPoints ctrls, TimelineSlider slider) {
+		public DoubleSliderCanvas(final CtrlPoints ctrls, AnimationPanel slider) {
 			this.slider = slider;
 			this.diagram = new DiagramCanvas();
 			diagram.addListenersTo(this);
