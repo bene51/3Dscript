@@ -76,7 +76,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
 		Color col = getLUTColor(luts[0]);
-		final ContrastPanel histogramSlider = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
+		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
 
@@ -235,7 +235,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
-		histogramSlider.addContrastPanelListener(new ContrastPanel.Listener() {
+		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged() {
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
@@ -244,9 +244,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void channelChanged() {
-				int c = histogramSlider.getChannel();
+				int c = contrastPanel.getChannel();
 				Color col = getLUTColor(luts[c]);
-				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
 			}
 
 			@Override
@@ -260,9 +260,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 					renderingSettings[c].colorGamma = 1;
 				}
 
-				int c = histogramSlider.getChannel();
+				int c = contrastPanel.getChannel();
 				Color col = getLUTColor(luts[c]);
-				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar);
 			}
