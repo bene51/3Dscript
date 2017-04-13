@@ -79,8 +79,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
-
-
 		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
 		gd.addMessage("");
 
@@ -309,7 +307,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		});
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
-
 		final String[] timelineNames = timelines.getNames();
 		gd.addChoice("Timeline", timelineNames, timelineNames[0]);
 		final Choice timelineChoice = (Choice)gd.getChoices().lastElement();
@@ -346,7 +343,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 				nearfar[1] = k.far;
 
 				croppingPanel.setNearAndFar(Math.round(k.near), Math.round(k.far));
-//				nearfarSlider.setMinAndMax(Math.round(k.near), Math.round(k.far));
 
 				Transform.fromEulerAngles(rotation, new double[] {
 						Math.PI * k.angleX / 180,
@@ -357,7 +353,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 				worker.push(renderingSettings, inverse, nearfar, k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
 			}
 		});
-		timeline.setVisible(true); //TODO remove again
 
 		Panel p = new Panel(new FlowLayout(FlowLayout.RIGHT));
 		Button but = new Button("Set");
