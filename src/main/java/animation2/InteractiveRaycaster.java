@@ -271,6 +271,24 @@ public class InteractiveRaycaster implements PlugInFilter {
 				Color col = getLUTColor(luts[c]);
 				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
 			}
+
+			@Override
+			public void renderingSettingsReset() {
+				for(int c = 0; c < nC; c++) {
+					renderingSettings[c].alphaMin = (float)luts[c].min;
+					renderingSettings[c].alphaMax = (float)luts[c].max;
+					renderingSettings[c].alphaGamma = 2;
+					renderingSettings[c].colorMin = (float)luts[c].min;
+					renderingSettings[c].colorMax = (float)luts[c].max;
+					renderingSettings[c].colorGamma = 1;
+				}
+
+				int c = histogramSlider.getChannel();
+				Color col = getLUTColor(luts[c]);
+				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.push(renderingSettings, inverse, nearfar);
+			}
 		});
 
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
@@ -517,27 +535,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		});
 		p.add(but);
 
-		but = new Button("Reset rendering settings");
-		but.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				for(int c = 0; c < nC; c++) {
-					renderingSettings[c].alphaMin = (float)luts[c].min;
-					renderingSettings[c].alphaMax = (float)luts[c].max;
-					renderingSettings[c].alphaGamma = 2;
-					renderingSettings[c].colorMin = (float)luts[c].min;
-					renderingSettings[c].colorMax = (float)luts[c].max;
-					renderingSettings[c].colorGamma = 1;
-				}
 
-				int c = histogramSlider.getChannel();
-				Color col = getLUTColor(luts[c]);
-				histogramSlider.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
-			}
-		});
-		p.add(but);
 
 		gd.addPanel(p);
 

@@ -1,5 +1,6 @@
 package animation2;
 
+import java.awt.Button;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Component;
@@ -13,6 +14,8 @@ import java.awt.Insets;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
@@ -54,6 +57,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	public static interface Listener {
 		public void renderingSettingsChanged();
 		public void channelChanged();
+		public void renderingSettingsReset();
 	}
 
 	private ArrayList<Listener> listeners =
@@ -95,6 +99,18 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 				fireChannelChanged();
 			}
 		});
+
+		c.gridx = 2;
+		c.gridwidth = 2;
+		c.anchor = GridBagConstraints.EAST;
+		Button but = new Button("Reset rendering settings");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireRenderingSettingsReset();
+			}
+		});
+		add(but, c);
 
 		c.gridx = 0;
 		c.gridy++;
@@ -165,6 +181,11 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private void fireRenderingSettingsChanged() {
 		for(Listener l : listeners)
 			l.renderingSettingsChanged();
+	}
+
+	private void fireRenderingSettingsReset() {
+		for(Listener l : listeners)
+			l.renderingSettingsReset();
 	}
 
 	private void fireChannelChanged() {
