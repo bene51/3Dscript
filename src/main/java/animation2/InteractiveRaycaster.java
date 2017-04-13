@@ -1,15 +1,12 @@
 package animation2;
 
 import java.awt.Button;
-import java.awt.Choice;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Panel;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -21,7 +18,6 @@ import java.util.Arrays;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.gui.ImageCanvas;
 import ij.measure.Calibration;
@@ -308,18 +304,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 		final String[] timelineNames = timelines.getNames();
-		gd.addChoice("Timeline", timelineNames, timelineNames[0]);
-		final Choice timelineChoice = (Choice)gd.getChoices().lastElement();
-		final TimelineSlider timeline = gd.addTimelineSlider(timelines.get(0), 0);
-
-		timelineChoice.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent arg0) {
-				CtrlPoints tl = timelines.get(timelineChoice.getSelectedIndex());
-				timeline.set(tl);
-			}
-		});
-
+		final TimelineSlider timeline = gd.addTimelineSlider(timelineNames, timelines.get(0), 0);
 
 		timeline.addTimelineListener(new TimelineSlider.Listener() {
 			@Override
@@ -352,13 +337,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar, k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
 			}
-		});
 
-		Panel p = new Panel(new FlowLayout(FlowLayout.RIGHT));
-		Button but = new Button("Set");
-		but.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void recordKeyframe() {
 				int t = timeline.getCurrentFrame();
 				Keyframe previous = timelines.getKeyframeNoInterpol(t);
 				Keyframe current  = createKeyframe(t,
@@ -378,12 +359,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 				timelines.recordFrame(current);
 				timeline.repaint();
 			}
-		});
-		p.add(but);
-		but = new Button("Spin");
-		but.addActionListener(new ActionListener() {
+
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void insertSpin() {
 				int t = timeline.getCurrentFrame();
 				GenericDialog gd = new GenericDialog("");
 				gd.addNumericField("#frames", 180, 0);
@@ -430,71 +408,73 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 
 		p = new Panel(new FlowLayout(FlowLayout.RIGHT));
-		but = new Button("Animate");
-		but.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GenericDialog gd = new GenericDialog("");
-				gd.addNumericField("#frames", 180, 0);
-				gd.addNumericField("y_angle_increment", 2, 0);
-				gd.addNumericField("x_angle_increment", 0, 0);
-				gd.addCheckbox("Scroll_through", false);
-				gd.addNumericField("Scroll_from", 0, 2);
-				gd.addNumericField("Scroll_to", 0, 2);
-				gd.addNumericField("dz", 1, 0);
-				gd.showDialog();
-				if(gd.wasCanceled())
-					return;
 
-				int nFrames = (int)gd.getNextNumber();
-				int ax = (int)gd.getNextNumber();
-				int ay = (int)gd.getNextNumber();
-				boolean scrollThrough = gd.getNextBoolean();
-				float scrollFrom = (float)gd.getNextNumber();
-				float scrollTo = (float)gd.getNextNumber();
-				float dz = (float)gd.getNextNumber();
 
-				ImageStack stack = new ImageStack(worker.out.getWidth(), worker.out.getHeight());
-				float[] inverse = null;
-				for(int i = 0; i < nFrames; i++) {
-					float[] rx = Transform.fromAngleAxis(new float[] {0, 1, 0}, ax * (float)Math.PI / 180f, null);
-					float[] ry = Transform.fromAngleAxis(new float[] {1, 0, 0}, ay * (float)Math.PI / 180f, null);
-					float[] r = Transform.mul(rx, ry);
-//					float[] cinv = Transform.fromTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], null);
-//					float[] c = Transform.fromTranslation(rotcenter[0], rotcenter[1], rotcenter[2], null);
-//					float[] rot = Transform.mul(c, Transform.mul(r, Transform.mul(cinv, rotation)));
-					float[] rot = Transform.mul(r, rotation);
-					System.arraycopy(rot, 0, rotation, 0, 12);
-
-					inverse = calculateInverseTransform(
-							scale[0],
-							translation,
-							rot,
-							rotcenter,
-							fromCalib,
-							toTransform);
-					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, renderingSettings, nearfar[0], nearfar[1]).getProcessor());
-					IJ.showProgress(i + 1, nFrames);
-				}
-				if(scrollThrough) {
-					int n = Math.round((scrollTo - scrollFrom) / dz) + 1;
-					for(int i = 0; i < n; i++) {
-						stack.addSlice(worker.getRaycaster().renderAndCompose(
-								inverse, renderingSettings, scrollFrom + i * dz, nearfar[1]).getProcessor());
-					}
-					for(int i = n - 1; i >= 0; i--) {
-						stack.addSlice(worker.getRaycaster().renderAndCompose(
-								inverse, renderingSettings, scrollFrom + i * dz, nearfar[1]).getProcessor());
-					}
-				}
-				ImagePlus anim = new ImagePlus(image.getTitle(), stack);
-				anim.setCalibration(worker.out.getCalibration().copy());
-				anim.show();
-			}
-		});
-		p.add(but);
 
 		but = new Button("Reset transformations");
+//		Button but = new Button("Animate");
+//		but.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				GenericDialog gd = new GenericDialog("");
+//				gd.addNumericField("#frames", 180, 0);
+//				gd.addNumericField("y_angle_increment", 2, 0);
+//				gd.addNumericField("x_angle_increment", 0, 0);
+//				gd.addCheckbox("Scroll_through", false);
+//				gd.addNumericField("Scroll_from", 0, 2);
+//				gd.addNumericField("Scroll_to", 0, 2);
+//				gd.addNumericField("dz", 1, 0);
+//				gd.showDialog();
+//				if(gd.wasCanceled())
+//					return;
+//
+//				int nFrames = (int)gd.getNextNumber();
+//				int ax = (int)gd.getNextNumber();
+//				int ay = (int)gd.getNextNumber();
+//				boolean scrollThrough = gd.getNextBoolean();
+//				float scrollFrom = (float)gd.getNextNumber();
+//				float scrollTo = (float)gd.getNextNumber();
+//				float dz = (float)gd.getNextNumber();
+//
+//				ImageStack stack = new ImageStack(worker.out.getWidth(), worker.out.getHeight());
+//				float[] inverse = null;
+//				for(int i = 0; i < nFrames; i++) {
+//					float[] rx = Transform.fromAngleAxis(new float[] {0, 1, 0}, ax * (float)Math.PI / 180f, null);
+//					float[] ry = Transform.fromAngleAxis(new float[] {1, 0, 0}, ay * (float)Math.PI / 180f, null);
+//					float[] r = Transform.mul(rx, ry);
+////					float[] cinv = Transform.fromTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], null);
+////					float[] c = Transform.fromTranslation(rotcenter[0], rotcenter[1], rotcenter[2], null);
+////					float[] rot = Transform.mul(c, Transform.mul(r, Transform.mul(cinv, rotation)));
+//					float[] rot = Transform.mul(r, rotation);
+//					System.arraycopy(rot, 0, rotation, 0, 12);
+//
+//					inverse = calculateInverseTransform(
+//							scale[0],
+//							translation,
+//							rot,
+//							rotcenter,
+//							fromCalib,
+//							toTransform);
+//					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, renderingSettings, nearfar[0], nearfar[1]).getProcessor());
+//					IJ.showProgress(i + 1, nFrames);
+//				}
+//				if(scrollThrough) {
+//					int n = Math.round((scrollTo - scrollFrom) / dz) + 1;
+//					for(int i = 0; i < n; i++) {
+//						stack.addSlice(worker.getRaycaster().renderAndCompose(
+//								inverse, renderingSettings, scrollFrom + i * dz, nearfar[1]).getProcessor());
+//					}
+//					for(int i = n - 1; i >= 0; i--) {
+//						stack.addSlice(worker.getRaycaster().renderAndCompose(
+//								inverse, renderingSettings, scrollFrom + i * dz, nearfar[1]).getProcessor());
+//					}
+//				}
+//				ImagePlus anim = new ImagePlus(image.getTitle(), stack);
+//				anim.setCalibration(worker.out.getCalibration().copy());
+//				anim.show();
+//			}
+//		});
+//		p.add(but);
 		but.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
