@@ -3,6 +3,10 @@ package animation2;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class Timelines {
 
 	private final List<CtrlPoints> timelines = new ArrayList<CtrlPoints>();
@@ -101,6 +105,50 @@ public class Timelines {
 			timelines.add(new CtrlPoints());
 			timelines.add(new CtrlPoints());
 		}
+	}
+
+	public int getNChannels() {
+		return nChannels;
+	}
+
+	public static void main(String[] args) {
+		toJSON();
+	}
+
+	public static void toJSON() {
+		Keyframe kf = new Keyframe(1,
+				new RenderingSettings[] {
+						new RenderingSettings(0, 255, 2, 0, 255, 1),
+						new RenderingSettings(0, 255, 2, 0, 255, 1)
+				},
+				0, // near
+				100, // far
+				1, // scale,
+				1, // dx,
+				1, // dy,
+				1, // dz,
+				0, // angleX,
+				0, // double angleY,
+				0, // double angleZ,
+				0, // int bbx,
+				0, // int bby,
+				0, // int bbz,
+				256, // int bbw,
+				256, // int bbh,
+				57); // int bbd) {
+
+		Gson gson = new GsonBuilder()
+	             .disableHtmlEscaping()
+	             .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+	             .setPrettyPrinting()
+	             .serializeNulls()
+	             .create();
+		System.out.println(gson.toJson(kf));
+	}
+
+	public void clear() {
+		for(CtrlPoints ctrls : timelines)
+			ctrls.clear();
 	}
 
 	public boolean isEmpty() {

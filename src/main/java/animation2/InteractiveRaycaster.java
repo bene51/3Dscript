@@ -14,12 +14,16 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.Arrays;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.gui.ImageCanvas;
+import ij.io.OpenDialog;
+import ij.io.SaveDialog;
 import ij.measure.Calibration;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
@@ -307,6 +311,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines.get(0), 0);
 
 		animationPanel.addTimelineListener(new AnimationPanel.Listener() {
+
+			@Override
+			public void timelineChanged(int timelineIdx) {
+				animationPanel.set(timelines.get(timelineIdx));
+			}
+
 			@Override
 			public void currentTimepointChanged(int t) {
 				if(timelines.isEmpty())
@@ -401,6 +411,60 @@ public class InteractiveRaycaster implements PlugInFilter {
 				timelines.recordFrame(kf);
 
 				animationPanel.repaint();
+			}
+
+			@Override
+			public void record(int from, int to) {
+				ImageStack stack = new ImageStack(worker.out.getWidth(), worker.out.getHeight());
+
+				for(int t = from; t <= to; t++) {
+					Keyframe k = timelines.getInterpolatedFrame(t);
+
+					float[] translation = new float[] {k.dx, k.dy, k.dz};
+					float[] rotation = new float[12];
+					Transform.fromEulerAngles(rotation, new double[] {
+							Math.PI * k.angleX / 180,
+							Math.PI * k.angleY / 180,
+							Math.PI * k.angleZ / 180});
+
+					float[] inverse = calculateInverseTransform(k.scale, translation, rotation, rotcenter, fromCalib, toTransform);
+
+					worker.getRaycaster().setBBox(k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
+
+					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, k.renderingSettings, k.near, k.far).getProcessor());
+					IJ.showProgress(t - from, to - from + 1);
+				}
+				ImagePlus anim = new ImagePlus(image.getTitle(), stack);
+				anim.setCalibration(worker.out.getCalibration().copy());
+				anim.show();
+			}
+
+			@Override
+			public void exportJSON() {
+				SaveDialog d = new SaveDialog("Save animation", "animation.json", ".json");
+				String dir = d.getDirectory();
+				String name = d.getFileName();
+				if(dir != null && name != null) {
+					try {
+						JsonExporter.exportTimelines(timelines, new File(dir, name));
+					} catch(Exception e) {
+						IJ.handleException(e);
+					}
+				}
+			}
+
+			@Override
+			public void importJSON() {
+				OpenDialog d = new OpenDialog("Open animation", "animation.json", ".json");
+				String dir = d.getDirectory();
+				String name = d.getFileName();
+				if(dir != null && name != null) {
+					try {
+						JsonExporter.importTimelines(timelines, new File(dir, name));
+					} catch(Exception e) {
+						IJ.handleException(e);
+					}
+				}
 			}
 		});
 

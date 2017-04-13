@@ -26,6 +26,10 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>vecmath</artifactId>
 		</dependency>
+		<dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
+		</dependency>
 	</dependencies>
 
 	<repositories>

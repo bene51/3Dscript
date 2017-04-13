@@ -70,7 +70,7 @@ public class SwitchablePanel extends Panel {
 		public void paint(Graphics g) {
 			Rectangle r;
 			super.paint(g);
-			r = this.getBounds(); // ClipBounds();
+			r = this.getBounds();
 			g.drawLine(
 					0,
 					r.height - this.getFontMetrics(this.getFont()).getDescent(),

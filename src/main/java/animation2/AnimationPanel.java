@@ -21,6 +21,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -35,9 +37,13 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 	private DoubleSliderCanvas slider;
 
 	public interface Listener {
+		public void timelineChanged(int timelineIdx);
 		public void currentTimepointChanged(int t);
 		public void recordKeyframe();
 		public void insertSpin();
+		public void record(int from, int to);
+		public void exportJSON();
+		public void importJSON();
 	}
 
 	public AnimationPanel(String[] timelineNames, CtrlPoints ctrls, int currentTimepoint) {
@@ -54,6 +60,13 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		timelineChoice = new Choice();
 		for(String s : timelineNames)
 			timelineChoice.add(s);
+
+		timelineChoice.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				fireTimelineChanged(timelineChoice.getSelectedIndex());
+			}
+		});
 
 		c.gridx = c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
@@ -94,6 +107,30 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 			}
 		});
 		buttons.add(but);
+		but = new Button("Record");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireRecord();
+			}
+		});
+		buttons.add(but);
+		but = new Button("Export");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireExportJSON();
+			}
+		});
+		buttons.add(but);
+		but = new Button("Import");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireImportJSON();
+			}
+		});
+		buttons.add(but);
 
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.anchor = GridBagConstraints.WEST;
@@ -125,6 +162,11 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		listeners.remove(l);
 	}
 
+	private void fireTimelineChanged(int timelineIdx) {
+		for(Listener l : listeners)
+			l.timelineChanged(timelineIdx);
+	}
+
 	private void fireCurrentTimepointChanged(int i) {
 		for(Listener l : listeners)
 			l.currentTimepointChanged(i);
@@ -138,6 +180,23 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 	private void fireInsertSpin() {
 		for(Listener l : listeners)
 			l.insertSpin();
+	}
+
+	private void fireRecord() {
+		int from = (int)Math.round(slider.diagram.getXMin());
+		int to = (int)Math.round(slider.diagram.getXMax());
+		for(Listener l : listeners)
+			l.record(from, to);
+	}
+
+	private void fireExportJSON() {
+		for(Listener l : listeners)
+			l.exportJSON();
+	}
+
+	private void fireImportJSON() {
+		for(Listener l : listeners)
+			l.importJSON();
 	}
 
 	public int getCurrentFrame() {

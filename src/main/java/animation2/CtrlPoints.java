@@ -25,6 +25,10 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		list = new ArrayList<LinePoint>(p.list);
 	}
 
+	public void clear() {
+		list.clear();
+	}
+
 	@Override
 	public Iterator<LinePoint> iterator() {
 		return list.listIterator();
