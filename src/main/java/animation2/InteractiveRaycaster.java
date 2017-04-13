@@ -81,29 +81,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 
 
-//		int d = image.getNSlices();
-//		final float[] nearfar = new float[] {, 2 * d};
-//		final DoubleSlider nearfarSlider = gd.addDoubleSlider(
-//				"near/far",
-//				new int[] {-5 * d, 5 * d},
-//				new int[] {Math.round(nearfar[0]), Math.round(nearfar[1])},
-//				new Color(255, 0, 0, 100));
-//
-//		final DoubleSlider xRangeSlider = gd.addDoubleSlider(
-//				"x_range",
-//				new int[] {0, image.getWidth()},
-//				new int[] {0, image.getWidth()},
-//				new Color(255, 0, 0, 100));
-//		final DoubleSlider yRangeSlider = gd.addDoubleSlider(
-//				"y_range",
-//				new int[] {0, image.getHeight()},
-//				new int[] {0, image.getHeight()},
-//				new Color(255, 0, 0, 100));
-//		final DoubleSlider zRangeSlider = gd.addDoubleSlider(
-//				"z_range",
-//				new int[] {0, image.getNSlices()},
-//				new int[] {0, image.getNSlices()},
-//				new Color(255, 0, 0, 100));
 		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
 		gd.addMessage("");
 
