@@ -1,13 +1,11 @@
 package animation2;
 
-import java.awt.AWTEvent;
 import java.awt.Button;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Panel;
 import java.awt.Point;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -24,7 +22,6 @@ import java.util.Arrays;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
 import ij.gui.ImageCanvas;
 import ij.measure.Calibration;
@@ -108,6 +105,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 //				new int[] {0, image.getNSlices()},
 //				new Color(255, 0, 0, 100));
 		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
+		gd.addMessage("");
+
 		final float[] nearfar = new float[] {croppingPanel.getNear(), croppingPanel.getFar()};
 
 		final float[] scale = new float[] {1};
@@ -117,10 +116,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final float[] rotcenter = new float[] {image.getWidth() * pd[0] / 2, image.getHeight() * pd[1] / 2, image.getNSlices() * pd[2] / 2};
 
 		final RenderingThread worker = new RenderingThread(image, renderingSettings, Transform.fromIdentity(null), nearfar);
-		gd.addNumericField("output_width", worker.out.getWidth(), 0);
-		final TextField widthTF = (TextField)gd.getNumericFields().lastElement();
-		gd.addNumericField("output_height", worker.out.getHeight(), 0);
-		final TextField heightTF = (TextField)gd.getNumericFields().lastElement();
+
+		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight());
+		gd.addMessage("");
 
 		Calibration cal = worker.out.getCalibration();
 		cal.pixelWidth = pdOut[0] / scale[0];
@@ -260,91 +258,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
-//		final ImageWindow window = worker.out.getWindow();
-//		final int extraWidth = window.getWidth() - canvas.getWidth();
-//		final int extraHeight = window.getHeight() - canvas.getHeight();
-//		window.addComponentListener(new ComponentAdapter() {
-//			@Override
-//			public void componentResized(ComponentEvent e) {
-//				System.out.println("componentResized");
-//				int tgtW = window.getWidth() - extraWidth;
-//				int tgtH = window.getHeight() - extraHeight;
-//
-//				System.out.println(tgtW + ", "+ tgtH);
-//
-//				pdOut[0] = image.getWidth() * pd[0] / tgtW;
-//				pdOut[1] = image.getWidth() * pd[0] / tgtW; // TODO phOut
-//
-//				final float[] tt = Transform.fromCalibration(
-//						pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
-//				Transform.invert(tt);
-//				System.arraycopy(tt, 0, toTransform, 0, 12);
-//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, fromCalib, toTransform);
-//				worker.push(renderingSettings, inverse, nearfar, tgtW, tgtH);
-//				Calibration cal = worker.out.getCalibration();
-//				cal.pixelWidth = pdOut[0] / scale[0];
-//				cal.pixelHeight = pdOut[1] / scale[0];
-//
-//			}
-//		});
-
-		gd.addDialogListener(new DialogListener() {
-			@Override
-			public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-				if(e != null && (e.getSource() == widthTF || e.getSource() == heightTF)) {
-					int tgtW = Integer.parseInt(widthTF.getText());
-					int tgtH = Integer.parseInt(heightTF.getText());
-					pdOut[0] = image.getWidth() * pd[0] / tgtW;
-					pdOut[1] = image.getWidth() * pd[0] / tgtW; // TODO phOut
-
-					final float[] tt = Transform.fromCalibration(
-							pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
-					Transform.invert(tt);
-					System.arraycopy(tt, 0, toTransform, 0, 12);
-
-					float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-					worker.push(renderingSettings, inverse, nearfar, tgtW, tgtH);
-					Calibration cal = worker.out.getCalibration();
-					cal.pixelWidth = pdOut[0] / scale[0];
-					cal.pixelHeight = pdOut[1] / scale[0];
-					return true;
-				}
-				return false;
-			}
-		});
-
-//		nearfarSlider.addSliderChangeListener(new DoubleSlider.Listener() {
-//
-//			@Override
-//			public void sliderChanged() {
-//				try {
-//					nearfar[0] = nearfarSlider.getMin();
-//					nearfar[1] = nearfarSlider.getMax();
-//				} catch(Throwable t) {
-//					t.printStackTrace();
-//				}
-//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-//				worker.push(renderingSettings, inverse, nearfar);
-//			}
-//		});
-//
-//		DoubleSlider.Listener rangeListener = new DoubleSlider.Listener() {
-//			@Override
-//			public void sliderChanged() {
-//				int x = xRangeSlider.getMin();
-//				int y = yRangeSlider.getMin();
-//				int z = zRangeSlider.getMin();
-//				int w = xRangeSlider.getMax() - x;
-//				int h = yRangeSlider.getMax() - y;
-//				int d = zRangeSlider.getMax() - z;
-//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-//				worker.push(renderingSettings, inverse, nearfar, x, y, z, w, h, d);
-//			}
-//		};
-//		xRangeSlider.addSliderChangeListener(rangeListener);
-//		yRangeSlider.addSliderChangeListener(rangeListener);
-//		zRangeSlider.addSliderChangeListener(rangeListener);
-
 		histogramSlider.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged() {
@@ -374,18 +287,31 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
+		outputPanel.addOutputPanelListener(new OutputPanel.Listener() {
+			@Override
+			public void outputSizeChanged(int tgtW, int tgtH) {
+				pdOut[0] = image.getWidth() * pd[0] / tgtW;
+				pdOut[1] = image.getWidth() * pd[0] / tgtW; // TODO phOut
+
+				final float[] tt = Transform.fromCalibration(
+						pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
+				Transform.invert(tt);
+				System.arraycopy(tt, 0, toTransform, 0, 12);
+
+				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.push(renderingSettings, inverse, nearfar, tgtW, tgtH);
+				Calibration cal = worker.out.getCalibration();
+				cal.pixelWidth = pdOut[0] / scale[0];
+				cal.pixelHeight = pdOut[1] / scale[0];
+			}
+		});
+
 		gd.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				worker.shutdown(); // TODO check that this works
 			}
 		});
-
-//		final TreeMap<Integer, Keyframe> keyframes = new TreeMap<Integer, Keyframe>();
-		Keyframe kf = createKeyframe(0, croppingPanel, renderingSettings, rotation, translation, scale, nearfar);
-//		keyframes.put(0, kf);
-//		keyframes.put(99, createKeyframe(99, xRangeSlider, yRangeSlider, zRangeSlider, renderingSettings, rotation, translation, scale, nearfar));
-
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 

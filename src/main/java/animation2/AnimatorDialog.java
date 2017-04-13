@@ -99,6 +99,20 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
+	public OutputPanel addOutputPanel(int width, int height) {
+		OutputPanel outputPanel = new OutputPanel(width, height);
+
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		GridBagConstraints c = getConstraints();
+
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0;
+		SwitchablePanel sp = new SwitchablePanel("Output", outputPanel);
+		layout.setConstraints(sp, c);
+		add(sp);
+		return outputPanel;
+	}
+
 	public DoubleSlider addDoubleSlider(String label, int[] realMinMax, int[] setMinMax, Color color) {
 		DoubleSlider slider = new DoubleSlider(realMinMax, setMinMax, color);
 		doubleSliders.add(slider);
