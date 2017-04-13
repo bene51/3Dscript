@@ -1,11 +1,13 @@
 package animation2;
 
 import java.awt.BasicStroke;
+import java.awt.Button;
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -13,6 +15,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Panel;
 import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
@@ -22,40 +26,21 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
-import javax.swing.SwingUtilities;
-
 public class TimelineSlider extends Panel implements NumberField.Listener, FocusListener {
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				final Frame frame = new Frame();
-				frame.setSize(500, 300);
-
-				CtrlPoints ctrls = new CtrlPoints();
-				ctrls.add(0, 0);
-				ctrls.add(50, 50);
-
-				TimelineSlider slider = new TimelineSlider(ctrls, 0);
-				frame.add(slider);
-				frame.setVisible(true);
-			}
-		});
-	}
 
 	private static final long serialVersionUID = 1L;
 
-
 	private NumberField currentTimepointTF = new NumberField(3);
-
+	private Choice timelineChoice;
 	private DoubleSliderCanvas slider;
 
 	public interface Listener {
 		public void currentTimepointChanged(int t);
+		public void recordKeyframe();
+		public void insertSpin();
 	}
 
-	public TimelineSlider(CtrlPoints ctrls, int currentTimepoint) {
+	public TimelineSlider(String[] timelineNames, CtrlPoints ctrls, int currentTimepoint) {
 		super();
 		currentTimepointTF.setIntegersOnly(true);
 		currentTimepointTF.addListener(this);
@@ -66,29 +51,57 @@ public class TimelineSlider extends Panel implements NumberField.Listener, Focus
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
 
+		timelineChoice = new Choice();
+		for(String s : timelineNames)
+			timelineChoice.add(s);
+
 		c.gridx = c.gridy = 0;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(5, 2, 10, 0);
+		add(timelineChoice, c);
+
+		c.gridx = 0;
+		c.gridy++;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.insets = new Insets(0, 2, 0, 5);
+		c.insets = new Insets(0, 2, 10, 5);
 		c.weightx = 1.0;
 		add(slider, c);
 
-		c.fill = GridBagConstraints.NONE;
 		c.gridwidth = 1;
-		c.insets = new Insets(3, 3, 0, 3);
-		c.gridy++;
-
-		c.gridx = 0;
-		c.anchor = GridBagConstraints.WEST;
 		c.weightx = 0;
-		c.insets = new Insets(3, 3, 0, 3);
+		c.gridx = 0;
+		c.gridy++;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(0, 2, 10, 5);
 		add(currentTimepointTF, c);
-//		c.gridx++;
-//		c.anchor = GridBagConstraints.CENTER;
-//		add(gammaCTF, c);
-//		c.gridx++;
-//		c.anchor = GridBagConstraints.EAST;
-//		add(maxCTF, c);
+
+		Panel buttons = new Panel(new FlowLayout(FlowLayout.LEFT));
+		Button but = new Button("Set");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireRecordKeyframe();
+			}
+		});
+		buttons.add(but);
+		but = new Button("Spin");
+		but.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireInsertSpin();
+			}
+		});
+		buttons.add(but);
+
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(0, -3, 10, 5);
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridx = 0;
+		c.gridy++;
+		add(buttons, c);
 
 		slider.setCurrentFrame(currentTimepoint);
 		valueChanged();
@@ -115,6 +128,16 @@ public class TimelineSlider extends Panel implements NumberField.Listener, Focus
 	private void fireCurrentTimepointChanged(int i) {
 		for(Listener l : listeners)
 			l.currentTimepointChanged(i);
+	}
+
+	private void fireRecordKeyframe() {
+		for(Listener l : listeners)
+			l.recordKeyframe();
+	}
+
+	private void fireInsertSpin() {
+		for(Listener l : listeners)
+			l.insertSpin();
 	}
 
 	public int getCurrentFrame() {

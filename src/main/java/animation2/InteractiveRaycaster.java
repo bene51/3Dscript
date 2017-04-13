@@ -403,15 +403,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 				timeline.repaint();
 			}
 		});
-		p.add(but);
-		gd.addPanel(p);
-
-
-		p = new Panel(new FlowLayout(FlowLayout.RIGHT));
 
 
 
-		but = new Button("Reset transformations");
+
+		Panel p = new Panel(new FlowLayout(FlowLayout.RIGHT));
 //		Button but = new Button("Animate");
 //		but.addActionListener(new ActionListener() {
 //			@Override
@@ -475,6 +471,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 //			}
 //		});
 //		p.add(but);
+
+		Button but = new Button("Reset transformations");
 		but.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

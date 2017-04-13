@@ -136,8 +136,8 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public TimelineSlider addTimelineSlider(CtrlPoints ctrls, int current) {
-		final TimelineSlider timeline = new TimelineSlider(ctrls, current);
+	public TimelineSlider addTimelineSlider(String[] timelineNames, CtrlPoints ctrls, int current) {
+		final TimelineSlider timeline = new TimelineSlider(timelineNames, ctrls, current);
 		timelineSliders.add(timeline);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
@@ -145,9 +145,9 @@ public class AnimatorDialog extends GenericDialog {
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
-//		c.weighty = 1.0;
-		layout.setConstraints(timeline, c);
-		add(timeline);
+		SwitchablePanel sp = new SwitchablePanel("Animation", timeline);
+		layout.setConstraints(sp, c);
+		add(sp);
 		return timeline;
 	}
 
