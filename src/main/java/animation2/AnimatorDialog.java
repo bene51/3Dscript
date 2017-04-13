@@ -9,8 +9,6 @@ import java.awt.Label;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
 
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
@@ -21,9 +19,6 @@ public class AnimatorDialog extends GenericDialog {
 	private static final long serialVersionUID = 1L;
 
 	private ActionListener listener;
-	private List<DoubleSlider> doubleSliders = new ArrayList<DoubleSlider>();
-	private List<AnimationPanel> timelineSliders = new ArrayList<AnimationPanel>();
-	private int sliderIdx = 0;
 	private Button okButton;
 
 	public static interface Listener {
@@ -57,14 +52,6 @@ public class AnimatorDialog extends GenericDialog {
 			listener.actionPerformed(e);
 		else
 			super.actionPerformed(e);
-	}
-
-	public DoubleSlider getNextDoubleSlider() {
-		return doubleSliders.get(sliderIdx);
-	}
-
-	public List<DoubleSlider> getDoubleSliders() {
-		return doubleSliders;
 	}
 
 	public void addChoice(String label, String[] choice) {
@@ -115,7 +102,6 @@ public class AnimatorDialog extends GenericDialog {
 
 	public DoubleSlider addDoubleSlider(String label, int[] realMinMax, int[] setMinMax, Color color) {
 		DoubleSlider slider = new DoubleSlider(realMinMax, setMinMax, color);
-		doubleSliders.add(slider);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints c = getConstraints();
@@ -138,7 +124,6 @@ public class AnimatorDialog extends GenericDialog {
 
 	public AnimationPanel addAnimationPanel(String[] timelineNames, CtrlPoints ctrls, int current) {
 		final AnimationPanel timeline = new AnimationPanel(timelineNames, ctrls, current);
-		timelineSliders.add(timeline);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints c = getConstraints();
