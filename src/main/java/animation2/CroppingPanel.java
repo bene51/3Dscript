@@ -111,6 +111,9 @@ public class CroppingPanel extends Panel {
 						bbZ.getMax() - bbZ.getMin());
 			}
 		};
+		bbX.addSliderChangeListener(bbListener);
+		bbY.addSliderChangeListener(bbListener);
+		bbZ.addSliderChangeListener(bbListener);
 	}
 
 	public int getBBX() {
