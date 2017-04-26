@@ -102,6 +102,7 @@ public class CudaRaycaster {
 		this.wOut = wOut;
 		this.hOut = hOut;
 		int nChannels = imp.getNChannels();
+		this.channelLUTs = getChannelLUTs();
 
 		if(imp.getType() == ImagePlus.GRAY8) {
 			initRaycaster8(nChannels, w, h, d, wOut, hOut, zStep, alphastop);
@@ -170,24 +171,44 @@ public class CudaRaycaster {
 		ImagePlus iimp = new ImagePlus("", stack);
 		iimp.setDimensions(image.getNChannels(), 1, 1);
 		if(!image.isComposite()) {
-			LUT lut = image.getProcessor().getLut();
 			int t = image.getType();
 			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
-			if(lut != null && !grayscale) {
-				Color col = getLUTColor(lut);
-				iimp.getProcessor().setLut(LUT.createLutFromColor(col));
-				System.out.println(col);
-			}
+			if(channelLUTs[0] != null && !grayscale)
+				iimp.getProcessor().setLut(channelLUTs[0]);
 			return iimp;
 		}
 
 		CompositeImage comp = new CompositeImage(iimp, CompositeImage.COMPOSITE);
+		for(int c = 0; c < image.getNChannels(); c++)
+			comp.setChannelLut(channelLUTs[c], c + 1);
+
+		return new ImagePlus("", comp.getImage());
+	}
+
+	private LUT[] channelLUTs;
+
+	private LUT[] getChannelLUTs() {
+		int nChannels = image.getNChannels();
+		LUT[] channelLUTs = new LUT[nChannels];
+		if(!image.isComposite()) {
+			LUT lut = image.getProcessor().getLut();
+			int t = image.getType();
+			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
+			if(lut != null && !grayscale) {
+				channelLUTs[0] = LUT.createLutFromColor(getLUTColor(lut));
+			} else {
+				channelLUTs[0] = null;
+			}
+			return channelLUTs;
+		}
 		for(int c = 0; c < image.getNChannels(); c++) {
 			image.setC(c + 1);
 			Color col = ((CompositeImage)image).getChannelColor();
-			comp.setChannelLut(LUT.createLutFromColor(col), c + 1);
+			if(col.equals(Color.BLACK))
+				col = Color.white;
+			channelLUTs[c] = LUT.createLutFromColor(col);
 		}
-		return new ImagePlus("", comp.getImage());
+		return channelLUTs;
 	}
 
 	public Color getLUTColor(LUT lut) {
