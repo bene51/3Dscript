@@ -220,7 +220,7 @@ public class CudaRaycaster {
 		if (r<100 || g<100 || b<100)
 			return new Color(r, g, b);
 		else
-			return Color.black;
+			return Color.WHITE;
 	}
 
 
