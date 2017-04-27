@@ -39,8 +39,14 @@ public class NumberField extends TextField {
 	public static void main(String[] args) {
 		NumberField nf = new NumberField(8);
 		nf.setText("5.88");
-		nf.setLimits(0, 10);
+		nf.setLimits(-1000, 1000);
 		// nf.setIntegersOnly(true);
+		nf.addListener(new Listener() {
+			@Override
+			public void valueChanged(double v) {
+				System.out.println("value changed to " + v);
+			}
+		});
 		Frame frame = new Frame("");
 		frame.add(nf);
 		frame.pack();
@@ -57,6 +63,7 @@ public class NumberField extends TextField {
 	}
 
 	private void setTextAndFire(String text) {
+		System.out.println("setTextAndFire");
 		if(getText().equals(text))
 			return;
 		super.setText(text);
@@ -70,9 +77,17 @@ public class NumberField extends TextField {
 		if(car == text.length())
 			car--;
 
-		for(; car >= 0; car--) {
+		int firstdig = 0;
+		for(int i = 0; i < text.length(); i++) {
+			if(Character.isDigit(text.charAt(i))) {
+				firstdig = i;
+				break;
+			}
+		}
+
+		for(; car >= firstdig; car--) {
 			char ch = text.charAt(car);
-			if(ch == '.')
+			if(!Character.isDigit(ch))
 				continue;
 			int digit = Integer.parseInt(Character.toString(ch));
 			if(digit < 9) {
@@ -81,11 +96,13 @@ public class NumberField extends TextField {
 				setCaretPosition(originalCar);
 				break;
 			}
-			text.setCharAt(car, '0');
-			if(car == 0) {
-				text.insert(0, '1');
-				setTextAndFire(text.toString());
-				setCaretPosition(originalCar + 1);
+			else if(digit == 9) {
+				text.setCharAt(car, '0');
+				if(car == firstdig) {
+					text.insert(firstdig, '1');
+					setTextAndFire(text.toString());
+					setCaretPosition(originalCar + 1);
+				}
 			}
 		}
 		double val = Double.parseDouble(getText());
@@ -106,29 +123,68 @@ public class NumberField extends TextField {
 		if(car == text.length())
 			car--;
 
-		for(; car >= 0; car--) {
+		int firstdig = 0;
+		for(int i = 0; i < text.length(); i++) {
+			if(Character.isDigit(text.charAt(i))) {
+				firstdig = i;
+				break;
+			}
+		}
+		for(; car >= firstdig; car--) {
 			char ch = text.charAt(car);
-			if(ch == '.')
+			if(!Character.isDigit(ch))
 				continue;
 			int digit = Integer.parseInt(Character.toString(ch));
 			if(digit > 0) {
 				int carP = 0;
-				if(car == 0 && digit == 1 && (text.length() > 1 && text.charAt(1) != '.')) {
-					text.deleteCharAt(0);
+				// make 1 -> 0, and 14 -> 4, but only for integers
+				if(car == firstdig && digit == 1 && (text.length() > firstdig + 1 && text.charAt(firstdig + 1) != '.')) {
+					text.deleteCharAt(firstdig);
 					carP = Math.max(0, originalCar - 1);
-				} else {
+				}
+				// normal case, e.g. 9 -> 8
+				else {
 					text.setCharAt(car, Integer.toString(digit - 1).charAt(0));
 					carP = originalCar;
+				}
+				if(Double.parseDouble(text.toString()) == 0 && text.charAt(0) == '-') {
+					text.deleteCharAt(0);
+					carP = Math.max(0, carP - 1);
 				}
 				setTextAndFire(text.toString());
 				setCaretPosition(carP);
 				break;
 			}
-			text.setCharAt(car, '9');
-			if(car == 0 && text.length() > 1 && text.charAt(1) != '.') {
-				text.deleteCharAt(0);
-				setTextAndFire(text.toString());
-				setCaretPosition(Math.max(0, originalCar - 1));
+			else if(digit == 0) {
+				// 210 -> 209
+				if(car != firstdig)
+					text.setCharAt(car, '9');
+				// 010 -> 10 (or 010.1 -> 10.1, but not 0.1 -> .1)
+				if(car == firstdig && text.length() > firstdig + 1 && text.charAt(firstdig + 1) != '.') {
+					text.deleteCharAt(firstdig);
+					setTextAndFire(text.toString());
+					setCaretPosition(Math.max(0, originalCar - 1));
+					break;
+				} else if(car == firstdig && Double.parseDouble(getText()) == 0) {
+					String s = getText();
+					int cp = originalCar;
+					if(s.charAt(0) == '-') {
+						s = s.substring(1);
+						cp--;
+					}
+					setText(s);
+					setCaretPosition(cp);
+					handleKeyUp();
+					setTextAndFire("-" + getText());
+					cp++;
+					setCaretPosition(cp);
+				} else if(car == firstdig && text.charAt(0) != '-') {
+					setTextAndFire("-" + getText());
+					setCaretPosition(originalCar + 1);
+				} else if(car == firstdig && text.charAt(0) == '-') {
+					setTextAndFire(getText().substring(1));
+					setCaretPosition(Math.max(0, originalCar - 1));
+				}
 			}
 		}
 		double val = Double.parseDouble(getText());
@@ -152,9 +208,11 @@ public class NumberField extends TextField {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				int units = e.getWheelRotation();
-				if(units > 0)
+				double d = Double.parseDouble(getText());
+				boolean neg = d < 0;
+				if((units > 0 && !neg) || (units < 0 && neg))
 					handleKeyUp();
-				else if(units < 0)
+				else if((units < 0 && !neg) || (units > 0 && neg))
 					handleKeyDown();
 			}
 		});
@@ -162,22 +220,33 @@ public class NumberField extends TextField {
 		super.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == KeyEvent.VK_UP) {
-					handleKeyUp();
+				int kc = e.getKeyCode();
+				if(kc == KeyEvent.VK_UP) {
+					boolean neg = Double.parseDouble(getText()) < 0;
+					if(!neg)
+						handleKeyUp();
+					else
+						handleKeyDown();
 					e.consume();
 				} // VK_UP
-				else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-					handleKeyDown();
+				else if(kc == KeyEvent.VK_DOWN) {
+					boolean neg = Double.parseDouble(getText()) < 0;
+					if(!neg)
+						handleKeyDown();
+					else
+						handleKeyUp();
 					e.consume();
 				} // VK_DOWN
+				else if(kc == KeyEvent.VK_ENTER)
+					fireValueChanged(Double.parseDouble(getText()));
 				// fireKeyPressed(e);
 			} // keyPressed
 
 			@Override
 			public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
-				if(Character.isDigit(c) || (c == '.' && !integersOnly)) {
-					;
+				if((c == '-' && min < 0) || Character.isDigit(c) || (c == '.' && !integersOnly)) {
+					; // fireValueChanged(Double.parseDouble(getText() + c));
 				} else {
 					e.consume();
 				}
