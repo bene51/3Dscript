@@ -31,6 +31,18 @@ import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import ij.process.LUT;
 
+/*
+ * TODOs
+ * - export mp4
+ * - close properly
+ * - set current settings when importing an animation
+ * - show progress when recording an animation
+ * - increase near and far
+ * - cancel recording
+ * - avoid channel changing when recording/composing
+ * - record clipping in %
+ *
+ */
 public class InteractiveRaycaster implements PlugInFilter {
 
 	private ImagePlus image;
@@ -53,8 +65,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		calculateChannelMinAndMax();
 
-		final RenderingSettings[] renderingSettings = new RenderingSettings[nC];
-
 		final float[] pd = new float[] {
 				(float)image.getCalibration().pixelWidth,
 				(float)image.getCalibration().pixelHeight,
@@ -69,29 +79,32 @@ public class InteractiveRaycaster implements PlugInFilter {
 				pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
 		Transform.invert(toTransform);
 
-		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster");
-
-		for(int c = 0; c < nC; c++) {
-			renderingSettings[c] = new RenderingSettings(
-					(float)luts[c].min, (float)luts[c].max, 2,
-					(float)luts[c].min, (float)luts[c].max, 1);
-		}
-		Color col = getLUTColor(luts[0]);
-		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
-		gd.addMessage("");
-
-		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
-		gd.addMessage("");
-
-		final float[] nearfar = new float[] {croppingPanel.getNear(), croppingPanel.getFar()};
-
+		final float[] nearfar = new float[] {0, 0};
 		final float[] scale = new float[] {1};
 		final float[] translation = new float[3];
 		final float[] rotation = Transform.fromIdentity(null);
 
 		final float[] rotcenter = new float[] {image.getWidth() * pd[0] / 2, image.getHeight() * pd[1] / 2, image.getNSlices() * pd[2] / 2};
 
+		final RenderingSettings[] renderingSettings = new RenderingSettings[nC];
+		for(int c = 0; c < nC; c++) {
+			renderingSettings[c] = new RenderingSettings(
+					(float)luts[c].min, (float)luts[c].max, 2,
+					(float)luts[c].min, (float)luts[c].max, 1);
+		}
 		final RenderingThread worker = new RenderingThread(image, renderingSettings, Transform.fromIdentity(null), nearfar);
+
+		Color col = getLUTColor(luts[0]);
+
+		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
+		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
+		gd.addMessage("");
+
+		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
+		gd.addMessage("");
+
+		nearfar[0] = croppingPanel.getNear();
+		nearfar[1] = croppingPanel.getFar();
 
 		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight());
 		gd.addMessage("");
@@ -567,6 +580,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		gd.setModal(false);
 		gd.showDialog();
+
+		float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+		worker.push(renderingSettings, inverse, nearfar);
 	}
 
 	private Keyframe createKeyframe(int frame,
