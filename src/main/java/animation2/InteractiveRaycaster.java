@@ -275,6 +275,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
 			@Override
 			public void nearFarChanged(int near, int far) {
+				nearfar[0] = near;
+				nearfar[1] = far;
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar);
 			}
