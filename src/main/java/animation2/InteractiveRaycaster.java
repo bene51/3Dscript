@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -106,7 +107,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final boolean[] isRotation = new boolean[] {false};
 
 		final ImageCanvas canvas = worker.out.getCanvas();
-		canvas.addMouseListener(new MouseAdapter() {
+		final MouseListener mouseListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				mouseDown.setLocation(e.getPoint());
@@ -143,8 +144,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 					System.arraycopy(rot, 0, rotation, 0, 12);
 				}
 			}
-		});
-		canvas.addMouseMotionListener(new MouseMotionListener() {
+		};
+		canvas.addMouseListener(mouseListener);
+
+		final MouseMotionListener mouseMotionListener = new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				// translation
@@ -200,8 +203,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void mouseMoved(MouseEvent e) {}
-		});
-		canvas.addMouseWheelListener(new MouseWheelListener() {
+		};
+		canvas.addMouseMotionListener(mouseMotionListener);
+
+		final MouseWheelListener mouseWheelListener = new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				int units = e.getWheelRotation();
@@ -231,7 +236,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 				cal.pixelWidth = pdOut[0] / scale[0];
 				cal.pixelHeight = pdOut[1] / scale[0];
 			}
-		});
+		};
+		canvas.addMouseWheelListener(mouseWheelListener);
 
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
@@ -304,6 +310,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void windowClosed(WindowEvent e) {
 				System.out.println("closing");
 				worker.shutdown(); // TODO check that this works
+				canvas.removeMouseListener(mouseListener);
+				canvas.removeMouseMotionListener(mouseMotionListener);
+				canvas.removeMouseWheelListener(mouseWheelListener);
 			}
 		});
 
