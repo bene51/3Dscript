@@ -301,7 +301,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		gd.addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosing(WindowEvent e) {
+			public void windowClosed(WindowEvent e) {
+				System.out.println("closing");
 				worker.shutdown(); // TODO check that this works
 			}
 		});
