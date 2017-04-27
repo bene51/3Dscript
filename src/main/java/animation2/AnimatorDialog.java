@@ -122,18 +122,18 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public AnimationPanel addAnimationPanel(String[] timelineNames, Timelines ctrls, int current) {
-		final AnimationPanel timeline = new AnimationPanel(timelineNames, ctrls, current);
+	public AnimationPanel addAnimationPanel(String[] timelineNames, Timelines ctrls, int timeline, int frame) {
+		final AnimationPanel panel = new AnimationPanel(timelineNames, ctrls, timeline, frame);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints c = getConstraints();
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
-		SwitchablePanel sp = new SwitchablePanel("Animation", timeline);
+		SwitchablePanel sp = new SwitchablePanel("Animation", panel);
 		layout.setConstraints(sp, c);
 		add(sp);
-		return timeline;
+		return panel;
 	}
 
 	protected GridBagConstraints getConstraints() {

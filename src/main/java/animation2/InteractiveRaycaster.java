@@ -333,7 +333,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 		final String[] timelineNames = timelines.getNames();
-		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines, 0);
+		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines, 0, 0);
 
 		animationPanel.addTimelineListener(new AnimationPanel.Listener() {
 
@@ -429,8 +429,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 				kf.angleY = 180 * (eulerAngles0[1] + dEy * angle) / Math.PI;
 				kf.angleZ = 180 * (eulerAngles0[2] + dEz * angle) / Math.PI;
 				timelines.recordFrame(kf);
-
-				animationPanel.repaint();
 			}
 
 			@Override
