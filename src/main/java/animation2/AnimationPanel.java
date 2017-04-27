@@ -210,7 +210,9 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 	}
 
 	@Override
-	public void focusLost(FocusEvent e) {}
+	public void focusLost(FocusEvent e) {
+		valueChanged(Double.parseDouble(currentTimepointTF.getText()));
+	}
 
 	@Override
 	public void valueChanged(double v) {

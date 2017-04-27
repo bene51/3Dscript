@@ -106,7 +106,9 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 	}
 
 	@Override
-	public void focusLost(FocusEvent e) {}
+	public void focusLost(FocusEvent e) {
+		valueChanged(0);
+	}
 
 	@Override
 	public void valueChanged(double v) {

@@ -200,7 +200,9 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	@Override
-	public void focusLost(FocusEvent e) {}
+	public void focusLost(FocusEvent e) {
+		valueChanged(0);
+	}
 
 	@Override
 	public void valueChanged(double v) {

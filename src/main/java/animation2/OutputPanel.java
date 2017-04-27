@@ -3,9 +3,12 @@ package animation2;
 import java.awt.FlowLayout;
 import java.awt.Label;
 import java.awt.Panel;
+import java.awt.TextField;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 
-public class OutputPanel extends Panel {
+public class OutputPanel extends Panel implements FocusListener, NumberField.Listener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -36,19 +39,26 @@ public class OutputPanel extends Panel {
 		add(new Label("   x "));
 		add(heightTF);
 
-		widthTF.addListener(new NumberField.Listener() {
-			@Override
-			public void valueChanged(double v) {
-				fireOutputSizeChanged();
-			}
-		});
+		widthTF.addListener(this);
+		widthTF.addFocusListener(this);
+		heightTF.addListener(this);
+		heightTF.addFocusListener(this);
+	}
 
-		heightTF.addListener(new NumberField.Listener() {
-			@Override
-			public void valueChanged(double v) {
-				fireOutputSizeChanged();
-			}
-		});
+	@Override
+	public void focusGained(FocusEvent e) {
+		TextField tf = (TextField)e.getSource();
+		tf.selectAll();
+	}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		fireOutputSizeChanged();
+	}
+
+	@Override
+	public void valueChanged(double v) {
+		fireOutputSizeChanged();
 	}
 
 	public int getOutputWidth() {
