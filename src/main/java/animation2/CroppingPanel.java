@@ -69,7 +69,7 @@ public class CroppingPanel extends Panel {
 		nearfar = addDoubleSlider(
 				"near/far",
 				new int[] {-5 * d, 5 * d},
-				new int[] {Math.round(-5 * d), Math.round(5 * d)},
+				new int[] {-5 * d, 5 * d},
 				new Color(255, 0, 0, 100),
 				c);
 

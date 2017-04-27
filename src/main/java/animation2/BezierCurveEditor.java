@@ -167,7 +167,7 @@ public class BezierCurveEditor extends Panel {
 				else {
 					Point ll = new Point(0, 0);
 					Point ur = new Point(0, 0);
-					ctrls.getBoundingBox(ll, ur);
+					ctrls.getBoundingBox(ll, ur); // TODO really getBoundingBox? Not getLowerAndUpper?
 					cp.moveTo(x, y, ll, ur);
 				}
 				fireCurveChanged(true);

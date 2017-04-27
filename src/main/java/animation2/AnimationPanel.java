@@ -35,9 +35,9 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 	private NumberField currentTimepointTF = new NumberField(3);
 	private Choice timelineChoice;
 	private DoubleSliderCanvas slider;
+	private Timelines timelines;
 
 	public interface Listener {
-		public void timelineChanged(int timelineIdx);
 		public void currentTimepointChanged(int t);
 		public void recordKeyframe();
 		public void insertSpin();
@@ -46,13 +46,14 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		public void importJSON();
 	}
 
-	public AnimationPanel(String[] timelineNames, CtrlPoints ctrls, int currentTimepoint) {
+	public AnimationPanel(String[] timelineNames, Timelines ctrls, int currentTimepoint) {
 		super();
+		this.timelines = ctrls;
 		currentTimepointTF.setIntegersOnly(true);
 		currentTimepointTF.addListener(this);
 		currentTimepointTF.addFocusListener(this);
 
-		this.slider = new DoubleSliderCanvas(ctrls, this);
+		this.slider = new DoubleSliderCanvas(ctrls.get(currentTimepoint), this, currentTimepoint);
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
@@ -64,7 +65,7 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		timelineChoice.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				fireTimelineChanged(timelineChoice.getSelectedIndex());
+				slider.set(timelines.get(timelineChoice.getSelectedIndex()));
 			}
 		});
 
@@ -144,14 +145,6 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		valueChanged();
 	}
 
-	public CtrlPoints getControls() {
-		return this.slider.bezier.getControls();
-	}
-
-	public void set(CtrlPoints ctrls) {
-		this.slider.set(ctrls);
-	}
-
 	private ArrayList<Listener> listeners = new ArrayList<Listener>();
 
 	public void addTimelineListener(Listener l) {
@@ -160,11 +153,6 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 
 	public void removeTimelineListener(Listener l) {
 		listeners.remove(l);
-	}
-
-	private void fireTimelineChanged(int timelineIdx) {
-		for(Listener l : listeners)
-			l.timelineChanged(timelineIdx);
 	}
 
 	private void fireCurrentTimepointChanged(int i) {
@@ -244,9 +232,23 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 
 		private BezierCurveEditor.CurveChangerCanvas bezier;
 
-		public DoubleSliderCanvas(final CtrlPoints ctrls, AnimationPanel slider) {
+		private void getBoundingBox(int tl, Point ll, Point ur) {
+			final Point ll1 = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
+			final Point ur1 = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
+			slider.timelines.getBoundingBox(ll1, ur1);
+
+			final Point ll2 = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
+			final Point ur2 = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
+			slider.timelines.get(tl).getBoundingBox(ll2, ur2);
+
+			ll.set(ll1.x, ll2.y);
+			ur.set(ur1.x, ur2.y);
+		}
+
+		public DoubleSliderCanvas(final CtrlPoints ctrls, final AnimationPanel slider, final int currentFrame) {
 			this.slider = slider;
 			this.diagram = new DiagramCanvas();
+			this.currentFrame = currentFrame;
 			diagram.addListenersTo(this);
 
 			this.addMouseMotionListener(this);
@@ -260,7 +262,7 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 				@Override
 				public void curveChanged(boolean boundingBoxChanged) {
 					if(boundingBoxChanged) {
-						bezier.getControls().getBoundingBox(ll, ur);
+						getBoundingBox(currentFrame, ll, ur);
 						diagram.setBoundingBox(ll.x, ll.y, ur.x, ur.y);
 					}
 					repaint();
@@ -271,7 +273,7 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 
 			setFont(new Font("Helvetica", Font.PLAIN, 10));
 			int marginLeft = 2 * getFontMetrics(getFont()).stringWidth(Double.toString(100)) + 5;
-			ctrls.getBoundingBox(ll, ur);
+			getBoundingBox(currentFrame, ll, ur);
 			this.diagram.setBoundingBox(ll.x, ll.y, ur.x, ur.y);
 			this.diagram.setMargins(2, marginLeft, 30, 2);
 			addComponentListener(new ComponentAdapter() {
@@ -284,9 +286,9 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 
 		public void set(final CtrlPoints ctrls) {
 			this.bezier.setControls(ctrls);
-			Point ll = new Point(0, 0);
-			Point ur = new Point(0, 0);
-			ctrls.getBoundingBox(ll, ur);
+			final Point ll = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
+			final Point ur = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
+			slider.timelines.getBoundingBox(ll, ur);
 			this.diagram.setBoundingBox(ll.x, ll.y, ur.x, ur.y);
 			repaint();
 		}

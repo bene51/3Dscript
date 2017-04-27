@@ -333,14 +333,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 		final String[] timelineNames = timelines.getNames();
-		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines.get(0), 0);
+		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines, 0);
 
 		animationPanel.addTimelineListener(new AnimationPanel.Listener() {
-
-			@Override
-			public void timelineChanged(int timelineIdx) {
-				animationPanel.set(timelines.get(timelineIdx));
-			}
 
 			@Override
 			public void currentTimepointChanged(int t) {

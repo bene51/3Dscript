@@ -107,6 +107,11 @@ public class Timelines {
 		}
 	}
 
+	public void getBoundingBox(Point ll, Point ur) {
+		for(CtrlPoints c : timelines)
+			c.getBoundingBox(ll, ur);
+	}
+
 	public int getNChannels() {
 		return nChannels;
 	}

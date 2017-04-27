@@ -187,10 +187,10 @@ public class CtrlPoints implements Iterable<LinePoint> {
 			return;
 		}
 
-		double xmin = Double.POSITIVE_INFINITY;
-		double xmax = Double.NEGATIVE_INFINITY;
-		double ymin = Double.POSITIVE_INFINITY;
-		double ymax = Double.NEGATIVE_INFINITY;
+		double xmin = lowerleft.x;
+		double xmax = upperright.x;
+		double ymin = lowerleft.y;
+		double ymax = upperright.y;
 
 		for(LinePoint lp : this) {
 			if(lp.x < xmin) xmin = lp.x;

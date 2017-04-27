@@ -122,7 +122,7 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public AnimationPanel addAnimationPanel(String[] timelineNames, CtrlPoints ctrls, int current) {
+	public AnimationPanel addAnimationPanel(String[] timelineNames, Timelines ctrls, int current) {
 		final AnimationPanel timeline = new AnimationPanel(timelineNames, ctrls, current);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
