@@ -82,7 +82,7 @@ public class CtrlPoints implements Iterable<LinePoint> {
 
 	public double getInterpolatedValue(double x) {
 		if(size() == 0)
-			return 0;
+			return Keyframe.UNSET;
 		if(size() == 1)
 			return list.get(0).getY();
 		Iterator<LinePoint> it = iterator();

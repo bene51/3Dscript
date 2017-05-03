@@ -341,7 +341,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void currentTimepointChanged(int t) {
 				if(timelines.isEmpty())
 					return;
-				Keyframe k = timelines.getInterpolatedFrame(t);
+				Keyframe current = createKeyframe(t, croppingPanel, renderingSettings, rotation, translation, scale, nearfar);
+				Keyframe k = timelines.getInterpolatedFrame(t, current);
 				for(int i = 0; i < renderingSettings.length; i++) {
 					renderingSettings[i].set(k.renderingSettings[i]);
 				}
@@ -434,9 +435,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void record(int from, int to) {
 				ImageStack stack = new ImageStack(worker.out.getWidth(), worker.out.getHeight());
+				Keyframe current = createKeyframe(from, croppingPanel, renderingSettings, rotation, translation, scale, nearfar);
 
 				for(int t = from; t <= to; t++) {
-					Keyframe k = timelines.getInterpolatedFrame(t);
+					Keyframe k = timelines.getInterpolatedFrame(t, current);
 
 					float[] translation = new float[] {k.dx, k.dy, k.dz};
 					float[] rotation = new float[12];

@@ -207,6 +207,51 @@ public class Timelines {
 		}
 	}
 
+	double getInterpolatedValue(int i, int t, double def) {
+		double v = timelines.get(i).getInterpolatedValue(t);
+		if(v == Keyframe.UNSET)
+			return def;
+		return v;
+	}
+
+	public Keyframe getInterpolatedFrame(int t, Keyframe def) {
+		Keyframe kf = new Keyframe(t);
+		int i = 0;
+
+		kf.dx = (float)getInterpolatedValue(i++, t, def.dx);
+		kf.dy = (float)getInterpolatedValue(i++, t, def.dy);
+		kf.dz = (float)getInterpolatedValue(i++, t, def.dz);
+
+		kf.angleX = (float)getInterpolatedValue(i++, t, def.angleX);
+		kf.angleY = (float)getInterpolatedValue(i++, t, def.angleY);
+		kf.angleZ = (float)getInterpolatedValue(i++, t, def.angleZ);
+
+		kf.scale = (float)getInterpolatedValue(i++, t, def.scale);
+
+		kf.bbx = (int)Math.round(getInterpolatedValue(i++, t, def.bbx));
+		kf.bby = (int)Math.round(getInterpolatedValue(i++, t, def.bby));
+		kf.bbz = (int)Math.round(getInterpolatedValue(i++, t, def.bbz));
+		kf.bbw = (int)Math.round(getInterpolatedValue(i++, t, def.bbw));
+		kf.bbh = (int)Math.round(getInterpolatedValue(i++, t, def.bbh));
+		kf.bbd = (int)Math.round(getInterpolatedValue(i++, t, def.bbd));
+
+		kf.near = (float)getInterpolatedValue(i++, t, def.near);
+		kf.far  = (float)getInterpolatedValue(i++, t, def.far);
+
+		kf.renderingSettings = new RenderingSettings[nChannels];
+		for(int c = 0; c < nChannels; c++) {
+			kf.renderingSettings[c] = new RenderingSettings(
+					(float)getInterpolatedValue(i + 3, t, def.renderingSettings[c].alphaMin),
+					(float)getInterpolatedValue(i + 4, t, def.renderingSettings[c].alphaMax),
+					(float)getInterpolatedValue(i + 5, t, def.renderingSettings[c].alphaGamma),
+					(float)getInterpolatedValue(i + 0, t, def.renderingSettings[c].colorMin),
+					(float)getInterpolatedValue(i + 1, t, def.renderingSettings[c].colorMax),
+					(float)getInterpolatedValue(i + 2, t, def.renderingSettings[c].colorGamma));
+			i += 6;
+		}
+		return kf;
+	}
+
 	public Keyframe getInterpolatedFrame(int t) {
 		Keyframe kf = new Keyframe(t);
 		int i = 0;
