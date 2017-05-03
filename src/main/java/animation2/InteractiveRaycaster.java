@@ -34,13 +34,12 @@ import ij.process.LUT;
 /*
  * TODOs
  * - export mp4
- * - close properly
  * - set current settings when importing an animation
  * - show progress when recording an animation
  * - increase near and far
  * - cancel recording
- * - avoid channel changing when recording/composing
  * - record clipping in %
+ * - if some property is not set, use the current setting (and not 0).
  *
  */
 public class InteractiveRaycaster implements PlugInFilter {
@@ -435,9 +434,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void record(int from, int to) {
 				ImageStack stack = new ImageStack(worker.out.getWidth(), worker.out.getHeight());
+				ImagePlus anim = null;
 				Keyframe current = createKeyframe(from, croppingPanel, renderingSettings, rotation, translation, scale, nearfar);
 
 				for(int t = from; t <= to; t++) {
+					if(IJ.escapePressed())
+						break;
 					Keyframe k = timelines.getInterpolatedFrame(t, current);
 
 					float[] translation = new float[] {k.dx, k.dy, k.dz};
@@ -452,11 +454,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 					worker.getRaycaster().setBBox(k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
 
 					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, k.renderingSettings, k.near, k.far).getProcessor());
-					IJ.showProgress(t - from, to - from + 1);
+					if(t == from + 1) {
+						anim = new ImagePlus(image.getTitle(), stack);
+						anim.setCalibration(worker.out.getCalibration().copy());
+						anim.show();
+					} else if(t > from + 1) {
+						anim.setSlice(t - from + 1);
+						anim.updateAndDraw();
+					}
 				}
-				ImagePlus anim = new ImagePlus(image.getTitle(), stack);
-				anim.setCalibration(worker.out.getCalibration().copy());
-				anim.show();
+				IJ.resetEscape();
 			}
 
 			@Override
