@@ -108,8 +108,22 @@ public class Timelines {
 	}
 
 	public void getBoundingBox(Point ll, Point ur) {
+		ll.set(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
+		ur.set(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
 		for(CtrlPoints c : timelines)
 			c.getBoundingBox(ll, ur);
+		if(ll.x == Integer.MAX_VALUE)
+			ll.x = 0;
+		if(ur.x == Integer.MIN_VALUE)
+			ur.x = ll.x + 1;
+		if(ll.y == Double.POSITIVE_INFINITY)
+			ll.y = 0;
+		if(ur.y == Double.NEGATIVE_INFINITY)
+			ur.y = ll.y + 1;
+		if(ur.x == ll.x)
+			ur.x += 1;
+		if(ur.y == ll.y)
+			ur.y += 1;
 	}
 
 	public int getNChannels() {

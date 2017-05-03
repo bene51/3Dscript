@@ -154,7 +154,7 @@ public class DiagramCanvas {
 	}
 
 	private void setDisplayRange(double xMin, double yMin, double xMax, double yMax, boolean updateTextFields) {
-		System.out.println("setDisplayRange()");
+		System.out.println("setDisplayRange(" + xMin + ", " + yMin + ", " + xMax + ", " + yMax + ")");
 		this.xMin = xMin;
 		this.xMax = xMax;
 		this.yMin = yMin;
@@ -179,6 +179,7 @@ public class DiagramCanvas {
 	 * @param yMax
 	 */
 	public void setBoundingBox(double xMin, double yMin, double xMax, double yMax) {
+		System.out.println("setBoundingBox(" + xMin + ", " + yMin + ", " + xMax + ", " + yMax + ")");
 		if(xMax == xMin)
 			xMax = xMin + 1;
 		if(yMax == yMin)

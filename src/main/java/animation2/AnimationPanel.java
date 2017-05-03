@@ -253,9 +253,17 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 			final Point ll2 = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
 			final Point ur2 = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
 			slider.timelines.get(tl).getBoundingBox(ll2, ur2);
+			if(ll2.y == Double.POSITIVE_INFINITY)
+				ll2.y = 0;
+			if(ur2.y == Double.NEGATIVE_INFINITY)
+				ur2.y = ll.y + 1;
+			if(ur2.y == ll2.y)
+				ur2.y += 1;
 
 			ll.set(ll1.x, ll2.y);
 			ur.set(ur1.x, ur2.y);
+
+			System.out.println("getBoundingBox: " + ll + ", " + ur);
 		}
 
 		public DoubleSliderCanvas(final CtrlPoints ctrls, final AnimationPanel slider, final int currentFrame) {

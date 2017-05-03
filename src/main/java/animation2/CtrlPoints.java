@@ -182,8 +182,6 @@ public class CtrlPoints implements Iterable<LinePoint> {
 
 	public void getBoundingBox(Point lowerleft, Point upperright) {
 		if(list.size() == 0) {
-			lowerleft.set(0, 0);
-			upperright.set(100, 1);
 			return;
 		}
 
