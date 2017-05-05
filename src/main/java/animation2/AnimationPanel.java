@@ -21,8 +21,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -55,7 +53,7 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		currentTimepointTF.addListener(this);
 		currentTimepointTF.addFocusListener(this);
 
-		this.slider = new DoubleSliderCanvas(ctrls.get(timeline), this, frame);
+		this.slider = new DoubleSliderCanvas(ctrls, this, frame);
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
@@ -63,19 +61,6 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		timelineChoice = new Choice();
 		for(String s : timelineNames)
 			timelineChoice.add(s);
-
-		timelineChoice.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				AnimationPanel.this.timeline = timelineChoice.getSelectedIndex();
-				slider.set(timelines.get(AnimationPanel.this.timeline));
-			}
-		});
-
-		c.gridx = c.gridy = 0;
-		c.anchor = GridBagConstraints.WEST;
-		c.insets = new Insets(5, 2, 10, 0);
-		add(timelineChoice, c);
 
 		c.gridx = 0;
 		c.gridy++;
@@ -85,16 +70,9 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		c.weightx = 1.0;
 		add(slider, c);
 
-		c.gridwidth = 1;
-		c.weightx = 0;
-		c.gridx = 0;
-		c.gridy++;
-		c.fill = GridBagConstraints.NONE;
-		c.anchor = GridBagConstraints.WEST;
-		c.insets = new Insets(0, 2, 10, 5);
-		add(currentTimepointTF, c);
-
 		Panel buttons = new Panel(new FlowLayout(FlowLayout.LEFT));
+		buttons.add(currentTimepointTF);
+
 		Button but = new Button("Set");
 		but.addActionListener(new ActionListener() {
 			@Override
@@ -243,30 +221,20 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 
 		private AnimationPanel slider;
 
-		private BezierCurveEditor.CurveChangerCanvas bezier;
+		private TimelineOverview timelineOverview;
+
+		private Timelines timelines;
 
 		private void getBoundingBox(int tl, Point ll, Point ur) {
 			final Point ll1 = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
 			final Point ur1 = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
 			slider.timelines.getBoundingBox(ll1, ur1);
-
-			final Point ll2 = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
-			final Point ur2 = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
-			slider.timelines.get(tl).getBoundingBox(ll2, ur2);
-			if(ll2.y == Double.POSITIVE_INFINITY)
-				ll2.y = 0;
-			if(ur2.y == Double.NEGATIVE_INFINITY)
-				ur2.y = ll.y + 1;
-			if(ur2.y == ll2.y)
-				ur2.y += 1;
-
-			ll.set(ll1.x, ll2.y);
-			ur.set(ur1.x, ur2.y);
-
-			System.out.println("getBoundingBox: " + ll + ", " + ur);
+			ll.set(ll1.x, 0);
+			ur.set(ur1.x, timelines.size());
 		}
 
-		public DoubleSliderCanvas(final CtrlPoints ctrls, final AnimationPanel slider, final int currentFrame) {
+		public DoubleSliderCanvas(final Timelines ctrls, final AnimationPanel slider, final int currentFrame) {
+			this.timelines = ctrls;
 			this.slider = slider;
 			this.diagram = new DiagramCanvas();
 			this.currentFrame = currentFrame;
@@ -275,11 +243,12 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
 			this.setBackground(Color.WHITE);
-			this.setPreferredSize(new Dimension(200, 128));
-			bezier = new BezierCurveEditor.CurveChangerCanvas(diagram, ctrls);
+			this.setPreferredSize(new Dimension(258, 2 + 30 + (ctrls.size() + 1) * 10));
+			// bezier = new BezierCurveEditor.CurveChangerCanvas(diagram, ctrls);
+			timelineOverview = new TimelineOverview(diagram, ctrls);
 			final Point ll = new Point(0, 0);
 			final Point ur = new Point(0, 0);
-			bezier.addCurveChangeListener(new BezierCurveEditor.CurveChangerCanvas.Listener() {
+			timelineOverview.addCurveChangeListener(new TimelineOverview.Listener() {
 				@Override
 				public void curveChanged(boolean boundingBoxChanged) {
 					if(boundingBoxChanged) {
@@ -289,11 +258,10 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 					repaint();
 				}
 			});
-			this.addMouseListener(bezier);
-			this.addMouseMotionListener(bezier);
+			this.addMouseListener(timelineOverview);
+			this.addMouseMotionListener(timelineOverview);
 
-			setFont(new Font("Helvetica", Font.PLAIN, 10));
-			int marginLeft = 2 * getFontMetrics(getFont()).stringWidth(Double.toString(100)) + 5;
+			int marginLeft = getMaximumStringWidth(ctrls) + 5;
 			getBoundingBox(slider.timeline, ll, ur);
 			this.diagram.setBoundingBox(ll.x, ll.y, ur.x, ur.y);
 			this.diagram.setMargins(2, marginLeft, 30, 2);
@@ -305,13 +273,15 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 			});
 		}
 
-		public void set(final CtrlPoints ctrls) {
-			this.bezier.setControls(ctrls);
-			final Point ll = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
-			final Point ur = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
-			getBoundingBox(slider.timeline, ll, ur);
-			this.diagram.setBoundingBox(ll.x, ll.y, ur.x, ur.y);
-			repaint();
+		private int getMaximumStringWidth(Timelines timelines) {
+			int max = 0;
+			setFont(new Font("Helvetica", Font.PLAIN, 8));
+			for(String s : timelines.getNames()) {
+				int w = getFontMetrics(getFont()).stringWidth(s);
+				if(w > max)
+					max = w;
+			}
+			return max;
 		}
 
 		public void setCurrentFrame(int frame) {
@@ -383,13 +353,12 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 				currentDrawn = -Integer.MAX_VALUE;
 			}
 
-			g2d.setClip(diagram.getClippingRect());
-			bezier.paint(g);
+			// g2d.setClip(diagram.getClippingRect());
+			timelineOverview.paint(g);
 			g2d.setClip(0, 0, w, h);
 
 			diagram.drawFrame(g2d);
 			diagram.drawXMinMax(g2d);
-			diagram.drawYMinMax(g2d);
 		}
 	}
 }
