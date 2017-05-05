@@ -23,12 +23,13 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 	private static final long serialVersionUID = 1L;
 
-	private NumberField angleX, angleZ, angleY;
+	private NumberField angleX, angleY, angleZ;
 	private NumberField dX, dY, dZ;
 	private NumberField scale;
 
 	public static interface Listener {
 		public void transformationChanged(float ax, float ay, float az, float dx, float dy, float dz, float s);
+		public void record(NumberField src, String timelineName);
 	}
 
 	private ArrayList<Listener> listeners =	new ArrayList<Listener>();
@@ -119,7 +120,23 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 	@Override
 	public void record(NumberField src) {
+		String timelineName = null;
 
+		if(src == angleX)
+			timelineName = "X Rotation";
+		else if(src == angleY)
+			timelineName = "Y Rotation";
+		else if(src == angleZ)
+			timelineName = "Z Rotation";
+		else if(src == dX)
+			timelineName = "X Translation";
+		else if(src == dY)
+			timelineName = "Y Translation";
+		else if(src == dZ)
+			timelineName = "Z Translation";
+		else if(src == scale)
+			timelineName = "Scale";
+		fireRecord(src, timelineName);
 	}
 
 	public float getAngleX() {
@@ -181,5 +198,10 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 					getTranslationY(),
 					getTranslationZ(),
 					getScale());
+	}
+
+	private void fireRecord(NumberField src, String timelineName) {
+		for(Listener l : listeners)
+			l.record(src, timelineName);
 	}
 }

@@ -331,7 +331,18 @@ public class InteractiveRaycaster implements PlugInFilter {
 				Calibration cal = worker.out.getCalibration();
 				cal.pixelWidth = pdOut[0] / scale[0];
 				cal.pixelHeight = pdOut[1] / scale[0];
+			}
 
+			@Override
+			public void record(NumberField src, String timelineName) {
+				for(int i = 0; i < timelines.size(); i++) {
+					if(Timelines.getName(i).equals(timelineName)) {
+						int frame = animationPanel.getCurrentFrame();
+						timelines.get(i).add(frame, Double.parseDouble(src.getText()));
+						animationPanel.repaint();
+						break;
+					}
+				}
 			}
 		});
 
