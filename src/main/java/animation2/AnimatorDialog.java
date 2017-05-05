@@ -100,6 +100,20 @@ public class AnimatorDialog extends GenericDialog {
 		return outputPanel;
 	}
 
+	public TransformationPanel addTransformationPanel(float ax, float ay, float az, float dx, float dy, float dz, float s) {
+		TransformationPanel panel = new TransformationPanel(ax, ay, az, dx, dy, dz, s);
+
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		GridBagConstraints c = getConstraints();
+
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0;
+		SwitchablePanel sp = new SwitchablePanel("Transformation", panel);
+		layout.setConstraints(sp, c);
+		add(sp);
+		return panel;
+	}
+
 	public DoubleSlider addDoubleSlider(String label, int[] realMinMax, int[] setMinMax, Color color) {
 		DoubleSlider slider = new DoubleSlider(realMinMax, setMinMax, color);
 

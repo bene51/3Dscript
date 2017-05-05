@@ -475,6 +475,25 @@ public class Transform {
 		parameters[1] = Math.asin(m[a10]);
 	}
 
+	public static final void guessEulerAngles(float[]  m, float[] parameters) {
+	    // Assuming the angles are in radians.
+		if (m[a10] > 0.998) { // singularity at north pole
+			parameters[0] = (float)Math.atan2(m[a02], m[a22]);
+			parameters[1] = (float)(Math.PI/2);
+			parameters[2] = 0;
+			return;
+		}
+		if (m[a10] < -0.998) { // singularity at south pole
+			parameters[0] = (float)Math.atan2(m[a02], m[a22]);
+			parameters[1] = (float)(-Math.PI/2);
+			parameters[2] = 0;
+			return;
+		}
+		parameters[0] = (float)Math.atan2(-m[a20], m[a00]);
+		parameters[2] = (float)Math.atan2(-m[a12], m[a11]);
+		parameters[1] = (float)Math.asin(m[a10]);
+	}
+
 	/** this conversion uses NASA standard aeroplane conventions as described on page:
 	 *   http://www.euclideanspace.com/maths/geometry/rotations/euler/index.htm
 	 *   Coordinate System: right hand

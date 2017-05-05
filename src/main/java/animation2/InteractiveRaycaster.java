@@ -99,6 +99,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 		gd.addMessage("");
 
+		final TransformationPanel transformationPanel = gd.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
+		gd.addMessage("");
+
 		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
 		gd.addMessage("");
 
@@ -173,13 +176,18 @@ public class InteractiveRaycaster implements PlugInFilter {
 					System.out.println(e.getX() + ", " + e.getY());
 					int dx = e.getX() - mouseDown.x;
 					int dy = e.getY() - mouseDown.y;
+					float[] trans = new float[] {
+							translation[0] + dx * pdOut[0] / scale[0],
+							translation[1] + dy * pdOut[1] / scale[0],
+							translation[2]};
 					float[] inverse = calculateInverseTransform(
 							scale[0],
-							new float[] {translation[0] + dx * pdOut[0] / scale[0], translation[1] + dy * pdOut[1] / scale[0], translation[2]},
+							trans,
 							rotation,
 							rotcenter,
 							fromCalib,
 							toTransform);
+					transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), trans, scale[0]);
 					worker.push(renderingSettings, inverse, nearfar);
 				}
 				// rotation
@@ -215,6 +223,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 							rotcenter,
 							fromCalib,
 							toTransform);
+					transformationPanel.setTransformation(guessEulerAnglesDegree(rot), translation, scale[0]);
 					worker.push(renderingSettings, inverse, nearfar);
 				}
 			}
@@ -249,6 +258,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
 				worker.push(renderingSettings, inverse, nearfar);
 				Calibration cal = worker.out.getCalibration();
 				cal.pixelWidth = pdOut[0] / scale[0];
@@ -299,6 +309,29 @@ public class InteractiveRaycaster implements PlugInFilter {
 						break;
 					}
 				}
+			}
+		});
+
+		transformationPanel.addTransformationPanelListener(new TransformationPanel.Listener() {
+			@Override
+			public void transformationChanged(float ax, float ay, float az, float dx, float dy, float dz, float s) {
+				Transform.fromEulerAngles(rotation, new double[] {
+						Math.PI * ax / 180,
+						Math.PI * ay / 180,
+						Math.PI * az / 180});
+
+				scale[0] = s;
+
+				translation[0] = dx;
+				translation[1] = dy;
+				translation[2] = dz;
+
+				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.push(renderingSettings, inverse, nearfar);
+				Calibration cal = worker.out.getCalibration();
+				cal.pixelWidth = pdOut[0] / scale[0];
+				cal.pixelHeight = pdOut[1] / scale[0];
+
 			}
 		});
 
@@ -391,6 +424,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 						Math.PI * k.angleZ / 180});
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
 				worker.push(renderingSettings, inverse, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 			}
 
@@ -597,6 +631,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				translation[0] = translation[1] = translation[2] = 0;
 				Transform.fromIdentity(rotation);
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
 				worker.push(renderingSettings, inverse, nearfar);
 			}
 		});
@@ -701,6 +736,15 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		Transform.invert(x);
 		return x;
+	}
+
+	private float[] guessEulerAnglesDegree(float[] rotation) {
+		float[] eulerAngles = new float[3];
+		Transform.guessEulerAngles(rotation, eulerAngles);
+		eulerAngles[0] = eulerAngles[0] * 180 / (float)Math.PI;
+		eulerAngles[1] = eulerAngles[1] * 180 / (float)Math.PI;
+		eulerAngles[2] = eulerAngles[2] * 180 / (float)Math.PI;
+		return eulerAngles;
 	}
 
 	private void calculateChannelMinAndMax() {
