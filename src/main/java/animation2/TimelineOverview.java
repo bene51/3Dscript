@@ -252,17 +252,19 @@ import animation2.CtrlPoints.ClosestPoint;
 			FontMetrics fm = gx.getFontMetrics();
 			g.setColor(Color.ORANGE);
 			for(int l = 0; l < nLines; l++) {
+				int y = diagram.canvasY(nLines - 1 - l + 0.5);
+				String name = Timelines.getName(l);
+				int sy = y - fm.getHeight() / 2 + fm.getAscent();
+				g.setColor(Color.DARK_GRAY);
+				g.drawString(name, 0, sy);
+
 				CtrlPoints ctrls = timelines.get(l);
 				int nPoints = ctrls.size();
 				if(nPoints == 0)
 					continue;
 				g.setColor(Color.GRAY);
-				int y = diagram.canvasY(nLines - 1 - l + 0.5);
 				g.drawLine(diagram.getLeftPixel(), y, diagram.getRightPixel(), y);
 				Iterator<LinePoint> it = ctrls.iterator();
-				String name = timelines.getName(l);
-				int sy = y - fm.getHeight() / 2 + fm.getAscent();
-				g.drawString(name, 0, sy);
 				g.setColor(Color.ORANGE);
 				for(int i = 0; i < nPoints; i++) {
 					LinePoint p = it.next();

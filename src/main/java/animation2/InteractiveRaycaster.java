@@ -108,6 +108,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight());
 		gd.addMessage("");
 
+		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
+		final String[] timelineNames = new String[timelines.size()];
+		for(int i = 0; i < timelineNames.length; i++)
+			timelineNames[i] = Timelines.getName(i);
+		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines, 0, 0);
+
 		Calibration cal = worker.out.getCalibration();
 		cal.pixelWidth = pdOut[0] / scale[0];
 		cal.pixelHeight = pdOut[1] / scale[0];
@@ -282,6 +288,18 @@ public class InteractiveRaycaster implements PlugInFilter {
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				worker.push(renderingSettings, inverse, nearfar);
 			}
+
+			@Override
+			public void record(NumberField src, String timelineName) {
+				for(int i = 0; i < timelines.size(); i++) {
+					if(Timelines.getName(i).equals(timelineName)) {
+						int frame = animationPanel.getCurrentFrame();
+						timelines.get(i).add(frame, Double.parseDouble(src.getText()));
+						animationPanel.repaint();
+						break;
+					}
+				}
+			}
 		});
 
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
@@ -294,9 +312,21 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void boundingBoxChanged(int bbx, int bby, int bbz, int bbw, int bbh, int bbd) {
+			public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar, bbx, bby, bbz, bbw, bbh, bbd);
+				worker.push(renderingSettings, inverse, nearfar, bbx0, bby0, bbz0, bbx1, bby1, bbz1);
+			}
+
+			@Override
+			public void record(NumberField src, String timelineName) {
+				for(int i = 0; i < timelines.size(); i++) {
+					if(Timelines.getName(i).equals(timelineName)) {
+						int frame = animationPanel.getCurrentFrame();
+						timelines.get(i).add(frame, Double.parseDouble(src.getText()));
+						animationPanel.repaint();
+						break;
+					}
+				}
 			}
 		});
 
@@ -330,10 +360,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
-		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
-		final String[] timelineNames = timelines.getNames();
-		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines, 0, 0);
-
 		animationPanel.addTimelineListener(new AnimationPanel.Listener() {
 
 			@Override
@@ -346,7 +372,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					renderingSettings[i].set(k.renderingSettings[i]);
 				}
 
-				croppingPanel.setBoundingBox(k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
+				croppingPanel.setBoundingBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 
 				translation[0] = k.dx;
 				translation[1] = k.dy;
@@ -365,7 +391,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 						Math.PI * k.angleZ / 180});
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar, k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
+				worker.push(renderingSettings, inverse, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 			}
 
 			@Override
@@ -451,7 +477,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 					float[] inverse = calculateInverseTransform(k.scale, translation, rotation, rotcenter, fromCalib, toTransform);
 
-					worker.getRaycaster().setBBox(k.bbx, k.bby, k.bbz, k.bbw, k.bbh, k.bbd);
+					worker.getRaycaster().setBBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 
 					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, k.renderingSettings, k.near, k.far).getProcessor());
 					if(t == from + 1) {
@@ -597,12 +623,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 		RenderingSettings[] rs = new RenderingSettings[renderingSettings.length];
 		for(int i = 0; i < rs.length; i++)
 			rs[i] = new RenderingSettings(renderingSettings[i]);
-		int bbx = croppingPanel.getBBX();
-		int bby = croppingPanel.getBBY();
-		int bbz = croppingPanel.getBBZ();
-		int bbw = croppingPanel.getBBW();
-		int bbh = croppingPanel.getBBH();
-		int bbd = croppingPanel.getBBD();
+		int bbx0 = croppingPanel.getBBXMin();
+		int bby0 = croppingPanel.getBBYMin();
+		int bbz0 = croppingPanel.getBBZMin();
+		int bbx1 = croppingPanel.getBBXMax();
+		int bby1 = croppingPanel.getBBYMax();
+		int bbz1 = croppingPanel.getBBZMax();
 
 		double[] eulerAngles = new double[3];
 		Transform.guessEulerAngles(rotation, eulerAngles);
@@ -615,7 +641,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				scale[0],
 				translation[0], translation[1], translation[2],
 				eulerAngles[0], eulerAngles[1], eulerAngles[2],
-				bbx, bby, bbz, bbw, bbh, bbd);
+				bbx0, bby0, bbz0, bbx1, bby1, bbz1);
 	}
 
 	private Keyframe createUnsetKeyframe(int frame, int nChannels) {
@@ -624,8 +650,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		for(int i = 0; i < rs.length; i++)
 			rs[i] = new RenderingSettings(us, us, us, us, us, us);
 
-		int bbx, bby, bbz, bbw, bbh, bbd;
-		bbx = bby = bbz = bbw = bbh = bbd = us;
+		int bbx0, bby0, bbz0, bbx1, bby1, bbz1;
+		bbx0 = bby0 = bbz0 = bbx1 = bby1 = bbz1 = us;
 
 		float near, far, scale, dx, dy, dz;
 		near = far = scale = dx = dy = dz = us;
@@ -638,7 +664,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				scale,
 				dx, dy, dz,
 				ax, ay, az,
-				bbx, bby, bbz, bbw, bbh, bbd);
+				bbx0, bby0, bbz0, bbx1, bby1, bbz1);
 	}
 
 	private Color getLUTColor(LUT lut) {

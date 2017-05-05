@@ -121,12 +121,12 @@ public class JsonExporter {
 
 		record(i++, t, kf.scale);
 
-		record(i++, t, kf.bbx);
-		record(i++, t, kf.bby);
-		record(i++, t, kf.bbz);
-		record(i++, t, kf.bbw);
-		record(i++, t, kf.bbh);
-		record(i++, t, kf.bbd);
+		record(i++, t, kf.bbx0);
+		record(i++, t, kf.bby0);
+		record(i++, t, kf.bbz0);
+		record(i++, t, kf.bbx1);
+		record(i++, t, kf.bby1);
+		record(i++, t, kf.bbz1);
 
 		record(i++, t, kf.near);
 		record(i++, t, kf.far);
@@ -173,12 +173,12 @@ public class JsonExporter {
 
 		kf.scale = get(i++, t);
 
-		kf.bbx = get(i++, t);
-		kf.bby = get(i++, t);
-		kf.bbz = get(i++, t);
-		kf.bbw = get(i++, t);
-		kf.bbh = get(i++, t);
-		kf.bbd = get(i++, t);
+		kf.bbx0 = get(i++, t);
+		kf.bby0 = get(i++, t);
+		kf.bbz0 = get(i++, t);
+		kf.bbx1 = get(i++, t);
+		kf.bby1 = get(i++, t);
+		kf.bbz1 = get(i++, t);
 
 		kf.near = get(i++, t);
 		kf.far  = get(i++, t);
@@ -213,7 +213,7 @@ public class JsonExporter {
 		private double[] scale;
 		private double[] dx, dy, dz;
 		private double[] angleX, angleY, angleZ;
-		private double[] bbx, bby, bbz, bbw, bbh, bbd;
+		private double[] bbx0, bby0, bbz0, bbx1, bby1, bbz1;
 
 		JSONKeyframe(int t) {
 			frame = t;

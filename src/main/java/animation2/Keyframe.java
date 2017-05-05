@@ -16,7 +16,7 @@ public class Keyframe implements Comparable<Keyframe> {
 	public float scale;
 	public float dx, dy, dz;
 	public double angleX, angleY, angleZ;
-	public int bbx, bby, bbz, bbw, bbh, bbd;
+	public int bbx0, bby0, bbz0, bbx1, bby1, bbz1;
 
 	public Keyframe(int frame) {
 		this.frame = frame;
@@ -29,7 +29,7 @@ public class Keyframe implements Comparable<Keyframe> {
 			float scale,
 			float dx, float dy, float dz,
 			double angleX, double angleY, double angleZ,
-			int bbx, int bby, int bbz, int bbw, int bbh, int bbd) {
+			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
 		super();
 		this.frame = frame;
 		this.renderingSettings = renderingSettings;
@@ -42,12 +42,12 @@ public class Keyframe implements Comparable<Keyframe> {
 		this.angleX = angleX;
 		this.angleY = angleY;
 		this.angleZ = angleZ;
-		this.bbx = bbx;
-		this.bby = bby;
-		this.bbz = bbz;
-		this.bbw = bbw;
-		this.bbh = bbh;
-		this.bbd = bbd;
+		this.bbx0 = bbx0;
+		this.bby0 = bby0;
+		this.bbz0 = bbz0;
+		this.bbx1 = bbx1;
+		this.bby1 = bby1;
+		this.bbz1 = bbz1;
 	}
 
 	public static void main(String[] args) throws Throwable {

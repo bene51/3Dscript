@@ -1,25 +1,40 @@
 package animation2;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.FontMetrics;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Panel;
+import java.awt.RenderingHints;
 import java.awt.TextField;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 
 @SuppressWarnings("serial")
-public class NumberField extends TextField {
+public class NumberField extends Panel {
 
 	private double min = Double.NEGATIVE_INFINITY;
 	private double max = Double.POSITIVE_INFINITY;
 
 	private boolean integersOnly = false;
 
+	private boolean isRecordable = false;
+
+	private TextField textfield;
+
 	private ArrayList<Listener> listener = new ArrayList<Listener>();
 
 	public static interface Listener {
 		public void valueChanged(double v);
+		public void record(NumberField src);
 	}
 
 	public void addListener(Listener l) {
@@ -30,10 +45,32 @@ public class NumberField extends TextField {
 		listener.remove(l);
 	}
 
+	public String getText() {
+		return textfield.getText();
+	}
+
+	public void setText(String s) {
+		textfield.setText(s);
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		if(!isRecordable)
+			return super.getPreferredSize();
+		Dimension d = textfield.getPreferredSize();
+		int r = (textfield.getHeight() - 6) / 2;
+		return new Dimension(d.width + 2 * r + 2, d.height);
+	}
+
 	private void fireValueChanged(double v) {
 		System.out.println("fire");
 		for(Listener l : listener)
 			l.valueChanged(v);
+	}
+
+	private void fireRecord(NumberField src) {
+		for(Listener l : listener)
+			l.record(src);
 	}
 
 	public static void main(String[] args) {
@@ -45,6 +82,10 @@ public class NumberField extends TextField {
 			@Override
 			public void valueChanged(double v) {
 				System.out.println("value changed to " + v);
+			}
+			@Override
+			public void record(NumberField src) {
+				System.out.println("record");
 			}
 		});
 		Frame frame = new Frame("");
@@ -66,13 +107,13 @@ public class NumberField extends TextField {
 		System.out.println("setTextAndFire");
 		if(getText().equals(text))
 			return;
-		super.setText(text);
+		setText(text);
 		fireValueChanged(Double.parseDouble(text));
 	}
 
 	void handleKeyUp() {
 		StringBuffer text = new StringBuffer(getText());
-		int car = getCaretPosition();
+		int car = textfield.getCaretPosition();
 		int originalCar = car;
 		if(car == text.length())
 			car--;
@@ -93,7 +134,7 @@ public class NumberField extends TextField {
 			if(digit < 9) {
 				text.setCharAt(car, Integer.toString(digit + 1).charAt(0));
 				setTextAndFire(text.toString());
-				setCaretPosition(originalCar);
+				textfield.setCaretPosition(originalCar);
 				break;
 			}
 			else if(digit == 9) {
@@ -101,7 +142,7 @@ public class NumberField extends TextField {
 				if(car == firstdig) {
 					text.insert(firstdig, '1');
 					setTextAndFire(text.toString());
-					setCaretPosition(originalCar + 1);
+					textfield.setCaretPosition(originalCar + 1);
 				}
 			}
 		}
@@ -118,7 +159,7 @@ public class NumberField extends TextField {
 
 	void handleKeyDown() {
 		StringBuffer text = new StringBuffer(getText());
-		int car = getCaretPosition();
+		int car = textfield.getCaretPosition();
 		int originalCar = car;
 		if(car == text.length())
 			car--;
@@ -152,7 +193,7 @@ public class NumberField extends TextField {
 					carP = Math.max(0, carP - 1);
 				}
 				setTextAndFire(text.toString());
-				setCaretPosition(carP);
+				textfield.setCaretPosition(carP);
 				break;
 			}
 			else if(digit == 0) {
@@ -163,7 +204,7 @@ public class NumberField extends TextField {
 				if(car == firstdig && text.length() > firstdig + 1 && text.charAt(firstdig + 1) != '.') {
 					text.deleteCharAt(firstdig);
 					setTextAndFire(text.toString());
-					setCaretPosition(Math.max(0, originalCar - 1));
+					textfield.setCaretPosition(Math.max(0, originalCar - 1));
 					break;
 				} else if(car == firstdig && Double.parseDouble(getText()) == 0) {
 					String s = getText();
@@ -173,17 +214,17 @@ public class NumberField extends TextField {
 						cp--;
 					}
 					setText(s);
-					setCaretPosition(cp);
+					textfield.setCaretPosition(cp);
 					handleKeyUp();
 					setTextAndFire("-" + getText());
 					cp++;
-					setCaretPosition(cp);
+					textfield.setCaretPosition(cp);
 				} else if(car == firstdig && text.charAt(0) != '-') {
 					setTextAndFire("-" + getText());
-					setCaretPosition(originalCar + 1);
+					textfield.setCaretPosition(originalCar + 1);
 				} else if(car == firstdig && text.charAt(0) == '-') {
 					setTextAndFire(getText().substring(1));
-					setCaretPosition(Math.max(0, originalCar - 1));
+					textfield.setCaretPosition(Math.max(0, originalCar - 1));
 				}
 			}
 		}
@@ -199,12 +240,19 @@ public class NumberField extends TextField {
 	}
 
 	public NumberField(int n) {
-		super(n);
+		this(n, false);
+	}
+
+	public NumberField(int n, final boolean isRecordable) {
+		super(new FlowLayout(0, 0, 0));
+		this.isRecordable = isRecordable;
+		textfield = new TextField(n);
+		add(textfield);
 //		InputMap im = getInputMap();
 //		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "bla");
 //		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "bla");
 
-		super.addMouseWheelListener(new MouseWheelListener() {
+		textfield.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				int units = e.getWheelRotation();
@@ -217,7 +265,7 @@ public class NumberField extends TextField {
 			}
 		});
 
-		super.addKeyListener(new KeyAdapter() {
+		textfield.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				int kc = e.getKeyCode();
@@ -252,5 +300,42 @@ public class NumberField extends TextField {
 				}
 			}
 		});
+
+		if(isRecordable) {
+			super.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					int x = e.getX();
+					int y = e.getY();
+					int r = (textfield.getHeight() - 6) / 2;
+					int x0 = textfield.getX() + textfield.getWidth() + 2;
+					int y0 = textfield.getY() + textfield.getHeight()/2 - r;
+					if(x >= x0 && x <= x0 + 2 * r && y >= y0 && y <= y0 + 2 * r) {
+						fireRecord(NumberField.this);
+					}
+				}
+			});
+		}
+	}
+
+
+	@Override
+	public void paint(Graphics g) {
+		Graphics2D g2d = (Graphics2D)g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		super.paint(g);
+		if(!isRecordable)
+			return;
+		int r = (textfield.getHeight() - 6) / 2;
+		int x = textfield.getX() + textfield.getWidth() + 2;
+		int y = textfield.getY() + textfield.getHeight()/2 - r;
+		g.setColor(new Color(80, 80, 80));
+		g.fillOval(x, y, 2 * r, 2 * r);
+		g.setColor(Color.WHITE);
+		FontMetrics fm = g2d.getFontMetrics();
+		g2d.drawString("R",
+				x + r - fm.stringWidth("R") / 2f,
+				y + r + fm.getAscent() - (float)(fm.getHeight() / 2));
 	}
 }

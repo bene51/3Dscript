@@ -156,8 +156,8 @@ public class CudaRaycaster {
 		setTargetSize(w, h);
 	}
 
-	public void setBBox(int bx, int by, int bz, int bw, int bh, int bd) {
-		setBoundingBox(bx, by, bz, bw, bh, bd);
+	public void setBBox(int bx0, int by0, int bz0, int bx1, int by1, int bz1) {
+		setBoundingBox(bx0, by0, bz0, bx1 - bx0, by1 - by0, bz1 - bz0);
 	}
 
 

@@ -2,6 +2,7 @@ package animation2;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -16,11 +17,9 @@ public class SwitchablePanel extends Panel {
 
 	private Label label;
 	private Label label2;
-	private Panel panel;
 	private Panel labels;
 
-	public SwitchablePanel(final String title, final Panel panel) {
-		this.panel = panel;
+	public SwitchablePanel(final String title, final Container panel) {
 
 		labels = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		this.label = new Label(title);

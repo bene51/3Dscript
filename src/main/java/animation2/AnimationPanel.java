@@ -128,6 +128,12 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		valueChanged();
 	}
 
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		slider.repaint();
+	}
+
 	public void updateBoundingBox() {
 		Point ll = new Point(0, 0);
 		Point ur = new Point(0, 0);
@@ -203,6 +209,9 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		}
 	}
 
+	@Override
+	public void record(NumberField src) {}
+
 	public void valueChanged() {
 		currentTimepointTF.setText(Integer.toString(slider.currentFrame));
 		fireCurrentTimepointChanged(slider.currentFrame);
@@ -276,7 +285,8 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		private int getMaximumStringWidth(Timelines timelines) {
 			int max = 0;
 			setFont(new Font("Helvetica", Font.PLAIN, 8));
-			for(String s : timelines.getNames()) {
+			for(int i = 0; i < timelines.size(); i++) {
+				String s = Timelines.getName(i);
 				int w = getFontMetrics(getFont()).stringWidth(s);
 				if(w > max)
 					max = w;

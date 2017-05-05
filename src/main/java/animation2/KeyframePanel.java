@@ -145,12 +145,12 @@ public class KeyframePanel extends Panel {
 			Choice c2 = add("far",    c.gridy, 3, current.far,  previous.far,  Keyframe.class.getField("far"),  current);
 
 			c.gridwidth = 1;
-			Choice c3 = add("x", ++c.gridy, 0, current.bbx, previous.bbx, Keyframe.class.getField("bbx"),  current);
-			Choice c4 = add("y",   c.gridy, 3, current.bby, previous.bby, Keyframe.class.getField("bby"),  current);
-			Choice c5 = add("z",   c.gridy, 6, current.bbz, previous.bbz, Keyframe.class.getField("bbz"),  current);
-			Choice c6 = add("w", ++c.gridy, 0, current.bbw, previous.bbw, Keyframe.class.getField("bbw"),  current);
-			Choice c7 = add("h",   c.gridy, 3, current.bbh, previous.bbh, Keyframe.class.getField("bbh"),  current);
-			Choice c8 = add("d",   c.gridy, 6, current.bbd, previous.bbd, Keyframe.class.getField("bbd"),  current);
+			Choice c3 = add("x", ++c.gridy, 0, current.bbx0, previous.bbx0, Keyframe.class.getField("bbx0"),  current);
+			Choice c4 = add("y",   c.gridy, 3, current.bby0, previous.bby0, Keyframe.class.getField("bby0"),  current);
+			Choice c5 = add("z",   c.gridy, 6, current.bbz0, previous.bbz0, Keyframe.class.getField("bbz0"),  current);
+			Choice c6 = add("w", ++c.gridy, 0, current.bbx1, previous.bbx1, Keyframe.class.getField("bbx1"),  current);
+			Choice c7 = add("h",   c.gridy, 3, current.bby1, previous.bby1, Keyframe.class.getField("bby1"),  current);
+			Choice c8 = add("d",   c.gridy, 6, current.bbz1, previous.bbz1, Keyframe.class.getField("bbz1"),  current);
 			broadcast(choice, c1, c2, c3, c4, c5, c6, c7, c8);
 
 			c.gridwidth = GridBagConstraints.REMAINDER;

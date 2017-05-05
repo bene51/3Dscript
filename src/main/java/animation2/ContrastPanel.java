@@ -42,13 +42,13 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private static final long serialVersionUID = 1L;
 
 
-	private NumberField minCTF = new NumberField(4);
-	private NumberField maxCTF = new NumberField(4);
-	private NumberField gammaCTF = new NumberField(4);
+	private NumberField minCTF = new NumberField(4, true);
+	private NumberField maxCTF = new NumberField(4, true);
+	private NumberField gammaCTF = new NumberField(4, true);
 
-	private NumberField minATF = new NumberField(4);
-	private NumberField maxATF = new NumberField(4);
-	private NumberField gammaATF = new NumberField(4);
+	private NumberField minATF = new NumberField(4, true);
+	private NumberField maxATF = new NumberField(4, true);
+	private NumberField gammaATF = new NumberField(4, true);
 
 	private Choice channelChoice;
 
@@ -58,6 +58,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		public void renderingSettingsChanged();
 		public void channelChanged();
 		public void renderingSettingsReset();
+		public void record(NumberField src, String timelineName);
 	}
 
 	private ArrayList<Listener> listeners =
@@ -193,6 +194,11 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			l.channelChanged();
 	}
 
+	private void fireRecord(NumberField src, String timelineName) {
+		for(Listener l : listeners)
+			l.record(src, timelineName);
+	}
+
 	@Override
 	public void focusGained(FocusEvent e) {
 		TextField tf = (TextField)e.getSource();
@@ -202,6 +208,25 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	@Override
 	public void focusLost(FocusEvent e) {
 		valueChanged(0);
+	}
+
+	@Override
+	public void record(NumberField src) {
+		String timelineName = null;
+		int c = channelChoice.getSelectedIndex();
+		if(src == minCTF)
+			timelineName = "Channel " + (c + 1) + " color min";
+		else if(src == maxCTF)
+			timelineName = "Channel " + (c + 1) + " color max";
+		else if(src == gammaCTF)
+			timelineName = "Channel " + (c + 1) + " color gamma";
+		else if(src == minATF)
+			timelineName = "Channel " + (c + 1) + " alpha min";
+		else if(src == maxATF)
+			timelineName = "Channel " + (c + 1) + " alpha max";
+		else if(src == gammaATF)
+			timelineName = "Channel " + (c + 1) + " alpha gamma";
+		fireRecord(src, timelineName);
 	}
 
 	@Override

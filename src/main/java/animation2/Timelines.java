@@ -14,36 +14,51 @@ public class Timelines {
 
 	private final int nChannels;
 
+	public static String getName(int i) {
+		switch(i) {
+		case 0: return "X Translation";
+		case 1: return "Y Translation";
+		case 2: return "Z Translation";
+
+		case 3: return "X Rotation";
+		case 4: return "Y Rotation";
+		case 5: return "Z Rotation";
+
+		case 6: return "Scale";
+
+		case 7: return "Bounding Box X Min";
+		case 8: return "Bounding Box Y Min";
+		case 9: return "Bounding Box Z Min";
+		case 10: return "Bounding Box X Max";
+		case 11: return "Bounding Box Y Max";
+		case 12: return "Bounding Box Z Max";
+
+		case 13: return "Near";
+		case 14: return "Far";
+		default:
+			int r = (i - 15) % 6;
+			int c = (i - 15) / 6;
+			switch(r) {
+			case 0: return "Channel " + (c + 1) + " color min";
+			case 1: return "Channel " + (c + 1) + " color max";
+			case 2: return "Channel " + (c + 1) + " color gamma";
+			case 3: return "Channel " + (c + 1) + " alpha min";
+			case 4: return "Channel " + (c + 1) + " alpha max";
+			case 5: return "Channel " + (c + 1) + " alpha gamma";
+			}
+		}
+		return null;
+	}
+
 	public Timelines(int nChannels, int tmin, int tmax) {
 		this.nChannels = nChannels;
-
-		names.add("X Translation");
-		names.add("Y Translation");
-		names.add("Z Translation");
-
-		names.add("X Rotation");
-		names.add("Y Rotation");
-		names.add("Z Rotation");
-
-		names.add("Scale");
-
-		names.add("Bounding Box X");
-		names.add("Bounding Box Y");
-		names.add("Bounding Box Z");
-		names.add("Bounding Box W");
-		names.add("Bounding Box H");
-		names.add("Bounding Box D");
-
-		names.add("Near");
-		names.add("Far");
+		int i = 0;
+		for(i = 0; i < 15; i++)
+			names.add(getName(i));
 
 		for(int c = 0; c < nChannels; c++) {
-			names.add("Channel " + (c + 1) + " color min");
-			names.add("Channel " + (c + 1) + " color max");
-			names.add("Channel " + (c + 1) + " color gamma");
-			names.add("Channel " + (c + 1) + " alpha min");
-			names.add("Channel " + (c + 1) + " alpha max");
-			names.add("Channel " + (c + 1) + " alpha gamma");
+			for(int j = 0; j < 6; j++)
+				names.add(getName(i++));
 		}
 
 //		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.dx), new LinePoint(tmax, kf.dx)));
@@ -200,12 +215,12 @@ public class Timelines {
 
 		record(i++, t, kf.scale);
 
-		record(i++, t, kf.bbx);
-		record(i++, t, kf.bby);
-		record(i++, t, kf.bbz);
-		record(i++, t, kf.bbw);
-		record(i++, t, kf.bbh);
-		record(i++, t, kf.bbd);
+		record(i++, t, kf.bbx0);
+		record(i++, t, kf.bby0);
+		record(i++, t, kf.bbz0);
+		record(i++, t, kf.bbx1);
+		record(i++, t, kf.bby1);
+		record(i++, t, kf.bbz1);
 
 		record(i++, t, kf.near);
 		record(i++, t, kf.far);
@@ -242,12 +257,12 @@ public class Timelines {
 
 		kf.scale = (float)getInterpolatedValue(i++, t, def.scale);
 
-		kf.bbx = (int)Math.round(getInterpolatedValue(i++, t, def.bbx));
-		kf.bby = (int)Math.round(getInterpolatedValue(i++, t, def.bby));
-		kf.bbz = (int)Math.round(getInterpolatedValue(i++, t, def.bbz));
-		kf.bbw = (int)Math.round(getInterpolatedValue(i++, t, def.bbw));
-		kf.bbh = (int)Math.round(getInterpolatedValue(i++, t, def.bbh));
-		kf.bbd = (int)Math.round(getInterpolatedValue(i++, t, def.bbd));
+		kf.bbx0 = (int)Math.round(getInterpolatedValue(i++, t, def.bbx0));
+		kf.bby0 = (int)Math.round(getInterpolatedValue(i++, t, def.bby0));
+		kf.bbz0 = (int)Math.round(getInterpolatedValue(i++, t, def.bbz0));
+		kf.bbx1 = (int)Math.round(getInterpolatedValue(i++, t, def.bbx1));
+		kf.bby1 = (int)Math.round(getInterpolatedValue(i++, t, def.bby1));
+		kf.bbz1 = (int)Math.round(getInterpolatedValue(i++, t, def.bbz1));
 
 		kf.near = (float)getInterpolatedValue(i++, t, def.near);
 		kf.far  = (float)getInterpolatedValue(i++, t, def.far);
@@ -280,12 +295,12 @@ public class Timelines {
 
 		kf.scale = (float)timelines.get(i++).getInterpolatedValue(t);
 
-		kf.bbx = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bby = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbz = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbw = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbh = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbd = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
+		kf.bbx0 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
+		kf.bby0 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
+		kf.bbz0 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
+		kf.bbx1 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
+		kf.bby1 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
+		kf.bbz1 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
 
 		kf.near = (float)timelines.get(i++).getInterpolatedValue(t);
 		kf.far  = (float)timelines.get(i++).getInterpolatedValue(t);
@@ -326,12 +341,12 @@ public class Timelines {
 
 		kf.scale = (float)get(i++, t);
 
-		kf.bbx = (int)Math.round(get(i++, t));
-		kf.bby = (int)Math.round(get(i++, t));
-		kf.bbz = (int)Math.round(get(i++, t));
-		kf.bbw = (int)Math.round(get(i++, t));
-		kf.bbh = (int)Math.round(get(i++, t));
-		kf.bbd = (int)Math.round(get(i++, t));
+		kf.bbx0 = (int)Math.round(get(i++, t));
+		kf.bby0 = (int)Math.round(get(i++, t));
+		kf.bbz0 = (int)Math.round(get(i++, t));
+		kf.bbx1 = (int)Math.round(get(i++, t));
+		kf.bby1 = (int)Math.round(get(i++, t));
+		kf.bbz1 = (int)Math.round(get(i++, t));
 
 		kf.near = (float)get(i++, t);
 		kf.far  = (float)get(i++, t);
@@ -351,10 +366,6 @@ public class Timelines {
 		return kf;
 	}
 
-	public String getName(int i) {
-		return names.get(i);
-	}
-
 	public CtrlPoints get(int i) {
 		return timelines.get(i);
 	}
@@ -363,9 +374,9 @@ public class Timelines {
 		return names.size();
 	}
 
-	public String[] getNames() {
-		String[] names = new String[size()];
-		this.names.toArray(names);
-		return names;
-	}
+//	public String[] getNames() {
+//		String[] names = new String[size()];
+//		this.names.toArray(names);
+//		return names;
+//	}
 }

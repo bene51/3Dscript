@@ -33,7 +33,8 @@ public class CroppingPanel extends Panel {
 
 	public static interface Listener {
 		public void nearFarChanged(int near, int far);
-		public void boundingBoxChanged(int bbx, int bby, int bbz, int bbw, int bbh, int bbd);
+		public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1);
+		public void record(NumberField src, String timelineName);
 	}
 
 	private ArrayList<Listener> listeners =	new ArrayList<Listener>();
@@ -106,38 +107,58 @@ public class CroppingPanel extends Panel {
 						bbX.getMin(),
 						bbY.getMin(),
 						bbZ.getMin(),
-						bbX.getMax() - bbX.getMin(),
-						bbY.getMax() - bbY.getMin(),
-						bbZ.getMax() - bbZ.getMin());
+						bbX.getMax(),
+						bbY.getMax(),
+						bbZ.getMax());
 			}
 		};
 		bbX.addSliderChangeListener(bbListener);
 		bbY.addSliderChangeListener(bbListener);
 		bbZ.addSliderChangeListener(bbListener);
+
+		addNumberFieldListener(nearfar.getMinField(), "Near");
+		addNumberFieldListener(nearfar.getMaxField(), "Far");
+		addNumberFieldListener(bbX.getMinField(), "Bounding Box X Min");
+		addNumberFieldListener(bbX.getMaxField(), "Bounding Box X Max");
+		addNumberFieldListener(bbY.getMinField(), "Bounding Box Y Min");
+		addNumberFieldListener(bbY.getMaxField(), "Bounding Box Y Max");
+		addNumberFieldListener(bbZ.getMinField(), "Bounding Box Z Min");
+		addNumberFieldListener(bbZ.getMaxField(), "Bounding Box Z Max");
 	}
 
-	public int getBBX() {
+	private void addNumberFieldListener(NumberField nf, final String timelineName) {
+		nf.addListener(new NumberField.Listener() {
+			@Override public void valueChanged(double v) {}
+
+			@Override
+			public void record(NumberField src) {
+				fireRecord(src, timelineName);
+			}
+		});
+	}
+
+	public int getBBXMin() {
 		return bbX.getMin();
 	}
 
-	public int getBBY() {
+	public int getBBYMin() {
 		return bbY.getMin();
 	}
 
-	public int getBBZ() {
+	public int getBBZMin() {
 		return bbZ.getMin();
 	}
 
-	public int getBBW() {
-		return bbX.getMax() - bbX.getMin();
+	public int getBBXMax() {
+		return bbX.getMax();
 	}
 
-	public int getBBH() {
-		return bbY.getMax() - bbY.getMin();
+	public int getBBYMax() {
+		return bbY.getMax();
 	}
 
-	public int getBBD() {
-		return bbZ.getMax() - bbZ.getMin();
+	public int getBBZMax() {
+		return bbZ.getMax();
 	}
 
 	public int getNear() {
@@ -148,10 +169,10 @@ public class CroppingPanel extends Panel {
 		return nearfar.getMax();
 	}
 
-	public void setBoundingBox(int bbx, int bby, int bbz, int bbw, int bbh, int bbd) {
-		bbX.setMinAndMax(bbx, bbx + bbw);
-		bbY.setMinAndMax(bby, bby + bbh);
-		bbZ.setMinAndMax(bbz, bbz + bbd);
+	public void setBoundingBox(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
+		bbX.setMinAndMax(bbx0, bbx1);
+		bbY.setMinAndMax(bby0, bby1);
+		bbZ.setMinAndMax(bbz0, bbz1);
 	}
 
 	public void setNearAndFar(int near, int far) {
@@ -162,13 +183,18 @@ public class CroppingPanel extends Panel {
         listeners.add(l);
     }
 
-	private void fireBoundingBoxChanged(int bbx, int bby, int bbz, int bbw, int bbh, int bbd) {
+	private void fireBoundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
 		for(Listener l : listeners)
-			l.boundingBoxChanged(bbx, bby, bbz, bbw, bbh, bbd);
+			l.boundingBoxChanged(bbx0, bby0, bbz0, bbx1, bby1, bbz1);
 	}
 
 	private void fireNearFarChanged(int near, int far) {
 		for(Listener l : listeners)
 			l.nearFarChanged(near, far);
+	}
+
+	private void fireRecord(NumberField src, String timelineName) {
+		for(Listener l : listeners)
+			l.record(src, timelineName);
 	}
 }

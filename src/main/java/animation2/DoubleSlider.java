@@ -39,8 +39,8 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 	private static final long serialVersionUID = 1L;
 
 	private DoubleSliderCanvas slider;
-	private NumberField minTF = new NumberField(4);
-	private NumberField maxTF = new NumberField(4);
+	private NumberField minTF = new NumberField(4, true);
+	private NumberField maxTF = new NumberField(4, true);
 
 	private ArrayList<Listener> listeners = new ArrayList<Listener>();
 
@@ -79,6 +79,14 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 		add(maxTF, c);
 
 		updateTextfieldsFromSliders();
+	}
+
+	public NumberField getMinField() {
+		return minTF;
+	}
+
+	public NumberField getMaxField() {
+		return maxTF;
 	}
 
 	public int getMin() {
@@ -120,6 +128,9 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 		} catch(Exception ex) {
 		}
 	}
+
+	@Override
+	public void record(NumberField src) {}
 
 	private void updateTextfieldsFromSliders() {
 		minTF.setText(Integer.toString(slider.setMinMax[0]));
