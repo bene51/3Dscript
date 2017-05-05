@@ -1,12 +1,7 @@
 package animation2;
 
-import java.awt.Button;
 import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.Panel;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -344,6 +339,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 					}
 				}
 			}
+
+			@Override
+			public void resetTransformation() {
+				scale[0] = 1;
+				translation[0] = translation[1] = translation[2] = 0;
+				Transform.fromIdentity(rotation);
+				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.push(renderingSettings, inverse, nearfar);
+				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
+			}
 		});
 
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
@@ -569,7 +574,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 
 
-		Panel p = new Panel(new FlowLayout(FlowLayout.RIGHT));
+//		Panel p = new Panel(new FlowLayout(FlowLayout.RIGHT));
 //		Button but = new Button("Animate");
 //		but.addActionListener(new ActionListener() {
 //			@Override
@@ -633,24 +638,24 @@ public class InteractiveRaycaster implements PlugInFilter {
 //			}
 //		});
 //		p.add(but);
+//
+//		Button but = new Button("Reset transformations");
+//		but.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				scale[0] = 1;
+//				translation[0] = translation[1] = translation[2] = 0;
+//				Transform.fromIdentity(rotation);
+//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+//				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
+//				worker.push(renderingSettings, inverse, nearfar);
+//			}
+//		});
+//		p.add(but);
 
-		Button but = new Button("Reset transformations");
-		but.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				scale[0] = 1;
-				translation[0] = translation[1] = translation[2] = 0;
-				Transform.fromIdentity(rotation);
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
-				worker.push(renderingSettings, inverse, nearfar);
-			}
-		});
-		p.add(but);
 
 
-
-		gd.addPanel(p);
+//		gd.addPanel(p);
 
 		gd.setModal(false);
 		gd.showDialog();

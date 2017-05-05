@@ -1,5 +1,6 @@
 package animation2;
 
+import java.awt.Button;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -7,6 +8,8 @@ import java.awt.Insets;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 	public static interface Listener {
 		public void transformationChanged(float ax, float ay, float az, float dx, float dy, float dz, float s);
 		public void record(NumberField src, String timelineName);
+		public void resetTransformation();
 	}
 
 	private ArrayList<Listener> listeners =	new ArrayList<Listener>();
@@ -91,6 +95,19 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 		c.gridx = 5;
 		c.gridy = 0;
 		add(scale, c);
+
+		c.anchor = GridBagConstraints.CENTER;
+		c.gridx = 4;
+		c.gridy = 2;
+		c.gridwidth = 2;
+		Button reset = new Button("Reset transformation");
+		reset.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireResetTransformation();
+			}
+		});
+		add(reset, c);
 
 		setTransformation(ax, ay, az, dx, dy, dz, s);
 	}
@@ -203,5 +220,10 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 	private void fireRecord(NumberField src, String timelineName) {
 		for(Listener l : listeners)
 			l.record(src, timelineName);
+	}
+
+	private void fireResetTransformation() {
+		for(Listener l : listeners)
+			l.resetTransformation();
 	}
 }
