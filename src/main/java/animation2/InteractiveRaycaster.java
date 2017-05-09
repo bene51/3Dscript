@@ -691,6 +691,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 //		gd.addPanel(p);
 
 		gd.setModal(false);
+		gd.pack();
 		gd.showDialog();
 
 		float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
