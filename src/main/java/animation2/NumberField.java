@@ -304,19 +304,36 @@ public class NumberField extends Panel {
 		if(isRecordable) {
 			super.addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(MouseEvent e) {
+				public void mousePressed(MouseEvent e) {
 					int x = e.getX();
 					int y = e.getY();
+					if(within(x, y)) {
+						recordButtonColor = Color.ORANGE;
+						repaint();
+					}
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					if(recordButtonColor.equals(Color.ORANGE)) {
+						recordButtonColor = defaultRecordButtonColor;
+						repaint();
+						fireRecord(NumberField.this);
+					}
+				}
+
+				public boolean within(int x, int y) {
 					int r = (textfield.getHeight() - 6) / 2;
 					int x0 = textfield.getX() + textfield.getWidth() + 2;
 					int y0 = textfield.getY() + textfield.getHeight()/2 - r;
-					if(x >= x0 && x <= x0 + 2 * r && y >= y0 && y <= y0 + 2 * r) {
-						fireRecord(NumberField.this);
-					}
+					return x >= x0 && x <= x0 + 2 * r && y >= y0 && y <= y0 + 2 * r;
 				}
 			});
 		}
 	}
+
+	private Color defaultRecordButtonColor = new Color(80, 80, 80);
+	private Color recordButtonColor = defaultRecordButtonColor;
 
 
 	@Override
@@ -330,7 +347,7 @@ public class NumberField extends Panel {
 		int r = (textfield.getHeight() - 6) / 2;
 		int x = textfield.getX() + textfield.getWidth() + 2;
 		int y = textfield.getY() + textfield.getHeight()/2 - r;
-		g.setColor(new Color(80, 80, 80));
+		g.setColor(recordButtonColor);
 		g.fillOval(x, y, 2 * r, 2 * r);
 		g.setColor(Color.WHITE);
 		FontMetrics fm = g2d.getFontMetrics();
