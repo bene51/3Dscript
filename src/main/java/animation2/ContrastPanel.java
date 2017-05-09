@@ -58,7 +58,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		public void renderingSettingsChanged();
 		public void channelChanged();
 		public void renderingSettingsReset();
-		public void record(NumberField src, String timelineName);
+		public void record(NumberField src, String timelineName, boolean delete);
 	}
 
 	private ArrayList<Listener> listeners =
@@ -194,9 +194,9 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			l.channelChanged();
 	}
 
-	private void fireRecord(NumberField src, String timelineName) {
+	private void fireRecord(NumberField src, String timelineName, boolean delete) {
 		for(Listener l : listeners)
-			l.record(src, timelineName);
+			l.record(src, timelineName, delete);
 	}
 
 	@Override
@@ -211,7 +211,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	@Override
-	public void record(NumberField src) {
+	public void record(NumberField src, boolean delete) {
 		String timelineName = null;
 		int c = channelChoice.getSelectedIndex();
 		if(src == minCTF)
@@ -226,7 +226,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			timelineName = "Channel " + (c + 1) + " alpha max";
 		else if(src == gammaATF)
 			timelineName = "Channel " + (c + 1) + " alpha gamma";
-		fireRecord(src, timelineName);
+		fireRecord(src, timelineName, delete);
 	}
 
 	@Override

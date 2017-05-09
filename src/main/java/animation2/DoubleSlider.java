@@ -130,7 +130,7 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 	}
 
 	@Override
-	public void record(NumberField src) {}
+	public void record(NumberField src, boolean delete) {}
 
 	private void updateTextfieldsFromSliders() {
 		minTF.setText(Integer.toString(slider.setMinMax[0]));

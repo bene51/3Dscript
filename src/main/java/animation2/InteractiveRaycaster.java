@@ -305,11 +305,14 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void record(NumberField src, String timelineName) {
+			public void record(NumberField src, String timelineName, boolean delete) {
 				for(int i = 0; i < timelines.size(); i++) {
 					if(Timelines.getName(i).equals(timelineName)) {
 						int frame = animationPanel.getCurrentFrame();
-						timelines.get(i).add(frame, Double.parseDouble(src.getText()));
+						if(delete)
+							timelines.get(i).removePointAt(frame);
+						else
+							timelines.get(i).add(frame, Double.parseDouble(src.getText()));
 						animationPanel.repaint();
 						break;
 					}
@@ -339,11 +342,14 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void record(NumberField src, String timelineName) {
+			public void record(NumberField src, String timelineName, boolean delete) {
 				for(int i = 0; i < timelines.size(); i++) {
 					if(Timelines.getName(i).equals(timelineName)) {
 						int frame = animationPanel.getCurrentFrame();
-						timelines.get(i).add(frame, Double.parseDouble(src.getText()));
+						if(delete)
+							timelines.get(i).removePointAt(frame);
+						else
+							timelines.get(i).add(frame, Double.parseDouble(src.getText()));
 						animationPanel.repaint();
 						break;
 					}
@@ -377,11 +383,14 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void record(NumberField src, String timelineName) {
+			public void record(NumberField src, String timelineName, boolean delete) {
 				for(int i = 0; i < timelines.size(); i++) {
 					if(Timelines.getName(i).equals(timelineName)) {
 						int frame = animationPanel.getCurrentFrame();
-						timelines.get(i).add(frame, Double.parseDouble(src.getText()));
+						if(delete)
+							timelines.get(i).removePointAt(frame);
+						else
+							timelines.get(i).add(frame, Double.parseDouble(src.getText()));
 						animationPanel.repaint();
 						break;
 					}

@@ -101,6 +101,19 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		return p1.getY();
 	}
 
+	public void removePointAt(int x) {
+		int toRemove = -1;
+		for(int i = 0; i < list.size(); i++) { // TODO replace with binary search
+			LinePoint lp = list.get(i);
+			if(lp.x == x) {
+				toRemove = i;
+				break;
+			}
+		}
+		if(toRemove != -1)
+			list.remove(toRemove);
+	}
+
 	public LinePoint getPointAt(int x) {
 		LinePoint existing = null;
 		for(LinePoint lp : list) { // TODO replace with binary search

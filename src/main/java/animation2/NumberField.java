@@ -34,7 +34,7 @@ public class NumberField extends Panel {
 
 	public static interface Listener {
 		public void valueChanged(double v);
-		public void record(NumberField src);
+		public void record(NumberField src, boolean delete);
 	}
 
 	public void addListener(Listener l) {
@@ -68,9 +68,9 @@ public class NumberField extends Panel {
 			l.valueChanged(v);
 	}
 
-	private void fireRecord(NumberField src) {
+	private void fireRecord(NumberField src, boolean delete) {
 		for(Listener l : listener)
-			l.record(src);
+			l.record(src, delete);
 	}
 
 	public static void main(String[] args) {
@@ -84,7 +84,7 @@ public class NumberField extends Panel {
 				System.out.println("value changed to " + v);
 			}
 			@Override
-			public void record(NumberField src) {
+			public void record(NumberField src, boolean delete) {
 				System.out.println("record");
 			}
 		});
@@ -318,7 +318,7 @@ public class NumberField extends Panel {
 					if(recordButtonColor.equals(Color.ORANGE)) {
 						recordButtonColor = defaultRecordButtonColor;
 						repaint();
-						fireRecord(NumberField.this);
+						fireRecord(NumberField.this, e.isShiftDown());
 					}
 				}
 

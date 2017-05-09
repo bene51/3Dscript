@@ -38,7 +38,7 @@ public class CroppingPanel extends Panel {
 	public static interface Listener {
 		public void nearFarChanged(int near, int far);
 		public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1);
-		public void record(NumberField src, String timelineName);
+		public void record(NumberField src, String timelineName, boolean delete);
 		public void cutOffROI();
 	}
 
@@ -156,8 +156,8 @@ public class CroppingPanel extends Panel {
 			@Override public void valueChanged(double v) {}
 
 			@Override
-			public void record(NumberField src) {
-				fireRecord(src, timelineName);
+			public void record(NumberField src, boolean delete) {
+				fireRecord(src, timelineName, delete);
 			}
 		});
 	}
@@ -218,9 +218,9 @@ public class CroppingPanel extends Panel {
 			l.nearFarChanged(near, far);
 	}
 
-	private void fireRecord(NumberField src, String timelineName) {
+	private void fireRecord(NumberField src, String timelineName, boolean delete) {
 		for(Listener l : listeners)
-			l.record(src, timelineName);
+			l.record(src, timelineName, delete);
 	}
 
 	private void fireCutOffROI() {

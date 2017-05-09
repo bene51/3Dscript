@@ -62,7 +62,7 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 	}
 
 	@Override
-	public void record(NumberField src) {
+	public void record(NumberField src, boolean delete) {
 
 	}
 

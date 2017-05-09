@@ -210,7 +210,7 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 	}
 
 	@Override
-	public void record(NumberField src) {}
+	public void record(NumberField src, boolean delete) {}
 
 	public void valueChanged() {
 		currentTimepointTF.setText(Integer.toString(slider.currentFrame));
