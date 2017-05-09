@@ -89,23 +89,42 @@ public class CudaRaycaster {
 	private ImagePlus image;
 	private int wOut;
 	private int hOut;
+	private int wIn, hIn, dIn, nChannels;
 
 	public CudaRaycaster(ImagePlus imp, int wOut, int hOut, float zStep) {
 		this(imp, wOut, hOut, zStep, 0.95f);
 	}
 
 	public CudaRaycaster(ImagePlus imp, int wOut, int hOut, float zStep, float alphastop) {
+		wIn = imp.getWidth();
+		hIn = imp.getHeight();
+		dIn = imp.getNSlices();
+		this.wOut = wOut;
+		this.hOut = hOut;
+		this.nChannels = imp.getNChannels();
+
+		if(imp.getType() == ImagePlus.GRAY8)
+			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
+		else if(imp.getType() == ImagePlus.GRAY16)
+			initRaycaster16(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
+		else
+			throw new RuntimeException("Only 8- and 16-bit images are supported");
+		setImage(imp);
+	}
+
+	public void setImage(ImagePlus imp) {
 		this.image = imp;
 		int w = imp.getWidth();
 		int h = imp.getHeight();
 		int d = imp.getNSlices();
-		this.wOut = wOut;
-		this.hOut = hOut;
 		int nChannels = imp.getNChannels();
+
+		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
+			throw new IllegalArgumentException("Image dimensions must remain the same.");
+
 		this.channelLUTs = getChannelLUTs();
 
 		if(imp.getType() == ImagePlus.GRAY8) {
-			initRaycaster8(nChannels, w, h, d, wOut, hOut, zStep, alphastop);
 			for(int c = 0; c < nChannels; c++) {
 				byte[][] image = new byte[d][];
 				for(int z = 0; z < d; z++) {
@@ -116,7 +135,6 @@ public class CudaRaycaster {
 			}
 		}
 		else if(imp.getType() == ImagePlus.GRAY16) {
-			initRaycaster16(nChannels, w, h, d, wOut, hOut, zStep, alphastop);
 			for(int c = 0; c < nChannels; c++) {
 				short[][] image = new short[d][];
 				for(int z = 0; z < d; z++) {
