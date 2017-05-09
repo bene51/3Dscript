@@ -18,10 +18,14 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.gui.ImageCanvas;
+import ij.gui.Roi;
+import ij.gui.TextRoi;
+import ij.gui.Toolbar;
 import ij.io.OpenDialog;
 import ij.io.SaveDialog;
 import ij.measure.Calibration;
 import ij.plugin.filter.PlugInFilter;
+import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import ij.process.LUT;
@@ -126,12 +130,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final MouseListener mouseListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
+				if(Toolbar.getToolId() != Toolbar.HAND)
+					return;
 				mouseDown.setLocation(e.getPoint());
 				isRotation[0] = !e.isShiftDown();
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				if(Toolbar.getToolId() != Toolbar.HAND)
+					return;
 				int dx = e.getX() - mouseDown.x;
 				int dy = e.getY() - mouseDown.y;
 				if(!isRotation[0]) {
@@ -166,6 +174,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final MouseMotionListener mouseMotionListener = new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				if(Toolbar.getToolId() != Toolbar.HAND)
+					return;
 				// translation
 				if(!isRotation[0]) {
 					System.out.println(e.getX() + ", " + e.getY());
@@ -375,6 +385,29 @@ public class InteractiveRaycaster implements PlugInFilter {
 						animationPanel.repaint();
 						break;
 					}
+				}
+			}
+
+			@Override
+			public void cutOffROI() {
+				float[] fwdTransform = calculateTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				Roi roi = worker.out.getRoi();
+				if(roi != null) {
+					ByteProcessor mask = new ByteProcessor(worker.out.getWidth(), worker.out.getHeight());
+					mask.setValue(255);
+					if(roi instanceof TextRoi)
+						mask.draw(roi);
+					else
+						mask.fill(roi);
+					mask.resetRoi();
+					mask.invert();
+
+					worker.getRaycaster().crop(image, mask, fwdTransform);
+					float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+					worker.push(renderingSettings, inverse, nearfar);
+				}
+				else {
+					IJ.error("Selection required");
 				}
 			}
 		});
@@ -730,15 +763,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			return Color.black;
 	}
 
-
-
-	/**
-	 * Calculates scale * translation * rotation
-	 * @param scale
-	 * @param translation
-	 * @param rotation
-	 */
-	private float[] calculateInverseTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
+	private float[] calculateTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
 		float[] scaleM = Transform.fromScale(scale, null);
 		float[] transM = Transform.fromTranslation(translation[0], translation[1], translation[2], null);
 		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
@@ -750,6 +775,17 @@ public class InteractiveRaycaster implements PlugInFilter {
 		x = Transform.mul(x, fromCalib);
 		x = Transform.mul(toTransform, x);
 
+		return x;
+	}
+
+	/**
+	 * Calculates scale * translation * rotation
+	 * @param scale
+	 * @param translation
+	 * @param rotation
+	 */
+	private float[] calculateInverseTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
+		float[] x = calculateTransform(scale, translation, rotation, center, fromCalib, toTransform);
 		Transform.invert(x);
 		return x;
 	}

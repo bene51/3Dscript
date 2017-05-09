@@ -1,11 +1,15 @@
 package animation2;
 
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Label;
 import java.awt.Panel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import ij.IJ;
@@ -35,6 +39,7 @@ public class CroppingPanel extends Panel {
 		public void nearFarChanged(int near, int far);
 		public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1);
 		public void record(NumberField src, String timelineName);
+		public void cutOffROI();
 	}
 
 	private ArrayList<Listener> listeners =	new ArrayList<Listener>();
@@ -97,6 +102,26 @@ public class CroppingPanel extends Panel {
 			@Override
 			public void sliderChanged() {
 				fireNearFarChanged(nearfar.getMin(), nearfar.getMax());
+			}
+		});
+
+		Button b = new Button("Cut off ROI");
+		c.gridx = 0;
+		c.insets = new Insets(7, 0, 0, 0);
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.EAST;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		gridbag.setConstraints(b, c);
+		add(b);
+		b.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new Thread() {
+					@Override
+					public void run() {
+						fireCutOffROI();
+					}
+				}.start();
 			}
 		});
 
@@ -196,5 +221,10 @@ public class CroppingPanel extends Panel {
 	private void fireRecord(NumberField src, String timelineName) {
 		for(Listener l : listeners)
 			l.record(src, timelineName);
+	}
+
+	private void fireCutOffROI() {
+		for(Listener l : listeners)
+			l.cutOffROI();
 	}
 }

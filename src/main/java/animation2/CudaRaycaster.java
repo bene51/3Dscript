@@ -1,6 +1,10 @@
 package animation2;
 
 import java.awt.Color;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import ij.CompositeImage;
 import ij.IJ;
@@ -239,6 +243,73 @@ public class CudaRaycaster {
 			return new Color(r, g, b);
 		else
 			return Color.WHITE;
+	}
+
+	public void crop(
+			final ImagePlus in,
+			final ByteProcessor mask,
+			final float[] fwdTransform) {
+		final ImageProcessor[] inProcessors = new ImageProcessor[in
+				.getStackSize()];
+		for (int z = 0; z < inProcessors.length; z++)
+			inProcessors[z] = in.getStack().getProcessor(z + 1);
+
+		final int wIn = in.getWidth();
+		final int hIn = in.getHeight();
+		final int dIn = in.getNSlices();
+		final int nC = in.getNChannels();
+
+		final ExecutorService exec = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors());
+
+		final int wOut = mask.getWidth();
+		final int hOut = mask.getHeight();
+
+		final int n = nC * dIn;
+		final AtomicInteger prog = new AtomicInteger(0);
+
+		for(int ic = 0; ic < nC; ic++) {
+			for (int iz = 0; iz < dIn; iz++) {
+				final int z = iz;
+				final int c = ic;
+				final int t = in.getFrame() - 1;
+				final int stackIndex = in.getStackIndex(c + 1, iz + 1, t + 1);
+				final ImageProcessor ip = inProcessors[stackIndex - 1];
+				exec.submit(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							float[] result = new float[3];
+							for (int y = 0, xy = 0; y < hIn; y++) {
+								for (int x = 0; x < wIn; x++, xy++) {
+									Transform.apply(fwdTransform, x, y, z, result);
+									if (result[0] < 0
+											|| result[1] < 0
+											|| result[0] >= wOut - 1
+											|| result[1] >= hOut - 1
+											|| mask.getf(Math.round(result[0]), Math.round(result[1])) == 0) {
+										ip.setf(xy, 0);
+										continue;
+									}
+								}
+							}
+							int progress = prog.incrementAndGet();
+							IJ.showProgress(progress, n);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		}
+		exec.shutdown();
+		try {
+			exec.awaitTermination(1, TimeUnit.DAYS);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		setImage(in);
 	}
 
 
