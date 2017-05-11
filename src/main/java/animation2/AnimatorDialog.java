@@ -81,6 +81,7 @@ public class AnimatorDialog extends GenericDialog {
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
 		SwitchablePanel sp = new SwitchablePanel("Cropping", slider);
+		sp.switchOff();
 		layout.setConstraints(sp, c);
 		add(sp);
 		return slider;
@@ -95,6 +96,7 @@ public class AnimatorDialog extends GenericDialog {
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
 		SwitchablePanel sp = new SwitchablePanel("Output", outputPanel);
+		sp.switchOff();
 		layout.setConstraints(sp, c);
 		add(sp);
 		return outputPanel;
@@ -109,6 +111,7 @@ public class AnimatorDialog extends GenericDialog {
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
 		SwitchablePanel sp = new SwitchablePanel("Transformation", panel);
+		sp.switchOff();
 		layout.setConstraints(sp, c);
 		add(sp);
 		return panel;
@@ -145,6 +148,7 @@ public class AnimatorDialog extends GenericDialog {
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
 		SwitchablePanel sp = new SwitchablePanel("Animation", panel);
+		sp.switchOff();
 		layout.setConstraints(sp, c);
 		add(sp);
 		return panel;

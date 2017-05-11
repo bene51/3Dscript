@@ -18,9 +18,10 @@ public class SwitchablePanel extends Panel {
 	private Label label;
 	private Label label2;
 	private Panel labels;
+	private Container panel;
 
 	public SwitchablePanel(final String title, final Container panel) {
-
+		this.panel = panel;
 		labels = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		this.label = new Label(title);
 		label.setBackground(new Color(100, 140, 200));
@@ -54,6 +55,24 @@ public class SwitchablePanel extends Panel {
 				((Window)getParent()).pack();
 			}
 		});
+	}
+
+	public void switchOn() {
+		panel.setVisible(true);
+		String sign = panel.isVisible() ? "(hide)" : "(show)";
+		label2.setText(sign);
+		invalidate();
+		if(getParent() != null)
+			((Window)getParent()).pack();
+	}
+
+	public void switchOff() {
+		panel.setVisible(false);
+		String sign = panel.isVisible() ? "(hide)" : "(show)";
+		label2.setText(sign);
+		invalidate();
+		if(getParent() != null)
+			((Window)getParent()).pack();
 	}
 
 	private static class UnderlinedLabel extends Label {
