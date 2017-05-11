@@ -90,7 +90,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 2,
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
-		final RenderingThread worker = new RenderingThread(image, renderingSettings, Transform.fromIdentity(null), nearfar);
+		final float zStep = 1;
+		final RenderingThread worker = new RenderingThread(image, renderingSettings, Transform.fromIdentity(null), nearfar, zStep);
 
 		Color col = getLUTColor(luts[0]);
 
@@ -107,7 +108,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		nearfar[0] = croppingPanel.getNear();
 		nearfar[1] = croppingPanel.getFar();
 
-		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight());
+		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
 		gd.addMessage("");
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
@@ -423,7 +424,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		outputPanel.addOutputPanelListener(new OutputPanel.Listener() {
 			@Override
-			public void outputSizeChanged(int tgtW, int tgtH) {
+			public void outputSizeChanged(int tgtW, int tgtH, float zStep) {
 				pdOut[0] = image.getWidth() * pd[0] / tgtW;
 				pdOut[1] = image.getWidth() * pd[0] / tgtW; // TODO phOut
 
@@ -433,6 +434,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				System.arraycopy(tt, 0, toTransform, 0, 12);
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				worker.getRaycaster().setTargetZStep(zStep);
 				worker.push(renderingSettings, inverse, nearfar, tgtW, tgtH);
 				Calibration cal = worker.out.getCalibration();
 				cal.pixelWidth = pdOut[0] / scale[0];

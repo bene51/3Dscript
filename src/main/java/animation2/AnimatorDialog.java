@@ -87,8 +87,8 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public OutputPanel addOutputPanel(int width, int height) {
-		OutputPanel outputPanel = new OutputPanel(width, height);
+	public OutputPanel addOutputPanel(int width, int height, float zStep) {
+		OutputPanel outputPanel = new OutputPanel(width, height, zStep);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
 		GridBagConstraints c = getConstraints();

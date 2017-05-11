@@ -78,6 +78,7 @@ public class CudaRaycaster {
 	private static native void setTexture16(int channel, short[][] data);
 
 	private static native void setTargetSize(int width, int height);
+	private static native void setZStep(float zStep);
 
 	private static native void setBoundingBox(int bx, int by, int bz, int bw, int bh, int pb);
 
@@ -176,6 +177,10 @@ public class CudaRaycaster {
 		wOut = w;
 		hOut = h;
 		setTargetSize(w, h);
+	}
+
+	public void setTargetZStep(float zStep) {
+		setZStep(zStep);
 	}
 
 	public void setBBox(int bx0, int by0, int bz0, int bx1, int by1, int bz1) {

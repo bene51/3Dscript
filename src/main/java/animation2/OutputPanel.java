@@ -13,15 +13,15 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 	private static final long serialVersionUID = 1L;
 
 
-	private NumberField widthTF, heightTF;
+	private NumberField widthTF, heightTF, zStepTF;
 
 	public static interface Listener {
-		public void outputSizeChanged(int w, int h);
+		public void outputSizeChanged(int w, int h, float zStep);
 	}
 
 	private ArrayList<Listener> listeners =	new ArrayList<Listener>();
 
-	public OutputPanel(int w, int h) {
+	public OutputPanel(int w, int h, float zStep) {
 		super();
 		setLayout(new FlowLayout(FlowLayout.CENTER, 0, 5));
 
@@ -35,14 +35,22 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		heightTF.setIntegersOnly(true);
 		heightTF.setLimits(0, 5000);
 
+		zStepTF = new NumberField(4);
+		zStepTF.setText(Float.toString(zStep));
+		zStepTF.setLimits(1, 5);
+
 		add(widthTF);
 		add(new Label("   x "));
 		add(heightTF);
+		add(new Label("     zStep:"));
+		add(zStepTF);
 
 		widthTF.addListener(this);
 		widthTF.addFocusListener(this);
 		heightTF.addListener(this);
 		heightTF.addFocusListener(this);
+		zStepTF.addListener(this);
+		zStepTF.addFocusListener(this);
 	}
 
 	@Override
@@ -74,9 +82,14 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		return (int)Double.parseDouble(heightTF.getText());
 	}
 
-	public void setOutputSize(int width, int height) {
+	public float getZStep() {
+		return (float)Double.parseDouble(zStepTF.getText());
+	}
+
+	public void setOutputSize(int width, int height, float zStep) {
 		widthTF.setText(Integer.toString(width));
 		heightTF.setText(Integer.toString(height));
+		zStepTF.setText(Float.toString(zStep));
 	}
 
 	public void addOutputPanelListener(Listener l) {
@@ -85,6 +98,6 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 
 	private void fireOutputSizeChanged() {
 		for(Listener l : listeners)
-			l.outputSizeChanged(getOutputWidth(), getOutputHeight());
+			l.outputSizeChanged(getOutputWidth(), getOutputHeight(), getZStep());
 	}
 }

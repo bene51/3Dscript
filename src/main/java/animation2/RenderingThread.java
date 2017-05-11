@@ -35,11 +35,11 @@ public class RenderingThread {
 		private int bbx0 = -1, bby0 = -1, bbz0 = -1, bbx1 = -1, bby1 = -1, bbz1 = -1;
 	}
 
-	public RenderingThread(ImagePlus image, final RenderingSettings[] settings, final float[] inv, final float[] nearfar) {
+	public RenderingThread(ImagePlus image, final RenderingSettings[] settings, final float[] inv, final float[] nearfar, final float zStep) {
 
 		this.event = new Event(settings, inv, nearfar[0], nearfar[1]);
 
-		raycaster = new CudaRaycaster(image, image.getWidth(), image.getHeight(), 1);
+		raycaster = new CudaRaycaster(image, image.getWidth(), image.getHeight(), zStep);
 		out = raycaster.renderAndCompose(event.inverseTransform, settings, nearfar[0], nearfar[1]);
 		out.show();
 
