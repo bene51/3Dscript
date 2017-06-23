@@ -1,6 +1,7 @@
 package animation2;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -425,7 +426,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void outputSizeChanged(int tgtW, int tgtH, float zStep) {
 				pdOut[0] = image.getWidth() * pd[0] / tgtW;
-				pdOut[1] = image.getWidth() * pd[0] / tgtW; // TODO phOut
+				pdOut[1] = image.getHeight() * pd[1] / tgtH;
 
 				final float[] tt = Transform.fromCalibration(
 						pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
@@ -708,8 +709,28 @@ public class InteractiveRaycaster implements PlugInFilter {
 		gd.pack();
 		gd.showDialog();
 
+		Dimension outsize = new Dimension(image.getWidth(), image.getHeight());
+		double mag = image.getCanvas().getMagnification();
+		outsize.width = (int)Math.round(outsize.width * mag);
+		outsize.height = (int)Math.round(outsize.height * mag);
+
+		outputPanel.setOutputSize(outsize.width, outsize.height, zStep);
+		pdOut[0] = image.getWidth() * pd[0] / outsize.width;
+		pdOut[1] = image.getHeight() * pd[1] / outsize.height;
+
+		final float[] tt = Transform.fromCalibration(
+				pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
+		Transform.invert(tt);
+		System.arraycopy(tt, 0, toTransform, 0, 12);
+
 		float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-		worker.push(renderingSettings, inverse, nearfar);
+		worker.getRaycaster().setTargetZStep(zStep);
+		worker.push(renderingSettings, inverse, nearfar, outsize.width, outsize.height);
+		cal = worker.out.getCalibration();
+		cal.pixelWidth = pdOut[0] / scale[0];
+		cal.pixelHeight = pdOut[1] / scale[0];
+
+		Toolbar.getInstance().setTool(Toolbar.HAND);
 	}
 
 	private Keyframe createKeyframe(int frame,
