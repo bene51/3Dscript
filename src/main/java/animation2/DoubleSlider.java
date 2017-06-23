@@ -49,10 +49,10 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 
 		minTF.setIntegersOnly(true);
 		minTF.addListener(this);
-		minTF.addFocusListener(this);
+		minTF.addNumberFieldFocusListener(this);
 		maxTF.setIntegersOnly(true);
 		maxTF.addListener(this);
-		maxTF.addFocusListener(this);
+		maxTF.addNumberFieldFocusListener(this);
 
 		this.slider = new DoubleSliderCanvas(realMinMax, setMinMax, color, this);
 		GridBagLayout gridbag = new GridBagLayout();

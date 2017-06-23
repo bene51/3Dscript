@@ -115,7 +115,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 	private NumberField makeNumberfield() {
 		NumberField nf = new NumberField(4, true);
 		nf.addListener(this);
-		nf.addFocusListener(this);
+		nf.addNumberFieldFocusListener(this);
 		return nf;
 	}
 

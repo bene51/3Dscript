@@ -67,18 +67,18 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	public ContrastPanel(int[] histogram, Color color, double min, double max, RenderingSettings r, int nChannels) {
 		super();
 		minCTF.addListener(this);
-		minCTF.addFocusListener(this);
+		minCTF.addNumberFieldFocusListener(this);
 		maxCTF.addListener(this);
-		maxCTF.addFocusListener(this);
+		maxCTF.addNumberFieldFocusListener(this);
 		gammaCTF.addListener(this);
-		gammaCTF.addFocusListener(this);
+		gammaCTF.addNumberFieldFocusListener(this);
 
 		minATF.addListener(this);
-		minATF.addFocusListener(this);
+		minATF.addNumberFieldFocusListener(this);
 		maxATF.addListener(this);
-		maxATF.addFocusListener(this);
+		maxATF.addNumberFieldFocusListener(this);
 		gammaATF.addListener(this);
-		gammaATF.addFocusListener(this);
+		gammaATF.addNumberFieldFocusListener(this);
 
 		gammaCTF.setText(Double.toString(r.colorGamma));
 		gammaATF.setText(Double.toString(r.alphaGamma));
@@ -278,6 +278,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
 			this.setPreferredSize(new Dimension(258, 128));
+			this.setMinimumSize(new Dimension(0, 0));
 			this.setBackground(Color.WHITE);
 		}
 

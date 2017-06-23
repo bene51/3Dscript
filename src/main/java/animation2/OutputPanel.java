@@ -26,6 +26,7 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		setLayout(new FlowLayout(FlowLayout.CENTER, 0, 5));
 
 		widthTF = new NumberField(4);
+		widthTF.setFocusable(true);
 		widthTF.setText(Integer.toString(w));
 		widthTF.setIntegersOnly(true);
 		widthTF.setLimits(0, 5000);
@@ -46,15 +47,16 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		add(zStepTF);
 
 		widthTF.addListener(this);
-		widthTF.addFocusListener(this);
+		widthTF.addNumberFieldFocusListener(this);
 		heightTF.addListener(this);
-		heightTF.addFocusListener(this);
+		heightTF.addNumberFieldFocusListener(this);
 		zStepTF.addListener(this);
-		zStepTF.addFocusListener(this);
+		zStepTF.addNumberFieldFocusListener(this);
 	}
 
 	@Override
 	public void focusGained(FocusEvent e) {
+		System.out.println("focusGained");
 		TextField tf = (TextField)e.getSource();
 		tf.selectAll();
 	}

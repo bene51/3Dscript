@@ -51,7 +51,7 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		this.timeline = timeline;
 		currentTimepointTF.setIntegersOnly(true);
 		currentTimepointTF.addListener(this);
-		currentTimepointTF.addFocusListener(this);
+		currentTimepointTF.addNumberFieldFocusListener(this);
 
 		this.slider = new DoubleSliderCanvas(ctrls, this, frame);
 		GridBagLayout gridbag = new GridBagLayout();

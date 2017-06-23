@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Panel;
 import java.awt.RenderingHints;
 import java.awt.TextField;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -39,6 +40,10 @@ public class NumberField extends Panel {
 
 	public void addListener(Listener l) {
 		listener.add(l);
+	}
+
+	public void addNumberFieldFocusListener(FocusListener l) {
+		textfield.addFocusListener(l);
 	}
 
 	public void removeListener(Listener l) {
