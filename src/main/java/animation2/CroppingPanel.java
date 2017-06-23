@@ -71,11 +71,14 @@ public class CroppingPanel extends Panel {
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
 
+		int w = image.getWidth();
+		int h = image.getHeight();
 		int d = image.getNSlices();
+		int max = Math.max(w, Math.max(h, d));
 		nearfar = addDoubleSlider(
 				"near/far",
-				new int[] {-5 * d, 5 * d},
-				new int[] {-5 * d, 5 * d},
+				new int[] {-2 * max, 2 * max},
+				new int[] {-2 * max, 2 * max},
 				new Color(255, 0, 0, 100),
 				c);
 
