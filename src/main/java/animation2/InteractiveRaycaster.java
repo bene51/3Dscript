@@ -47,7 +47,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private double[] min, max;
 	private int[][] histo8;
 
-
 	@Override
 	public int setup(String arg, ImagePlus imp) {
 		this.image = imp;
@@ -90,7 +89,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 2,
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
-		final float zStep = 1;
+		final float zStep = 2;
 		final RenderingThread worker = new RenderingThread(image, renderingSettings, Transform.fromIdentity(null), nearfar, zStep);
 
 		Color col = getLUTColor(luts[0]);
