@@ -485,7 +485,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
-				worker.push(renderingSettings, inverse, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
+				worker.push(renderingSettings, inverse, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1, t + 1);
 			}
 
 			@Override
@@ -572,6 +572,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 					float[] inverse = calculateInverseTransform(k.scale, translation, rotation, rotcenter, fromCalib, toTransform);
 
 					worker.getRaycaster().setBBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
+					if(image.getNFrames() > 1) {
+						image.setT(t + 1);
+						worker.getRaycaster().setImage(image);
+					}
 
 					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, k.renderingSettings, k.near, k.far).getProcessor());
 					if(t == from + 1) {

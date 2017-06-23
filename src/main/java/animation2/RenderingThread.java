@@ -33,6 +33,7 @@ public class RenderingThread {
 		private boolean valid;
 		private int tgtW = -1, tgtH = -1;
 		private int bbx0 = -1, bby0 = -1, bbz0 = -1, bbx1 = -1, bby1 = -1, bbz1 = -1;
+		private int imaget = -1;
 	}
 
 	public RenderingThread(ImagePlus image, final RenderingSettings[] settings, final float[] inv, final float[] nearfar, final float zStep) {
@@ -66,20 +67,25 @@ public class RenderingThread {
 	}
 
 	public void push(RenderingSettings[] s, float[] transform, float[] nearfar) {
-		push(s, transform, nearfar, -1, -1, -1, -1, -1, -1, -1, -1);
+		push(s, transform, nearfar, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 	}
 
 	public void push(RenderingSettings[] s, float[] transform, float[] nearfar, int tgtW, int tgtH) {
-		push(s, transform, nearfar, tgtW, tgtH, -1, -1, -1, -1, -1, -1);
+		push(s, transform, nearfar, tgtW, tgtH, -1, -1, -1, -1, -1, -1, -1);
 	}
 
 	public void push(RenderingSettings[] s, float[] transform, float[] nearfar,
 			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
-		push(s, transform, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1);
+		push(s, transform, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1, -1);
+	}
+
+	public void push(RenderingSettings[] s, float[] transform, float[] nearfar,
+			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1, int imaget) {
+		push(s, transform, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1, imaget);
 	}
 
 	public void push(RenderingSettings[] s, float[] transform, float[] nearfar, int w, int h,
-			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
+			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1, int imaget) {
 		synchronized(lock) {
 			System.out.println("push");
 			for(int i = 0; i < s.length; i++)
@@ -95,6 +101,7 @@ public class RenderingThread {
 			event.bbx1 = bbx1;
 			event.bby1 = bby1;
 			event.bbz1 = bbz1;
+			event.imaget = imaget;
 			System.arraycopy(transform, 0, event.inverseTransform, 0, 12);
 		}
 		synchronized(this) {
@@ -126,6 +133,7 @@ public class RenderingThread {
 			ret.bbx1 = event.bbx1;
 			ret.bby1 = event.bby1;
 			ret.bbz1 = event.bbz1;
+			ret.imaget = event.imaget;
 			event.valid = false;
 		}
 		return ret;
@@ -153,6 +161,11 @@ public class RenderingThread {
 			raycaster.setBBox(e.bbx0, e.bby0, e.bbz0, e.bbx1, e.bby1, e.bbz1);
 			e.bbx0 = e.bby0 = e.bbz0 = e.bbx1 = e.bby1 = e.bbz1 = -1;
 
+		}
+		if(e.imaget != -1 && e.imaget != raycaster.getImage().getT()) {
+			ImagePlus imp = raycaster.getImage();
+			imp.setT(e.imaget);
+			raycaster.setImage(imp);
 		}
 		out.setProcessor(raycaster.renderAndCompose(e.inverseTransform, e.renderingSettings, e.near, e.far).getProcessor());
 	}

@@ -117,6 +117,10 @@ public class CudaRaycaster {
 		setImage(imp);
 	}
 
+	public ImagePlus getImage() {
+		return image;
+	}
+
 	public void setImage(ImagePlus imp) {
 		this.image = imp;
 		int w = imp.getWidth();
