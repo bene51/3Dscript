@@ -48,12 +48,14 @@ public class CroppingPanel extends Panel {
 		DoubleSlider slider = new DoubleSlider(realMinMax, setMinMax, color);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
+		c.gridy++;
 
+		c.gridx = 0;
 		if(label != null) {
 			Label theLabel = new Label(label);
-			c.gridx = 0;
 			c.anchor = GridBagConstraints.EAST;
 			c.gridwidth = 1;
+			c.weightx = 0;
 			layout.setConstraints(theLabel, c);
 			add(theLabel);
 			c.gridx++;
