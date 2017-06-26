@@ -56,28 +56,38 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 		c.insets = new Insets(2, 2, 2, 2);
 
 		c.gridx = c.gridy = 0;
-		add(new Label("Angle X"), c);
+		c.gridwidth = 2;
+		add(new Label("Rotation"), c);
+		c.gridwidth = 1;
 		c.gridy++;
-		add(new Label("Angle Y"), c);
+		add(new Label("X"), c);
 		c.gridy++;
-		add(new Label("Angle Z"), c);
+		add(new Label("Y"), c);
+		c.gridy++;
+		add(new Label("Z"), c);
 
 		c.gridx = 2;
 		c.gridy = 0;
-		add(new Label("Translation X"), c);
+		c.gridwidth = 2;
+		add(new Label("Translation"), c);
+		c.gridwidth = 1;
 		c.gridy++;
-		add(new Label("Translation Y"), c);
+		add(new Label("X"), c);
 		c.gridy++;
-		add(new Label("Translation Z"), c);
+		add(new Label("Y"), c);
+		c.gridy++;
+		add(new Label("Z"), c);
 
 		c.gridx = 4;
 		c.gridy = 0;
+		c.gridwidth = 2;
 		add(new Label("Scale"), c);
+		c.gridwidth = 1;
 
 		c.insets = new Insets(2, 0, 2, 30);
 
 		c.gridx = 1;
-		c.gridy = 0;
+		c.gridy = 1;
 		add(angleX, c);
 		c.gridy++;
 		add(angleY, c);
@@ -85,7 +95,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 		add(angleZ, c);
 
 		c.gridx = 3;
-		c.gridy = 0;
+		c.gridy = 1;
 		add(dX, c);
 		c.gridy++;
 		add(dY, c);
@@ -93,14 +103,14 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 		add(dZ, c);
 
 		c.gridx = 5;
-		c.gridy = 0;
+		c.gridy = 1;
 		add(scale, c);
 
 		c.anchor = GridBagConstraints.CENTER;
 		c.gridx = 4;
 		c.gridy = 2;
 		c.gridwidth = 2;
-		Button reset = new Button("Reset transformation");
+		Button reset = new Button("Reset");
 		reset.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
