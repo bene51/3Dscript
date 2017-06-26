@@ -97,19 +97,15 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
 		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
-		gd.addMessage("");
 
 		final TransformationPanel transformationPanel = gd.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
-		gd.addMessage("");
 
 		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
-		gd.addMessage("");
 
 		nearfar[0] = croppingPanel.getNear();
 		nearfar[1] = croppingPanel.getFar();
 
 		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
-		gd.addMessage("");
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 		final String[] timelineNames = new String[timelines.size()];
