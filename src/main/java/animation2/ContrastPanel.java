@@ -3,7 +3,6 @@ package animation2;
 import java.awt.Button;
 import java.awt.Choice;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -252,7 +251,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		fireRenderingSettingsChanged();
 	}
 
-	private static class DoubleSliderCanvas extends Component implements MouseMotionListener, MouseListener {
+	private static class DoubleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
 
 		private static final long serialVersionUID = 1L;
 		private int[] histogram;
@@ -368,11 +367,6 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			}
 		}
 
-		@Override
-		public void update(Graphics g) {
-			paint(g);
-		}
-
 		int getMax(int[] histo) {
 			return getMax(histo, -1);
 		}
@@ -390,7 +384,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		}
 
 		@Override
-		public void paint(Graphics g) {
+		public void paintBuffer(Graphics g) {
 			int w = getWidth();
 			int h = getHeight();
 
