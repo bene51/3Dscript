@@ -5,7 +5,9 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.Rectangle;
@@ -46,8 +48,9 @@ public class SwitchablePanel extends Panel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				System.out.println(getParent());
-				panel.setVisible(!panel.isVisible());
-				String sign = panel.isVisible() ? "(hide)" : "(show)";
+				boolean visible = panel.isVisible();
+				panel.setVisible(!visible);
+				String sign = visible ? "(hide)" : "(show)";
 				label2.setText(sign);
 				invalidate();
 				revalidate();
@@ -94,7 +97,15 @@ public class SwitchablePanel extends Panel {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("\u25b6");
+		Frame f = new Frame();
+		f.setLayout(new GridLayout(2, 1));
+		Panel panel = new Panel();
+		panel.add(new Label("lkj lkj"));
+		f.add(new SwitchablePanel("bla", panel));
+		panel = new Panel();
+		panel.add(new Label("lkj lkj"));
+		f.add(new SwitchablePanel("bla", panel));
+		f.pack();
+		f.setVisible(true);
 	}
-
 }
