@@ -9,7 +9,6 @@ import java.awt.Graphics;
 import java.awt.Label;
 import java.awt.Panel;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -51,8 +50,7 @@ public class SwitchablePanel extends Panel {
 				String sign = panel.isVisible() ? "(hide)" : "(show)";
 				label2.setText(sign);
 				invalidate();
-//				getParent().doLayout();
-				((Window)getParent()).pack();
+				revalidate();
 			}
 		});
 	}
@@ -62,8 +60,7 @@ public class SwitchablePanel extends Panel {
 		String sign = panel.isVisible() ? "(hide)" : "(show)";
 		label2.setText(sign);
 		invalidate();
-		if(getParent() != null)
-			((Window)getParent()).pack();
+		revalidate();
 	}
 
 	public void switchOff() {
@@ -71,8 +68,7 @@ public class SwitchablePanel extends Panel {
 		String sign = panel.isVisible() ? "(hide)" : "(show)";
 		label2.setText(sign);
 		invalidate();
-		if(getParent() != null)
-			((Window)getParent()).pack();
+		revalidate();
 	}
 
 	private static class UnderlinedLabel extends Label {
