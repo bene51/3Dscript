@@ -276,9 +276,17 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			this.slider = slider;
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
-			this.setPreferredSize(new Dimension(258, 128));
-			this.setMinimumSize(new Dimension(0, 0));
 			this.setBackground(Color.WHITE);
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			return new Dimension(0, 80);
+		}
+
+		@Override
+		public Dimension getMinimumSize() {
+			return new Dimension(0, 80);
 		}
 
 		public void set(int[] histogram, Color color, double min, double max, RenderingSettings r) {

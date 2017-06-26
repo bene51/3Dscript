@@ -178,7 +178,6 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
-			this.setPreferredSize(new Dimension(256, 15));
 			this.setBackground(Color.WHITE);
 			this.setFont(new Font("Helvetica", Font.PLAIN, 10));
 			this.addComponentListener(new ComponentAdapter() {
@@ -187,6 +186,18 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 					diagram.setSizes(getWidth(), getHeight());
 				}
 			});
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			return new Dimension(0, 12);
+
+		}
+
+		@Override
+		public Dimension getMinimumSize() {
+			return new Dimension(0, 12);
+
 		}
 
 		void set(final int[] realMinMax, final int[] setMinMax, Color color) {

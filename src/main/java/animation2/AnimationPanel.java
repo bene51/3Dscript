@@ -252,7 +252,6 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
 			this.setBackground(Color.WHITE);
-			this.setPreferredSize(new Dimension(258, 2 + 30 + (ctrls.size() + 1) * 10));
 			// bezier = new BezierCurveEditor.CurveChangerCanvas(diagram, ctrls);
 			timelineOverview = new TimelineOverview(diagram, ctrls);
 			final Point ll = new Point(0, 0);
@@ -280,6 +279,16 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 					diagram.setSizes(getWidth(), getHeight());
 				}
 			});
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			return new Dimension(0, 2 + 30 + (timelines.size() + 1) * 10);
+		}
+
+		@Override
+		public Dimension getMinimumSize() {
+			return new Dimension(0, 2 + 30 + (timelines.size() + 1) * 10);
 		}
 
 		private int getMaximumStringWidth(Timelines timelines) {
