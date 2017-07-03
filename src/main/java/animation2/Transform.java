@@ -413,7 +413,7 @@ public class Transform {
 	public static float[] apply(float[] mat, float x, float y, float z,
 			float[] result) {
 		if(result == null)
-			result = new float[12];
+			result = new float[3];
 		result[0] = mat[0] * x + mat[1] * y + mat[2] * z + mat[3];
 		result[1] = mat[4] * x + mat[5] * y + mat[6] * z + mat[7];
 		result[2] = mat[8] * x + mat[9] * y + mat[10] * z + mat[11];
