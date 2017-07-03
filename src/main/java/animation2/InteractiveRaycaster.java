@@ -140,8 +140,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int dx = e.getX() - mouseDown.x;
 				int dy = e.getY() - mouseDown.y;
 				if(!isRotation[0]) {
-					translation[0] += dx * pdOut[0] / scale[0];
-					translation[1] += dy * pdOut[1] / scale[0];
+					translation[0] += dx * pdOut[0]; // / scale[0];
+					translation[1] += dy * pdOut[1]; // / scale[0];
 				}
 				else {
 					float speed = 0.7f;
@@ -179,8 +179,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 					int dx = e.getX() - mouseDown.x;
 					int dy = e.getY() - mouseDown.y;
 					float[] trans = new float[] {
-							translation[0] + dx * pdOut[0] / scale[0],
-							translation[1] + dy * pdOut[1] / scale[0],
+							translation[0] + dx * pdOut[0],// / scale[0],
+							translation[1] + dy * pdOut[1],// / scale[0],
 							translation[2]};
 					float[] inverse = calculateInverseTransform(
 							scale[0],
@@ -241,23 +241,35 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int units = e.getWheelRotation();
 				float factor = 1 + units * 0.2f;
 
-				float[] centerinv =  new float[] {-e.getX() * pdOut[0] / scale[0], -e.getY() * pdOut[1] / scale[0], 0};
+				int ex = e.getX();
+				int ey = e.getY();
+
+				float[] transform = calculateTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+
+				// calculate the current output pixel coordinate of the rotation center
+				// transform is the transformation that gets pixel coordinates as input
+				// and transforms to pixel output
+				float[] c = Transform.apply(transform, rotcenter[0] / pd[0], rotcenter[1] / pd[1], rotcenter[2] / pd[2], null);
+
+				// dx and dy are the x- and y-distances of the mouse point to the rotation center
+				// imagine a output size of 10x10, a rotation center at (5,5), the mouse at (1,1)
+				// and a scale factor of 0.5
+				// then dx = (4, 4)
+				float dx = c[0] - ex;
+				float dy = c[1] - ey;
+
+				// calculate where the transformed (scaled) mouse point appears (using rotcenter as scaling
+				// center)
+				// in the example: p = (5,5) - 0.5*(4,4) = (3,3)
+				float px = c[0] - factor * dx;
+				float py = c[1] - factor * dy;
+
+				// the transformed mouse point is at (px, py) (3,3), but should be at the original (untransformed)
+				// mouse position (1, 1), therefore, we need to shift the image back
+				translation[0] += (ex - px) * pdOut[0];
+				translation[1] += (ey - py) * pdOut[1];
 
 				scale[0] *= factor;
-
-				float[] center = new float[] {e.getX() * pdOut[0],  e.getY() * pdOut[1], 0};
-
-				float[] scaleM = Transform.fromScale(scale[0], null);
-				float[] scaleInvM = Transform.fromScale(1 / scale[0], null);
-				float[] centerM = Transform.fromTranslation(center[0], center[1], center[2], null);
-				float[] centerInvM = Transform.fromTranslation(centerinv[0], centerinv[1], centerinv[2], null);
-
-				float[] X = Transform.mul(Transform.mul(Transform.mul(scaleInvM, centerM), scaleM), centerInvM);
-				System.out.println(Arrays.toString(X));
-				translation[0] += X[3];
-				translation[1] += X[7];
-				translation[2] += X[11];
-
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
@@ -795,14 +807,14 @@ public class InteractiveRaycaster implements PlugInFilter {
 			return Color.black;
 	}
 
-	private float[] calculateTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
+	private static float[] calculateTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
 		float[] scaleM = Transform.fromScale(scale, null);
 		float[] transM = Transform.fromTranslation(translation[0], translation[1], translation[2], null);
 		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
 
-		float[] x = Transform.mul(rotation, centerM);
+		float[] x = Transform.mul(scaleM, Transform.mul(rotation, centerM));
 		Transform.applyTranslation(center[0], center[1], center[2], x);
-		x = Transform.mul(Transform.mul(scaleM, transM), x);
+		x = Transform.mul(transM, x);
 
 		x = Transform.mul(x, fromCalib);
 		x = Transform.mul(toTransform, x);
@@ -816,7 +828,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	 * @param translation
 	 * @param rotation
 	 */
-	private float[] calculateInverseTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
+	private static float[] calculateInverseTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
 		float[] x = calculateTransform(scale, translation, rotation, center, fromCalib, toTransform);
 		Transform.invert(x);
 		return x;
