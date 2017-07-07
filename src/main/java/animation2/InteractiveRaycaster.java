@@ -581,8 +581,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 					worker.getRaycaster().setBBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 					if(image.getNFrames() > 1) {
+						int before = image.getT();
 						image.setT(t + 1);
-						worker.getRaycaster().setImage(image);
+						if(image.getT() != before)
+							worker.getRaycaster().setImage(image);
 					}
 
 					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, k.renderingSettings, k.near, k.far).getProcessor());

@@ -162,10 +162,12 @@ public class RenderingThread {
 			e.bbx0 = e.bby0 = e.bbz0 = e.bbx1 = e.bby1 = e.bbz1 = -1;
 
 		}
-		if(e.imaget != -1 && e.imaget != raycaster.getImage().getT()) {
-			ImagePlus imp = raycaster.getImage();
-			imp.setT(e.imaget);
-			raycaster.setImage(imp);
+		ImagePlus input = raycaster.getImage();
+		int before = input.getT();
+		if(e.imaget != -1) {
+			input.setT(e.imaget);
+			if(input.getT() != before)
+				raycaster.setImage(input);
 		}
 		out.setProcessor(raycaster.renderAndCompose(e.inverseTransform, e.renderingSettings, e.near, e.far).getProcessor());
 	}
