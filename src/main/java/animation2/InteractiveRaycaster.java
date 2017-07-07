@@ -492,7 +492,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 						Math.PI * k.angleZ / 180});
 
 				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
+				transformationPanel.setTransformation(new float[] {
+						(float)k.angleX,
+						(float)k.angleY,
+						(float)k.angleZ}, translation, scale[0]);
 				worker.push(renderingSettings, inverse, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1, t + 1);
 			}
 
