@@ -551,9 +551,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 				double a = 0;
 				Keyframe kf = timelines.getKeyframeNoInterpol(t);
-				kf.angleX = 180 * (eulerAngles0[0] + dEx * a) / Math.PI;
-				kf.angleY = 180 * (eulerAngles0[1] + dEy * a) / Math.PI;
-				kf.angleZ = 180 * (eulerAngles0[2] + dEz * a) / Math.PI;
+				if(kf.angleX == Keyframe.UNSET) kf.angleX = 180 * (eulerAngles0[0] + dEx * a) / Math.PI;
+				if(kf.angleY == Keyframe.UNSET) kf.angleY = 180 * (eulerAngles0[1] + dEy * a) / Math.PI;
+				if(kf.angleZ == Keyframe.UNSET) kf.angleZ = 180 * (eulerAngles0[2] + dEz * a) / Math.PI;
 				timelines.recordFrame(kf);
 				kf = timelines.getKeyframeNoInterpol(t + nFrames);
 				kf.angleX = 180 * (eulerAngles0[0] + dEx * angle) / Math.PI;
