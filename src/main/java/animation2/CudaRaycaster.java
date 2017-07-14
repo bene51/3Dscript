@@ -90,6 +90,8 @@ public class CudaRaycaster {
 			float alphamin, float alphamax, float alphagamma,
 			float colormin, float colormax, float colorgamma);
 
+	private static native void white(int channel);
+
 
 	private ImagePlus image;
 	private int wOut;
@@ -177,6 +179,10 @@ public class CudaRaycaster {
 		return new ByteProcessor(wOut, hOut, result, null);
 	}
 
+	public void clear(int channel) {
+		white(channel);
+	}
+
 	public void setTgtSize(int w, int h) {
 		wOut = w;
 		hOut = h;
@@ -258,6 +264,9 @@ public class CudaRaycaster {
 			final ImagePlus in,
 			final ByteProcessor mask,
 			final float[] fwdTransform) {
+//		clear(0);
+//		if(true)
+//			return;
 		final ImageProcessor[] inProcessors = new ImageProcessor[in
 				.getStackSize()];
 		for (int z = 0; z < inProcessors.length; z++)
