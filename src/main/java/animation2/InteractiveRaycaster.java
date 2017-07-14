@@ -473,6 +473,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 					renderingSettings[i].set(k.renderingSettings[i]);
 				}
 
+				int c = contrastPanel.getChannel();
+				Color col = getLUTColor(luts[c]);
+				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+
 				croppingPanel.setBoundingBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 
 				translation[0] = k.dx;
