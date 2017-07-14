@@ -189,12 +189,12 @@ public class JsonExporter {
 		for(int c = 0; c < nChannels; c++) {
 			boolean thisUnset = true;
 			kf.renderingSettings[c] = new JSONRenderingSettings();
-			thisUnset = thisUnset && ((kf.renderingSettings[c].alphaMin   = get(i + 3, t)) == null);
-			thisUnset = thisUnset && ((kf.renderingSettings[c].alphaMax   = get(i + 4, t)) == null);
-			thisUnset = thisUnset && ((kf.renderingSettings[c].alphaGamma = get(i + 5, t)) == null);
-			thisUnset = thisUnset && ((kf.renderingSettings[c].colorMin   = get(i + 0, t)) == null);
-			thisUnset = thisUnset && ((kf.renderingSettings[c].colorMax   = get(i + 1, t)) == null);
-			thisUnset = thisUnset && ((kf.renderingSettings[c].colorGamma = get(i + 2, t)) == null);
+			thisUnset = ((kf.renderingSettings[c].alphaMin   = get(i + 3, t)) == null) && thisUnset;
+			thisUnset = ((kf.renderingSettings[c].alphaMax   = get(i + 4, t)) == null) && thisUnset;
+			thisUnset = ((kf.renderingSettings[c].alphaGamma = get(i + 5, t)) == null) && thisUnset;
+			thisUnset = ((kf.renderingSettings[c].colorMin   = get(i + 0, t)) == null) && thisUnset;
+			thisUnset = ((kf.renderingSettings[c].colorMax   = get(i + 1, t)) == null) && thisUnset;
+			thisUnset = ((kf.renderingSettings[c].colorGamma = get(i + 2, t)) == null) && thisUnset;
 			i += 6;
 			if(thisUnset)
 				kf.renderingSettings[c] = null;
