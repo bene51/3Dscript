@@ -22,7 +22,10 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
 
@@ -53,6 +56,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 	private DoubleSliderCanvas slider;
 
+	private DecimalFormat df;
+
 	public static interface Listener {
 		public void renderingSettingsChanged();
 		public void channelChanged();
@@ -65,6 +70,12 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 	public ContrastPanel(int[] histogram, Color color, double min, double max, RenderingSettings r, int nChannels) {
 		super();
+
+		Locale locale  = new Locale("en", "US");
+		String pattern = "##0.0#";
+		df = (DecimalFormat)NumberFormat.getNumberInstance(locale);
+		df.applyPattern(pattern);
+
 		minCTF.addListener(this);
 		minCTF.addNumberFieldFocusListener(this);
 		maxCTF.addListener(this);
@@ -79,8 +90,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		gammaATF.addListener(this);
 		gammaATF.addNumberFieldFocusListener(this);
 
-		gammaCTF.setText(Double.toString(r.colorGamma));
-		gammaATF.setText(Double.toString(r.alphaGamma));
+		gammaCTF.setText(df.format(r.colorGamma));
+		gammaATF.setText(df.format(r.alphaGamma));
 
 		this.slider = new DoubleSliderCanvas(histogram, color, min, max, r, this);
 		GridBagLayout gridbag = new GridBagLayout();
@@ -167,8 +178,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	public void set(int[] histogram, Color color, double min, double max, RenderingSettings r) {
-		gammaATF.setText(Double.toString(r.alphaGamma));
-		gammaCTF.setText(Double.toString(r.colorGamma));
+		gammaATF.setText(df.format(r.alphaGamma));
+		gammaCTF.setText(df.format(r.colorGamma));
 		slider.set(histogram, color, min, max, r);
 		updateTextfieldsFromSliders();
 		repaint();
@@ -244,10 +255,10 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	private void updateTextfieldsFromSliders() {
-		minCTF.setText(Double.toString(slider.renderingSettings.colorMin));
-		maxCTF.setText(Double.toString(slider.renderingSettings.colorMax));
-		minATF.setText(Double.toString(slider.renderingSettings.alphaMin));
-		maxATF.setText(Double.toString(slider.renderingSettings.alphaMax));
+		minCTF.setText(df.format(slider.renderingSettings.colorMin));
+		maxCTF.setText(df.format(slider.renderingSettings.colorMax));
+		minATF.setText(df.format(slider.renderingSettings.alphaMin));
+		maxATF.setText(df.format(slider.renderingSettings.alphaMax));
 		fireRenderingSettingsChanged();
 	}
 
