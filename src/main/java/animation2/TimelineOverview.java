@@ -46,6 +46,15 @@ import animation2.CtrlPoints.ClosestPoint;
 			this.diagram = diagram;
 		}
 
+		public int getYForTimeline(int tl) {
+			int y = diagram.canvasY(timelines.size() - 1 - tl + 0.5);
+			return y;
+		}
+
+		public int getTimelineForY(int y) {
+			return timelines.size() - 1 - (int)Math.round(diagram.realY(y) - 0.5);
+		}
+
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if(e.isConsumed())

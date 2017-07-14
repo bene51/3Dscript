@@ -309,7 +309,12 @@ public class AnimationPanel extends Panel implements NumberField.Listener, Focus
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e) {}
+		public void mouseClicked(MouseEvent e) {
+			if(e.getClickCount() == 2) {
+				int timeline = timelineOverview.getTimelineForY(e.getY());
+				TimelineDetailsDialog.showTimelineDialog(timelines, timeline);
+			}
+		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {}
