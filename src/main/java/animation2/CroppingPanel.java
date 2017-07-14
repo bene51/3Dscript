@@ -112,6 +112,7 @@ public class CroppingPanel extends Panel {
 
 		Button b = new Button("Cut off ROI");
 		c.gridx = 0;
+		c.gridy++;
 		c.insets = new Insets(7, 0, 0, 0);
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.EAST;
