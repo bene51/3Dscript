@@ -91,7 +91,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 					(float)luts[c].min, (float)luts[c].max, 1);
 		}
 		final float zStep = 2;
-		final RenderingThread worker = new RenderingThread(image, renderingSettings, Transform.fromIdentity(null), nearfar, zStep);
+		final RenderingThread worker = new RenderingThread(
+				image,
+				renderingSettings,
+				Transform.fromIdentity(null),
+				Transform.fromIdentity(null), nearfar, zStep);
 
 		Color col = getLUTColor(luts[0]);
 
@@ -182,15 +186,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 							translation[0] + dx * pdOut[0],// / scale[0],
 							translation[1] + dy * pdOut[1],// / scale[0],
 							translation[2]};
-					float[] inverse = calculateInverseTransform(
+					float[] fwd = calculateForwardTransform(
 							scale[0],
 							trans,
 							rotation,
 							rotcenter,
 							fromCalib,
 							toTransform);
+					float[] inv = calculateInverseTransform(fwd);
 					transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), trans, scale[0]);
-					worker.push(renderingSettings, inverse, nearfar);
+					worker.push(renderingSettings, fwd, inv, nearfar);
 				}
 				// rotation
 				else {
@@ -218,15 +223,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 //					float[] cinv = Transform.fromTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], null);
 //					float[] c = Transform.fromTranslation(rotcenter[0], rotcenter[1], rotcenter[2], null);
 //					float[] rot = Transform.mul(c, Transform.mul(r, Transform.mul(cinv, rotation)));
-					float[] inverse = calculateInverseTransform(
+					float[] fwd = calculateForwardTransform(
 							scale[0],
 							translation,
 							rot,
 							rotcenter,
 							fromCalib,
 							toTransform);
+					float[] inv = calculateInverseTransform(fwd);
 					transformationPanel.setTransformation(guessEulerAnglesDegree(rot), translation, scale[0]);
-					worker.push(renderingSettings, inverse, nearfar);
+					worker.push(renderingSettings, fwd, inv, nearfar);
 				}
 			}
 
@@ -244,7 +250,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int ex = e.getX();
 				int ey = e.getY();
 
-				float[] transform = calculateTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] transform = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 
 				// calculate the current output pixel coordinate of the rotation center
 				// transform is the transformation that gets pixel coordinates as input
@@ -271,9 +277,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 				scale[0] *= factor;
 
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
 				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
-				worker.push(renderingSettings, inverse, nearfar);
+				worker.push(renderingSettings, fwd, inv, nearfar);
 				Calibration cal = worker.out.getCalibration();
 				cal.pixelWidth = pdOut[0] / scale[0];
 				cal.pixelHeight = pdOut[1] / scale[0];
@@ -284,8 +291,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged() {
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
+				worker.push(renderingSettings, fwd, inv, nearfar);
 			}
 
 			@Override
@@ -309,8 +317,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int c = contrastPanel.getChannel();
 				Color col = getLUTColor(luts[c]);
 				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
+				worker.push(renderingSettings, fwd, inv, nearfar);
 			}
 
 			@Override
@@ -343,8 +352,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 				translation[1] = dy;
 				translation[2] = dz;
 
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
+				worker.push(renderingSettings, fwd, inv, nearfar);
 				Calibration cal = worker.out.getCalibration();
 				cal.pixelWidth = pdOut[0] / scale[0];
 				cal.pixelHeight = pdOut[1] / scale[0];
@@ -370,8 +380,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 				scale[0] = 1;
 				translation[0] = translation[1] = translation[2] = 0;
 				Transform.fromIdentity(rotation);
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
+				worker.push(renderingSettings, fwd, inv, nearfar);
 				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
 			}
 		});
@@ -381,14 +392,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void nearFarChanged(int near, int far) {
 				nearfar[0] = near;
 				nearfar[1] = far;
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
+				worker.push(renderingSettings, fwd, inv, nearfar);
 			}
 
 			@Override
 			public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				worker.push(renderingSettings, inverse, nearfar, bbx0, bby0, bbz0, bbx1, bby1, bbz1);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
+				worker.push(renderingSettings, fwd, inv, nearfar,  bbx0, bby0, bbz0, bbx1, bby1, bbz1);
 			}
 
 			@Override
@@ -408,7 +421,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void cutOffROI() {
-				float[] fwdTransform = calculateTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 				Roi roi = worker.out.getRoi();
 				if(roi != null) {
 					ByteProcessor mask = new ByteProcessor(worker.out.getWidth(), worker.out.getHeight());
@@ -420,9 +433,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 					mask.resetRoi();
 					mask.invert();
 
-					worker.getRaycaster().crop(image, mask, fwdTransform);
-					float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-					worker.push(renderingSettings, inverse, nearfar);
+					worker.getRaycaster().crop(image, mask, fwd);
+					float[] inv = calculateInverseTransform(fwd);
+					worker.push(renderingSettings, fwd, inv, nearfar);
 				}
 				else {
 					IJ.error("Selection required");
@@ -441,9 +454,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 				Transform.invert(tt);
 				System.arraycopy(tt, 0, toTransform, 0, 12);
 
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
 				worker.getRaycaster().setTargetZStep(zStep);
-				worker.push(renderingSettings, inverse, nearfar, tgtW, tgtH);
+				worker.push(renderingSettings, fwd, inv, nearfar, tgtW, tgtH);
 				Calibration cal = worker.out.getCalibration();
 				cal.pixelWidth = pdOut[0] / scale[0];
 				cal.pixelHeight = pdOut[1] / scale[0];
@@ -491,12 +505,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 						Math.PI * k.angleY / 180,
 						Math.PI * k.angleZ / 180});
 
-				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				float[] inv = calculateInverseTransform(fwd);
 				transformationPanel.setTransformation(new float[] {
 						(float)k.angleX,
 						(float)k.angleY,
 						(float)k.angleZ}, translation, scale[0]);
-				worker.push(renderingSettings, inverse, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1, t + 1);
+				worker.push(renderingSettings, fwd, inv, nearfar, k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1, t + 1);
 			}
 
 			@Override
@@ -580,7 +595,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 							Math.PI * k.angleY / 180,
 							Math.PI * k.angleZ / 180});
 
-					float[] inverse = calculateInverseTransform(k.scale, translation, rotation, rotcenter, fromCalib, toTransform);
+					float[] fwd = calculateForwardTransform(k.scale, translation, rotation, rotcenter, fromCalib, toTransform);
+					float[] inv = calculateInverseTransform(fwd);
 
 					worker.getRaycaster().setBBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 					if(image.getNFrames() > 1) {
@@ -590,7 +606,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 							worker.getRaycaster().setImage(image);
 					}
 
-					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, k.renderingSettings, k.near, k.far).getProcessor());
+					stack.addSlice(worker.getRaycaster().renderAndCompose(fwd, inv, k.renderingSettings, k.near, k.far).getProcessor());
 					if(t == from + 1) {
 						anim = new ImagePlus(image.getTitle(), stack);
 						anim.setCalibration(worker.out.getCalibration().copy());
@@ -736,9 +752,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 		Transform.invert(tt);
 		System.arraycopy(tt, 0, toTransform, 0, 12);
 
-		float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+		float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+		float[] inv = calculateInverseTransform(fwd);
 		worker.getRaycaster().setTargetZStep(zStep);
-		worker.push(renderingSettings, inverse, nearfar, outsize.width, outsize.height);
+		worker.push(renderingSettings, fwd, inv, nearfar, outsize.width, outsize.height);
 		cal = worker.out.getCalibration();
 		cal.pixelWidth = pdOut[0] / scale[0];
 		cal.pixelHeight = pdOut[1] / scale[0];
@@ -812,7 +829,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			return Color.black;
 	}
 
-	private static float[] calculateTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
+	private static float[] calculateForwardTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
 		float[] scaleM = Transform.fromScale(scale, null);
 		float[] transM = Transform.fromTranslation(translation[0], translation[1], translation[2], null);
 		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
@@ -834,9 +851,16 @@ public class InteractiveRaycaster implements PlugInFilter {
 	 * @param rotation
 	 */
 	private static float[] calculateInverseTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
-		float[] x = calculateTransform(scale, translation, rotation, center, fromCalib, toTransform);
+		float[] x = calculateForwardTransform(scale, translation, rotation, center, fromCalib, toTransform);
 		Transform.invert(x);
 		return x;
+	}
+
+	private static float[] calculateInverseTransform(float[] fwd) {
+		float[] copy = new float[12];
+		System.arraycopy(fwd, 0, copy, 0, 12);
+		Transform.invert(copy);
+		return copy;
 	}
 
 	private float[] guessEulerAnglesDegree(float[] rotation) {

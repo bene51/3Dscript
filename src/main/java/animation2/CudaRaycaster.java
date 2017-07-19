@@ -55,7 +55,8 @@ public class CudaRaycaster {
 		RenderingSettings[] renderingSettings = new RenderingSettings[] {renderingSettings0, renderingSettings1};
 
 		CudaRaycaster raycaster = new CudaRaycaster(imp, imp.getWidth(), imp.getHeight(), 1);
-		ImagePlus comp = raycaster.renderAndCompose(new float[] {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0}, renderingSettings, 0, 2 * d);
+		float[] xform = Transform.fromIdentity(null);
+		ImagePlus comp = raycaster.renderAndCompose(xform, xform, renderingSettings, 0, 2 * d);
 
 		new ImagePlus("", comp.getImage()).show();
 	}
@@ -159,6 +160,7 @@ public class CudaRaycaster {
 	}
 
 	public ImageProcessor project(
+			float[] fwdTransform,
 			float[] invTransform,
 			RenderingSettings[] renderingSettings,
 			float near,
@@ -203,8 +205,8 @@ public class CudaRaycaster {
 	}
 
 
-	public ImagePlus renderAndCompose(float[] transform, RenderingSettings[] renderingSettings, float near, float far) {
-		return new ImagePlus("", project(transform, renderingSettings, near, far));
+	public ImagePlus renderAndCompose(float[] fwd, float[] inv, RenderingSettings[] renderingSettings, float near, float far) {
+		return new ImagePlus("", project(fwd, inv, renderingSettings, near, far));
 //		ImageStack stack = new ImageStack(wOut, hOut);
 //		for(int ch = 0; ch < image.getNChannels(); ch++) {
 //			ImageProcessor ip = project(ch, transform, renderingSettings[ch], near, far);

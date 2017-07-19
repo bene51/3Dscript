@@ -15,7 +15,7 @@ public class RenderingThread {
 	private Event event;
 
 	static class Event {
-		Event(RenderingSettings[] settings, float[] inverseTransform, float near, float far) {
+		Event(RenderingSettings[] settings, float[] fwd, float[] inv, float near, float far) {
 			valid = true;
 			this.near = near;
 			this.far = far;
@@ -23,11 +23,13 @@ public class RenderingThread {
 			for(int i = 0; i < settings.length; i++)
 				renderingSettings[i] = new RenderingSettings(settings[i]);
 
-			System.arraycopy(inverseTransform, 0, this.inverseTransform, 0, 12);
+			System.arraycopy(inv, 0, this.inverseTransform, 0, 12);
+			System.arraycopy(fwd, 0, this.forwardTransform, 0, 12);
 		}
 
 		private RenderingSettings[] renderingSettings;
 		private float[] inverseTransform = Transform.fromIdentity(null);
+		private float[] forwardTransform = Transform.fromIdentity(null);
 		private float near;
 		private float far;
 		private boolean valid;
@@ -36,18 +38,18 @@ public class RenderingThread {
 		private int imaget = -1;
 	}
 
-	public RenderingThread(ImagePlus image, final RenderingSettings[] settings, final float[] inv, final float[] nearfar, final float zStep) {
+	public RenderingThread(ImagePlus image, final RenderingSettings[] settings, final float[] fwd, final float[] inv, final float[] nearfar, final float zStep) {
 
-		this.event = new Event(settings, inv, nearfar[0], nearfar[1]);
+		this.event = new Event(settings, fwd, inv, nearfar[0], nearfar[1]);
 
 		raycaster = new CudaRaycaster(image, image.getWidth(), image.getHeight(), zStep);
-		out = raycaster.renderAndCompose(event.inverseTransform, settings, nearfar[0], nearfar[1]);
+		out = raycaster.renderAndCompose(event.forwardTransform, event.inverseTransform, settings, nearfar[0], nearfar[1]);
 		out.show();
 
 		thread = new Thread() {
 			@Override
 			public void run() {
-				loop(settings, inv, nearfar);
+				loop(settings, fwd, inv, nearfar);
 			}
 		};
 		thread.start();
@@ -57,8 +59,8 @@ public class RenderingThread {
 		return raycaster;
 	}
 
-	public void loop(RenderingSettings[] settings, float[] inverseTransform, float[] nearfar) {
-		Event e = new Event(settings, inverseTransform, nearfar[0], nearfar[1]);
+	public void loop(RenderingSettings[] settings, float[] fwd, float[] inv, float[] nearfar) {
+		Event e = new Event(settings, fwd, inv, nearfar[0], nearfar[1]);
 		while(!shutdown) {
 			poll(e);
 			render(e);
@@ -66,25 +68,25 @@ public class RenderingThread {
 		CudaRaycaster.close();
 	}
 
-	public void push(RenderingSettings[] s, float[] transform, float[] nearfar) {
-		push(s, transform, nearfar, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+	public void push(RenderingSettings[] s, float[] fwd, float[] inv, float[] nearfar) {
+		push(s, fwd, inv, nearfar, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 	}
 
-	public void push(RenderingSettings[] s, float[] transform, float[] nearfar, int tgtW, int tgtH) {
-		push(s, transform, nearfar, tgtW, tgtH, -1, -1, -1, -1, -1, -1, -1);
+	public void push(RenderingSettings[] s, float[] fwd, float[] inv, float[] nearfar, int tgtW, int tgtH) {
+		push(s, fwd, inv, nearfar, tgtW, tgtH, -1, -1, -1, -1, -1, -1, -1);
 	}
 
-	public void push(RenderingSettings[] s, float[] transform, float[] nearfar,
+	public void push(RenderingSettings[] s, float[] fwd, float[] inv, float[] nearfar,
 			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
-		push(s, transform, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1, -1);
+		push(s, fwd, inv, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1, -1);
 	}
 
-	public void push(RenderingSettings[] s, float[] transform, float[] nearfar,
+	public void push(RenderingSettings[] s, float[] fwd, float[] inv, float[] nearfar,
 			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1, int imaget) {
-		push(s, transform, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1, imaget);
+		push(s, fwd, inv, nearfar, -1, -1, bbx0, bby0, bbz0, bbx1, bby1, bbz1, imaget);
 	}
 
-	public void push(RenderingSettings[] s, float[] transform, float[] nearfar, int w, int h,
+	public void push(RenderingSettings[] s, float[] fwd, float[] inv, float[] nearfar, int w, int h,
 			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1, int imaget) {
 		synchronized(lock) {
 			System.out.println("push");
@@ -102,7 +104,8 @@ public class RenderingThread {
 			event.bby1 = bby1;
 			event.bbz1 = bbz1;
 			event.imaget = imaget;
-			System.arraycopy(transform, 0, event.inverseTransform, 0, 12);
+			System.arraycopy(inv, 0, event.inverseTransform, 0, 12);
+			System.arraycopy(fwd, 0, event.forwardTransform, 0, 12);
 		}
 		synchronized(this) {
 			notifyAll();
@@ -123,6 +126,7 @@ public class RenderingThread {
 			for(int i = 0; i < ret.renderingSettings.length; i++)
 				ret.renderingSettings[i].set(event.renderingSettings[i]);
 			System.arraycopy(event.inverseTransform, 0, ret.inverseTransform, 0, 12);
+			System.arraycopy(event.forwardTransform, 0, ret.forwardTransform, 0, 12);
 			ret.near = event.near;
 			ret.far = event.far;
 			ret.tgtW = event.tgtW;
@@ -169,6 +173,6 @@ public class RenderingThread {
 			if(input.getT() != before)
 				raycaster.setImage(input);
 		}
-		out.setProcessor(raycaster.renderAndCompose(e.inverseTransform, e.renderingSettings, e.near, e.far).getProcessor());
+		out.setProcessor(raycaster.renderAndCompose(e.forwardTransform, e.inverseTransform, e.renderingSettings, e.near, e.far).getProcessor());
 	}
 }
