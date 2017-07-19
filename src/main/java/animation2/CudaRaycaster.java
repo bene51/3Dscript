@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.Toolbar;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
@@ -96,6 +97,7 @@ public class CudaRaycaster {
 	private int wOut;
 	private int hOut;
 	private int wIn, hIn, dIn, nChannels;
+	private BoundingBox bbox;
 
 	public CudaRaycaster(ImagePlus imp, int wOut, int hOut, float zStep) {
 		this(imp, wOut, hOut, zStep, 0.95f);
@@ -108,6 +110,8 @@ public class CudaRaycaster {
 		this.wOut = wOut;
 		this.hOut = hOut;
 		this.nChannels = imp.getNChannels();
+
+		bbox = new BoundingBox(wIn, hIn, dIn);
 
 		if(imp.getType() == ImagePlus.GRAY8)
 			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
@@ -183,6 +187,8 @@ public class CudaRaycaster {
 		Color bg = Toolbar.getBackgroundColor();
 		int[] result = cast(invTransform, near, far, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
+		ret.setValue(Toolbar.getForegroundColor().getRGB());
+		bbox.drawQuads(ret, fwdTransform, invTransform);
 		return ret;
 	}
 
