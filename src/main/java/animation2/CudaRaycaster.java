@@ -86,11 +86,8 @@ public class CudaRaycaster {
 			float[] inverseTransform,
 			float near,
 			float far,
-			float alphamin0, float alphamax0, float alphagamma0,
-			float colormin0, float colormax0, float colorgamma0,
-			float alphamin1, float alphamax1, float alphagamma1,
-			float colormin1, float colormax1, float colorgamma1);
-
+			float[][] channelSettings,
+			int bgred, int bggreen, int bgblue);
 
 	private ImagePlus image;
 	private int wOut;
@@ -132,7 +129,7 @@ public class CudaRaycaster {
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
 
-		this.channelLUTs = getChannelLUTs();
+		getChannelLUTs();
 
 		if(imp.getType() == ImagePlus.GRAY8) {
 			for(int c = 0; c < nChannels; c++) {
@@ -159,27 +156,29 @@ public class CudaRaycaster {
 	}
 
 	public ImageProcessor project(
-			float[] inverseTransform,
+			float[] invTransform,
 			RenderingSettings[] renderingSettings,
 			float near,
 			float far) {
-		int[] result = cast(
-				inverseTransform,
-				near,
-				far,
-				renderingSettings[0].alphaMin,
-				renderingSettings[0].alphaMax,
-				renderingSettings[0].alphaGamma,
-				renderingSettings[0].colorMin,
-				renderingSettings[0].colorMax,
-				renderingSettings[0].colorGamma,
-				renderingSettings[1].alphaMin,
-				renderingSettings[1].alphaMax,
-				renderingSettings[1].alphaGamma,
-				renderingSettings[1].colorMin,
-				renderingSettings[1].colorMax,
-				renderingSettings[1].colorGamma);
-		return new ColorProcessor(wOut, hOut, result);
+
+		float[][] channelSettings = new float[renderingSettings.length][];
+		for(int c = 0; c < channelSettings.length; c++) {
+			System.out.println("channelColors[" + c + "] = " + channelColors[c]);
+			channelSettings[c] = new float[] {
+					renderingSettings[c].colorMin,
+					renderingSettings[c].colorMax,
+					renderingSettings[c].colorGamma,
+					renderingSettings[c].alphaMin,
+					renderingSettings[c].alphaMax,
+					renderingSettings[c].alphaGamma,
+					1f, // TODO weight
+					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
+			};
+		}
+		Color bg = Toolbar.getBackgroundColor();
+		int[] result = cast(invTransform, near, far, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
+		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
+		return ret;
 	}
 
 	public void setTgtSize(int w, int h) {
@@ -223,29 +222,33 @@ public class CudaRaycaster {
 	}
 
 	private LUT[] channelLUTs;
+	private Color[] channelColors;
 
-	private LUT[] getChannelLUTs() {
+	private void getChannelLUTs() {
 		int nChannels = image.getNChannels();
-		LUT[] channelLUTs = new LUT[nChannels];
+		channelLUTs = new LUT[nChannels];
+		channelColors = new Color[nChannels];
 		if(!image.isComposite()) {
 			LUT lut = image.getProcessor().getLut();
 			int t = image.getType();
 			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
 			if(lut != null && !grayscale) {
-				channelLUTs[0] = LUT.createLutFromColor(getLUTColor(lut));
+				channelColors[0] = getLUTColor(lut);
+				channelLUTs[0] = LUT.createLutFromColor(channelColors[0]);
 			} else {
+				channelColors[0] = Color.WHITE;
 				channelLUTs[0] = null;
 			}
-			return channelLUTs;
+			return;
 		}
 		for(int c = 0; c < image.getNChannels(); c++) {
 			image.setC(c + 1);
 			Color col = ((CompositeImage)image).getChannelColor();
 			if(col.equals(Color.BLACK))
 				col = Color.white;
+			channelColors[c] = col;
 			channelLUTs[c] = LUT.createLutFromColor(col);
 		}
-		return channelLUTs;
 	}
 
 	public Color getLUTColor(LUT lut) {
