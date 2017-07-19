@@ -82,6 +82,8 @@ public class CudaRaycaster {
 
 	private static native void setBoundingBox(int bx, int by, int bz, int bw, int bh, int pb);
 
+	private static native void setKernel(String program);
+
 	private static native int[] cast(
 			float[] inverseTransform,
 			float near,
@@ -113,6 +115,7 @@ public class CudaRaycaster {
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 		setImage(imp);
+		setKernel(OpenCLProgram.makeSource(nChannels));
 	}
 
 	public ImagePlus getImage() {
@@ -193,6 +196,10 @@ public class CudaRaycaster {
 
 	public void setBBox(int bx0, int by0, int bz0, int bx1, int by1, int bz1) {
 		setBoundingBox(bx0, by0, bz0, bx1 - bx0, by1 - by0, bz1 - bz0);
+	}
+
+	public void setProgram(String src) {
+		setKernel(src);
 	}
 
 
