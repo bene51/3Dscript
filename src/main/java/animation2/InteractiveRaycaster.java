@@ -66,6 +66,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private float[] rotcenter;
 
 	private RenderingSettings[] renderingSettings;
+	private LUT[] luts;
 
 	@Override
 	public int setup(String arg, ImagePlus imp) {
@@ -75,7 +76,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 	@Override
 	public void run(ImageProcessor ip) {
-		final LUT[] luts = image.isComposite() ?
+		luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
 
 		final int nC = image.getNChannels();
@@ -324,19 +325,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void renderingSettingsReset() {
-				for(int c = 0; c < nC; c++) {
-					renderingSettings[c].alphaMin = (float)luts[c].min;
-					renderingSettings[c].alphaMax = (float)luts[c].max;
-					renderingSettings[c].alphaGamma = 2;
-					renderingSettings[c].colorMin = (float)luts[c].min;
-					renderingSettings[c].colorMax = (float)luts[c].max;
-					renderingSettings[c].colorGamma = 1;
-				}
-
-				int c = contrastPanel.getChannel();
-				Color col = getLUTColor(luts[c]);
-				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
-				render();
+				resetRenderingSettings();
 			}
 
 			@Override
@@ -697,6 +686,22 @@ public class InteractiveRaycaster implements PlugInFilter {
 		float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
 		float[] inv = calculateInverseTransform(fwd);
 		worker.push(renderingSettings, fwd, inv, nearfar);
+	}
+
+	public void resetRenderingSettings() {
+		for(int c = 0; c < luts.length; c++) {
+			renderingSettings[c].alphaMin = (float)luts[c].min;
+			renderingSettings[c].alphaMax = (float)luts[c].max;
+			renderingSettings[c].alphaGamma = 2;
+			renderingSettings[c].colorMin = (float)luts[c].min;
+			renderingSettings[c].colorMax = (float)luts[c].max;
+			renderingSettings[c].colorGamma = 1;
+		}
+
+		int c = contrastPanel.getChannel();
+		Color col = getLUTColor(luts[c]);
+		contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+		render();
 	}
 
 	private Keyframe createKeyframe(int frame,
