@@ -9,8 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
+import ij.gui.Toolbar;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
 
@@ -55,7 +56,8 @@ public class CudaRaycaster {
 		RenderingSettings[] renderingSettings = new RenderingSettings[] {renderingSettings0, renderingSettings1};
 
 		CudaRaycaster raycaster = new CudaRaycaster(imp, imp.getWidth(), imp.getHeight(), 1);
-		ImagePlus comp = raycaster.renderAndCompose(new float[] {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0}, renderingSettings, 0, 2 * d);
+		float[] xform = Transform.fromIdentity(null);
+		ImagePlus comp = raycaster.renderAndCompose(xform, xform, renderingSettings, 0, 2 * d);
 
 		new ImagePlus("", comp.getImage()).show();
 	}
@@ -82,13 +84,14 @@ public class CudaRaycaster {
 
 	private static native void setBoundingBox(int bx, int by, int bz, int bw, int bh, int pb);
 
-	private static native byte[] cast(
-			int channel,
+	private static native void setKernel(String program);
+
+	private static native int[] cast(
 			float[] inverseTransform,
 			float near,
 			float far,
-			float alphamin, float alphamax, float alphagamma,
-			float colormin, float colormax, float colorgamma);
+			float[][] channelSettings,
+			int bgred, int bggreen, int bgblue);
 
 	private static native void white(int channel);
 
@@ -97,6 +100,7 @@ public class CudaRaycaster {
 	private int wOut;
 	private int hOut;
 	private int wIn, hIn, dIn, nChannels;
+	private BoundingBox bbox;
 
 	public CudaRaycaster(ImagePlus imp, int wOut, int hOut, float zStep) {
 		this(imp, wOut, hOut, zStep, 0.95f);
@@ -110,6 +114,8 @@ public class CudaRaycaster {
 		this.hOut = hOut;
 		this.nChannels = imp.getNChannels();
 
+		bbox = new BoundingBox(wIn, hIn, dIn);
+
 		if(imp.getType() == ImagePlus.GRAY8)
 			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
 		else if(imp.getType() == ImagePlus.GRAY16)
@@ -117,6 +123,7 @@ public class CudaRaycaster {
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 		setImage(imp);
+		setKernel(OpenCLProgram.makeSource(nChannels));
 	}
 
 	public ImagePlus getImage() {
@@ -133,7 +140,7 @@ public class CudaRaycaster {
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
 
-		this.channelLUTs = getChannelLUTs();
+		getChannelLUTs();
 
 		if(imp.getType() == ImagePlus.GRAY8) {
 			for(int c = 0; c < nChannels; c++) {
@@ -160,23 +167,32 @@ public class CudaRaycaster {
 	}
 
 	public ImageProcessor project(
-			int channel,
-			float[] inverseTransform,
-			RenderingSettings renderingSettings,
+			float[] fwdTransform,
+			float[] invTransform,
+			RenderingSettings[] renderingSettings,
 			float near,
 			float far) {
-		byte[] result = cast(
-				channel,
-				inverseTransform,
-				near,
-				far,
-				renderingSettings.alphaMin,
-				renderingSettings.alphaMax,
-				renderingSettings.alphaGamma,
-				renderingSettings.colorMin,
-				renderingSettings.colorMax,
-				renderingSettings.colorGamma);
-		return new ByteProcessor(wOut, hOut, result, null);
+
+		float[][] channelSettings = new float[renderingSettings.length][];
+		for(int c = 0; c < channelSettings.length; c++) {
+			System.out.println("channelColors[" + c + "] = " + channelColors[c]);
+			channelSettings[c] = new float[] {
+					renderingSettings[c].colorMin,
+					renderingSettings[c].colorMax,
+					renderingSettings[c].colorGamma,
+					renderingSettings[c].alphaMin,
+					renderingSettings[c].alphaMax,
+					renderingSettings[c].alphaGamma,
+					1f, // TODO weight
+					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
+			};
+		}
+		Color bg = Toolbar.getBackgroundColor();
+		int[] result = cast(invTransform, near, far, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
+		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
+		ret.setValue(Toolbar.getForegroundColor().getRGB());
+		bbox.drawQuads(ret, fwdTransform, invTransform);
+		return ret;
 	}
 
 	public void clear(int channel) {
@@ -197,55 +213,64 @@ public class CudaRaycaster {
 		setBoundingBox(bx0, by0, bz0, bx1 - bx0, by1 - by0, bz1 - bz0);
 	}
 
+	public void setProgram(String src) {
+		setKernel(src);
+	}
 
-	public ImagePlus renderAndCompose(float[] transform, RenderingSettings[] renderingSettings, float near, float far) {
-		ImageStack stack = new ImageStack(wOut, hOut);
-		for(int ch = 0; ch < image.getNChannels(); ch++) {
-			ImageProcessor ip = project(ch, transform, renderingSettings[ch], near, far);
-			stack.addSlice(ip);
-		}
 
-		ImagePlus iimp = new ImagePlus("", stack);
-		iimp.setDimensions(image.getNChannels(), 1, 1);
-		if(!image.isComposite()) {
-			int t = image.getType();
-			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
-			if(channelLUTs[0] != null && !grayscale)
-				iimp.getProcessor().setLut(channelLUTs[0]);
-			return iimp;
-		}
-
-		CompositeImage comp = new CompositeImage(iimp, CompositeImage.COMPOSITE);
-		for(int c = 0; c < image.getNChannels(); c++)
-			comp.setChannelLut(channelLUTs[c], c + 1);
-
-		return new ImagePlus("", comp.getImage());
+	public ImagePlus renderAndCompose(float[] fwd, float[] inv, RenderingSettings[] renderingSettings, float near, float far) {
+		return new ImagePlus("", project(fwd, inv, renderingSettings, near, far));
+//		ImageStack stack = new ImageStack(wOut, hOut);
+//		for(int ch = 0; ch < image.getNChannels(); ch++) {
+//			ImageProcessor ip = project(ch, transform, renderingSettings[ch], near, far);
+//			stack.addSlice(ip);
+//		}
+//
+//		ImagePlus iimp = new ImagePlus("", stack);
+//		iimp.setDimensions(image.getNChannels(), 1, 1);
+//		if(!image.isComposite()) {
+//			int t = image.getType();
+//			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
+//			if(channelLUTs[0] != null && !grayscale)
+//				iimp.getProcessor().setLut(channelLUTs[0]);
+//			return iimp;
+//		}
+//
+//		CompositeImage comp = new CompositeImage(iimp, CompositeImage.COMPOSITE);
+//		for(int c = 0; c < image.getNChannels(); c++)
+//			comp.setChannelLut(channelLUTs[c], c + 1);
+//
+//		return new ImagePlus("", comp.getImage());
 	}
 
 	private LUT[] channelLUTs;
+	private Color[] channelColors;
 
-	private LUT[] getChannelLUTs() {
+	private void getChannelLUTs() {
 		int nChannels = image.getNChannels();
-		LUT[] channelLUTs = new LUT[nChannels];
+		channelLUTs = new LUT[nChannels];
+		channelColors = new Color[nChannels];
 		if(!image.isComposite()) {
 			LUT lut = image.getProcessor().getLut();
 			int t = image.getType();
 			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
 			if(lut != null && !grayscale) {
-				channelLUTs[0] = LUT.createLutFromColor(getLUTColor(lut));
+				channelColors[0] = getLUTColor(lut);
+				channelLUTs[0] = LUT.createLutFromColor(channelColors[0]);
 			} else {
+				channelColors[0] = Color.WHITE;
 				channelLUTs[0] = null;
 			}
-			return channelLUTs;
+			return;
 		}
 		for(int c = 0; c < image.getNChannels(); c++) {
 			image.setC(c + 1);
 			Color col = ((CompositeImage)image).getChannelColor();
 			if(col.equals(Color.BLACK))
 				col = Color.white;
+			channelColors[c] = col;
 			channelLUTs[c] = LUT.createLutFromColor(col);
 		}
-		return channelLUTs;
 	}
 
 	public Color getLUTColor(LUT lut) {

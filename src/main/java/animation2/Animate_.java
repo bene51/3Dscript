@@ -112,7 +112,7 @@ public class Animate_ implements PlugIn {
 		for(Processor proc : procs)
 			proc.process(imp, t);
 
-		ImageProcessor ret = projector.renderAndCompose(transform, renderingSettings, near, far).getProcessor();
+		ImageProcessor ret = projector.renderAndCompose(transform, transform, renderingSettings, near, far).getProcessor();
 		System.out.println(t + ": " + Arrays.toString(transform));
 
 		for(RenderCallback callback : listeners)
