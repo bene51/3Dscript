@@ -660,91 +660,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		});
 
 
-
-
-//		Panel p = new Panel(new FlowLayout(FlowLayout.RIGHT));
-//		Button but = new Button("Animate");
-//		but.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				GenericDialog gd = new GenericDialog("");
-//				gd.addNumericField("#frames", 180, 0);
-//				gd.addNumericField("y_angle_increment", 2, 0);
-//				gd.addNumericField("x_angle_increment", 0, 0);
-//				gd.addCheckbox("Scroll_through", false);
-//				gd.addNumericField("Scroll_from", 0, 2);
-//				gd.addNumericField("Scroll_to", 0, 2);
-//				gd.addNumericField("dz", 1, 0);
-//				gd.showDialog();
-//				if(gd.wasCanceled())
-//					return;
-//
-//				int nFrames = (int)gd.getNextNumber();
-//				int ax = (int)gd.getNextNumber();
-//				int ay = (int)gd.getNextNumber();
-//				boolean scrollThrough = gd.getNextBoolean();
-//				float scrollFrom = (float)gd.getNextNumber();
-//				float scrollTo = (float)gd.getNextNumber();
-//				float dz = (float)gd.getNextNumber();
-//
-//				ImageStack stack = new ImageStack(worker.out.getWidth(), worker.out.getHeight());
-//				float[] inverse = null;
-//				for(int i = 0; i < nFrames; i++) {
-//					float[] rx = Transform.fromAngleAxis(new float[] {0, 1, 0}, ax * (float)Math.PI / 180f, null);
-//					float[] ry = Transform.fromAngleAxis(new float[] {1, 0, 0}, ay * (float)Math.PI / 180f, null);
-//					float[] r = Transform.mul(rx, ry);
-////					float[] cinv = Transform.fromTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], null);
-////					float[] c = Transform.fromTranslation(rotcenter[0], rotcenter[1], rotcenter[2], null);
-////					float[] rot = Transform.mul(c, Transform.mul(r, Transform.mul(cinv, rotation)));
-//					float[] rot = Transform.mul(r, rotation);
-//					System.arraycopy(rot, 0, rotation, 0, 12);
-//
-//					inverse = calculateInverseTransform(
-//							scale[0],
-//							translation,
-//							rot,
-//							rotcenter,
-//							fromCalib,
-//							toTransform);
-//					stack.addSlice(worker.getRaycaster().renderAndCompose(inverse, renderingSettings, nearfar[0], nearfar[1]).getProcessor());
-//					IJ.showProgress(i + 1, nFrames);
-//				}
-//				if(scrollThrough) {
-//					int n = Math.round((scrollTo - scrollFrom) / dz) + 1;
-//					for(int i = 0; i < n; i++) {
-//						stack.addSlice(worker.getRaycaster().renderAndCompose(
-//								inverse, renderingSettings, scrollFrom + i * dz, nearfar[1]).getProcessor());
-//					}
-//					for(int i = n - 1; i >= 0; i--) {
-//						stack.addSlice(worker.getRaycaster().renderAndCompose(
-//								inverse, renderingSettings, scrollFrom + i * dz, nearfar[1]).getProcessor());
-//					}
-//				}
-//				ImagePlus anim = new ImagePlus(image.getTitle(), stack);
-//				anim.setCalibration(worker.out.getCalibration().copy());
-//				anim.show();
-//			}
-//		});
-//		p.add(but);
-//
-//		Button but = new Button("Reset transformations");
-//		but.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				scale[0] = 1;
-//				translation[0] = translation[1] = translation[2] = 0;
-//				Transform.fromIdentity(rotation);
-//				float[] inverse = calculateInverseTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-//				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
-//				worker.push(renderingSettings, inverse, nearfar);
-//			}
-//		});
-//		p.add(but);
-
-
-
-//		gd.addPanel(p);
-
 		dialog.setModal(false);
 		dialog.pack();
 		dialog.showDialog();
@@ -805,29 +720,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 				bbx0, bby0, bbz0, bbx1, bby1, bbz1);
 	}
 
-	private Keyframe createUnsetKeyframe(int frame, int nChannels) {
-		RenderingSettings[] rs = new RenderingSettings[nChannels];
-		int us = Keyframe.UNSET;
-		for(int i = 0; i < rs.length; i++)
-			rs[i] = new RenderingSettings(us, us, us, us, us, us);
-
-		int bbx0, bby0, bbz0, bbx1, bby1, bbz1;
-		bbx0 = bby0 = bbz0 = bbx1 = bby1 = bbz1 = us;
-
-		float near, far, scale, dx, dy, dz;
-		near = far = scale = dx = dy = dz = us;
-
-		double ax, ay, az;
-		ax = ay = az = us;
-		return new Keyframe(
-				frame, rs,
-				near, far,
-				scale,
-				dx, dy, dz,
-				ax, ay, az,
-				bbx0, bby0, bbz0, bbx1, bby1, bbz1);
-	}
-
 	private Color getLUTColor(LUT lut) {
 		int index = lut.getMapSize() - 1;
 		int r = lut.getRed(index);
@@ -852,18 +744,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		x = Transform.mul(x, fromCalib);
 		x = Transform.mul(toTransform, x);
 
-		return x;
-	}
-
-	/**
-	 * Calculates scale * translation * rotation
-	 * @param scale
-	 * @param translation
-	 * @param rotation
-	 */
-	private static float[] calculateInverseTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
-		float[] x = calculateForwardTransform(scale, translation, rotation, center, fromCalib, toTransform);
-		Transform.invert(x);
 		return x;
 	}
 
