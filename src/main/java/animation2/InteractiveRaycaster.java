@@ -48,6 +48,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private double[] min, max;
 	private int[][] histo8;
 
+	private AnimatorDialog dialog;
+	private ContrastPanel contrastPanel;
+	private TransformationPanel transformationPanel;
+	private CroppingPanel croppingPanel;
+	private OutputPanel outputPanel;
+	private AnimationPanel animationPanel;
+
 	@Override
 	public int setup(String arg, ImagePlus imp) {
 		this.image = imp;
@@ -99,23 +106,23 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		Color col = getLUTColor(luts[0]);
 
-		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
-		final ContrastPanel contrastPanel = gd.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
+		dialog = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
+		contrastPanel = dialog.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
 
-		final TransformationPanel transformationPanel = gd.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
+		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 
-		final CroppingPanel croppingPanel = gd.addCroppingPanel(image);
+		croppingPanel = dialog.addCroppingPanel(image);
 
 		nearfar[0] = croppingPanel.getNear();
 		nearfar[1] = croppingPanel.getFar();
 
-		final OutputPanel outputPanel = gd.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
+		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
 
 		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
 		final String[] timelineNames = new String[timelines.size()];
 		for(int i = 0; i < timelineNames.length; i++)
 			timelineNames[i] = Timelines.getName(i);
-		final AnimationPanel animationPanel = gd.addAnimationPanel(timelineNames, timelines, 0, 0);
+		animationPanel = dialog.addAnimationPanel(timelineNames, timelines, 0, 0);
 
 		Calibration cal = worker.out.getCalibration();
 		cal.pixelWidth = pdOut[0] / scale[0];
@@ -464,7 +471,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
-		gd.addWindowListener(new WindowAdapter() {
+		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				System.out.println("closing");
@@ -738,9 +745,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 //		gd.addPanel(p);
 
-		gd.setModal(false);
-		gd.pack();
-		gd.showDialog();
+		dialog.setModal(false);
+		dialog.pack();
+		dialog.showDialog();
 
 		Dimension outsize = new Dimension(image.getWidth(), image.getHeight());
 		double mag = image.getCanvas().getMagnification();
