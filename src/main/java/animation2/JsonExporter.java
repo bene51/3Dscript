@@ -58,7 +58,7 @@ public class JsonExporter {
 
 	public static void main(String[] args) throws IOException {
 		File f = new File("C:\\users\\bschmid\\Desktop\\animation.json");
-		Timelines timelines = new Timelines(2, 0, 100);
+		Timelines timelines = new Timelines(2);
 		importTimelines(timelines, f);
 	}
 

@@ -19,7 +19,7 @@ import ij.gui.GenericDialog;
 public class TimelineDetailsDialog {
 
 	public static void main(String...args) throws IOException {
-		Timelines lines = new Timelines(1, 0, 440);
+		Timelines lines = new Timelines(1);
 		JsonExporter.importTimelines(lines, new File("H:\\170704_test_gut_14-34-13-2.json"));
 		showTimelineDialog(lines, 3);
 	}

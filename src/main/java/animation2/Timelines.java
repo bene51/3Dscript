@@ -50,7 +50,7 @@ public class Timelines {
 		return null;
 	}
 
-	public Timelines(int nChannels, int tmin, int tmax) {
+	public Timelines(int nChannels) {
 		this.nChannels = nChannels;
 		int i = 0;
 		for(i = 0; i < 15; i++)

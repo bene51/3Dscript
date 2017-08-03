@@ -195,7 +195,7 @@ public class AnimatorDialog extends GenericDialog {
 
 		gd.addOutputPanel(255, 255, 1);
 
-		final Timelines timelines = new Timelines(1, 0, 99);
+		final Timelines timelines = new Timelines(1);
 		final String[] timelineNames = new String[timelines.size()];
 		for (int i = 0; i < timelineNames.length; i++)
 			timelineNames[i] = Timelines.getName(i);

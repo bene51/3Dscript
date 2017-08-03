@@ -133,7 +133,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
 
-		final Timelines timelines = new Timelines(renderingSettings.length, 0, 99);
+		final Timelines timelines = new Timelines(renderingSettings.length);
 		final String[] timelineNames = new String[timelines.size()];
 		for(int i = 0; i < timelineNames.length; i++)
 			timelineNames[i] = Timelines.getName(i);
