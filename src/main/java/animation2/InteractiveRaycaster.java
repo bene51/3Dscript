@@ -109,8 +109,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		renderingSettings = new RenderingSettings[nC];
 		for(int c = 0; c < nC; c++) {
 			renderingSettings[c] = new RenderingSettings(
-					(float)luts[c].min, (float)luts[c].max, 2,
-					(float)luts[c].min, (float)luts[c].max, 1);
+					(float)luts[c].min, (float)luts[c].max, 1,
+					(float)luts[c].min, (float)luts[c].max, 2);
 		}
 		final float zStep = 2;
 		worker = new RenderingThread(

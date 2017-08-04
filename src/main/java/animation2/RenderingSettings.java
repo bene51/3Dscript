@@ -6,8 +6,8 @@ public class RenderingSettings {
 	public float colorMin, colorMax, colorGamma;
 
 	public RenderingSettings(
-			float alphaMin, float alphaMax, float alphaGamma,
-			float colorMin, float colorMax, float colorGamma) {
+			float colorMin, float colorMax, float colorGamma,
+			float alphaMin, float alphaMax, float alphaGamma) {
 		this.alphaMin   = alphaMin;
 		this.alphaMax   = alphaMax;
 		this.alphaGamma = alphaGamma;

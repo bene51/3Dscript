@@ -29,20 +29,20 @@ public class DummyCudaRaycaster {
 		int d = imp.getNSlices();
 
 		RenderingSettings renderingSettings0 = new RenderingSettings(
+				300,    // colorMin,
+				3000,   // colorMax,
+				1,      // colorGamma,
 				300,    // alphaMin,
-				3000,   // float alphaMax,
-				2,      // float alphaGamma,
-				300,    // float colorMin,
-				3000,   // float colorMax,
-				1f);    // float colorGamma,
+				3000,   // alphaMax,
+				2f);    // alphaGamma,
 
 		RenderingSettings renderingSettings1 = new RenderingSettings(
+				300,   // colorMin,
+				3000,  // colorMax,
+				1,     // colorGamma,
 				300,   // alphaMin,
-				3000,  // float alphaMax,
-				2,      // float alphaGamma,
-				300,   // float colorMin,
-				3000,  // float colorMax,
-				1);    // float colorGamma,
+				3000,  // alphaMax,
+				2);    // alphaGamma,
 
 		RenderingSettings[] renderingSettings = new RenderingSettings[] {renderingSettings0, renderingSettings1};
 
@@ -51,13 +51,13 @@ public class DummyCudaRaycaster {
 
 		new ImagePlus("", comp.getImage()).show();
 	}
-	
+
 	private static void initRaycaster8(
 			int nChannels,
 			int width, int height, int depth,
 			int wOut, int hOut,
 			float zStep, float alphastop) {
-		
+
 	}
 
 	private static void initRaycaster16(
@@ -65,7 +65,7 @@ public class DummyCudaRaycaster {
 			int width, int height, int depth,
 			int wOut, int hOut,
 			float zStep, float alphastop) {
-		
+
 	}
 
 	public static void close() {}

@@ -61,36 +61,6 @@ public class Timelines {
 				names.add(getName(i++));
 		}
 
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.dx), new LinePoint(tmax, kf.dx)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.dy), new LinePoint(tmax, kf.dy)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.dz), new LinePoint(tmax, kf.dz)));
-//
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.angleX), new LinePoint(tmax, kf.angleX)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.angleY), new LinePoint(tmax, kf.angleY)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.angleZ), new LinePoint(tmax, kf.angleZ)));
-//
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.scale), new LinePoint(tmax, kf.scale)));
-//
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.bbx), new LinePoint(tmax, kf.bbx)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.bby), new LinePoint(tmax, kf.bby)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.bbz), new LinePoint(tmax, kf.bbz)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.bbw), new LinePoint(tmax, kf.bbw)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.bbh), new LinePoint(tmax, kf.bbh)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.bbd), new LinePoint(tmax, kf.bbd)));
-//
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.near), new LinePoint(tmax, kf.near)));
-//		timelines.add(new CtrlPoints(new LinePoint(tmin, kf.far),  new LinePoint(tmax, kf.far)));
-//
-//		for(int c = 0; c < nChannels; c++) {
-//			RenderingSettings rs = kf.renderingSettings[c];
-//			timelines.add(new CtrlPoints(new LinePoint(tmin, rs.colorMin),  new LinePoint(tmax, rs.colorMin)));
-//			timelines.add(new CtrlPoints(new LinePoint(tmin, rs.colorMax),  new LinePoint(tmax, rs.colorMax)));
-//			timelines.add(new CtrlPoints(new LinePoint(tmin, rs.colorGamma),  new LinePoint(tmax, rs.colorGamma)));
-//			timelines.add(new CtrlPoints(new LinePoint(tmin, rs.alphaMin),  new LinePoint(tmax, rs.alphaMin)));
-//			timelines.add(new CtrlPoints(new LinePoint(tmin, rs.alphaMax),  new LinePoint(tmax, rs.alphaMax)));
-//			timelines.add(new CtrlPoints(new LinePoint(tmin, rs.alphaGamma),  new LinePoint(tmax, rs.alphaGamma)));
-//		}
-
 		timelines.add(new CtrlPoints());
 		timelines.add(new CtrlPoints());
 		timelines.add(new CtrlPoints());
@@ -112,7 +82,6 @@ public class Timelines {
 		timelines.add(new CtrlPoints());
 
 		for(int c = 0; c < nChannels; c++) {
-//			RenderingSettings rs = kf.renderingSettings[c];
 			timelines.add(new CtrlPoints());
 			timelines.add(new CtrlPoints());
 			timelines.add(new CtrlPoints());
@@ -152,8 +121,8 @@ public class Timelines {
 	public static void toJSON() {
 		Keyframe kf = new Keyframe(1,
 				new RenderingSettings[] {
-						new RenderingSettings(0, 255, 2, 0, 255, 1),
-						new RenderingSettings(0, 255, 2, 0, 255, 1)
+						new RenderingSettings(0, 255, 1, 0, 255, 2),
+						new RenderingSettings(0, 255, 1, 0, 255, 2)
 				},
 				0, // near
 				100, // far
@@ -270,12 +239,12 @@ public class Timelines {
 		kf.renderingSettings = new RenderingSettings[nChannels];
 		for(int c = 0; c < nChannels; c++) {
 			kf.renderingSettings[c] = new RenderingSettings(
-					(float)getInterpolatedValue(i + 3, t, def.renderingSettings[c].alphaMin),
-					(float)getInterpolatedValue(i + 4, t, def.renderingSettings[c].alphaMax),
-					(float)getInterpolatedValue(i + 5, t, def.renderingSettings[c].alphaGamma),
 					(float)getInterpolatedValue(i + 0, t, def.renderingSettings[c].colorMin),
 					(float)getInterpolatedValue(i + 1, t, def.renderingSettings[c].colorMax),
-					(float)getInterpolatedValue(i + 2, t, def.renderingSettings[c].colorGamma));
+					(float)getInterpolatedValue(i + 2, t, def.renderingSettings[c].colorGamma),
+					(float)getInterpolatedValue(i + 3, t, def.renderingSettings[c].alphaMin),
+					(float)getInterpolatedValue(i + 4, t, def.renderingSettings[c].alphaMax),
+					(float)getInterpolatedValue(i + 5, t, def.renderingSettings[c].alphaGamma));
 			i += 6;
 		}
 		return kf;
@@ -308,12 +277,12 @@ public class Timelines {
 		kf.renderingSettings = new RenderingSettings[nChannels];
 		for(int c = 0; c < nChannels; c++) {
 			kf.renderingSettings[c] = new RenderingSettings(
-					(float)timelines.get(i + 3).getInterpolatedValue(t), // alphamin
-					(float)timelines.get(i + 4).getInterpolatedValue(t), // alphamax
-					(float)timelines.get(i + 5).getInterpolatedValue(t), // alphagamma
 					(float)timelines.get(i + 0).getInterpolatedValue(t), // colormin
 					(float)timelines.get(i + 1).getInterpolatedValue(t), // colormax
-					(float)timelines.get(i + 2).getInterpolatedValue(t)  // colorgamma
+					(float)timelines.get(i + 2).getInterpolatedValue(t), // colorgamma
+					(float)timelines.get(i + 3).getInterpolatedValue(t), // alphamin
+					(float)timelines.get(i + 4).getInterpolatedValue(t), // alphamax
+					(float)timelines.get(i + 5).getInterpolatedValue(t)  // alphagamma
 			);
 			i += 6;
 		}
@@ -354,12 +323,12 @@ public class Timelines {
 		kf.renderingSettings = new RenderingSettings[nChannels];
 		for(int c = 0; c < nChannels; c++) {
 			kf.renderingSettings[c] = new RenderingSettings(
-					(float)get(i + 3, t), // alphamin
-					(float)get(i + 4, t), // alphamax
-					(float)get(i + 5, t), // alphagamma
 					(float)get(i + 0, t), // colormin
 					(float)get(i + 1, t), // colormax
-					(float)get(i + 2, t)  // colorgamma
+					(float)get(i + 2, t), // colorgamma
+					(float)get(i + 3, t), // alphamin
+					(float)get(i + 4, t), // alphamax
+					(float)get(i + 5, t)  // alphagamma
 			);
 			i += 6;
 		}

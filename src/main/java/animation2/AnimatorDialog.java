@@ -183,7 +183,7 @@ public class AnimatorDialog extends GenericDialog {
 		for (int i = 0; i < 256; i++)
 			histo[i] = i;
 
-		RenderingSettings rs = new RenderingSettings(0, 255, 2, 0, 255, 1);
+		RenderingSettings rs = new RenderingSettings(0, 255, 1, 0, 255, 2);
 
 		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster", null);
 		gd.addContrastPanel(histo, Color.RED, 0, 255, rs, 1);
