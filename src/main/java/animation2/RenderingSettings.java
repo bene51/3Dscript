@@ -2,8 +2,19 @@ package animation2;
 
 public class RenderingSettings {
 
-	public float alphaMin, alphaMax, alphaGamma;
-	public float colorMin, colorMax, colorGamma;
+	@RenderingProperty(label = "Color Min")
+	public float colorMin;
+	@RenderingProperty(label = "Color Max")
+	public float colorMax;
+	@RenderingProperty(label = "Color Gamma")
+	public float colorGamma;
+
+	@RenderingProperty(label = "Alpha Min")
+	public float alphaMin;
+	@RenderingProperty(label = "Alpha Max")
+	public float alphaMax;
+	@RenderingProperty(label = "Alpha Gamma")
+	public float alphaGamma;
 
 	public RenderingSettings(
 			float colorMin, float colorMax, float colorGamma,
