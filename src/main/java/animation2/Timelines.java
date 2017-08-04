@@ -7,88 +7,38 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import animation2.Keyframe.KeyframeProperty;
+
 public class Timelines {
 
 	private final List<CtrlPoints> timelines = new ArrayList<CtrlPoints>();
-	private final List<String> names = new ArrayList<String>();
 
 	private final int nChannels;
 
 	public static String getName(int i) {
-		switch(i) {
-		case 0: return "X Translation";
-		case 1: return "Y Translation";
-		case 2: return "Z Translation";
+		Keyframe kf = Keyframe.createEmptyKeyframe();
+		KeyframeProperty[] props = kf.getRenderingProperties();
 
-		case 3: return "X Rotation";
-		case 4: return "Y Rotation";
-		case 5: return "Z Rotation";
+		int nonChannelProps = Keyframe.getNumberOfNonChannelProperties();
+		int channelProps = Keyframe.getNumberOfChannelProperties();
 
-		case 6: return "Scale";
+		if(i < Keyframe.getNumberOfNonChannelProperties())
+			return props[i].getLabel();
 
-		case 7: return "Bounding Box X Min";
-		case 8: return "Bounding Box Y Min";
-		case 9: return "Bounding Box Z Min";
-		case 10: return "Bounding Box X Max";
-		case 11: return "Bounding Box Y Max";
-		case 12: return "Bounding Box Z Max";
+		int rem = (i - nonChannelProps) % channelProps;
+		int cha = (i - nonChannelProps) / channelProps;
 
-		case 13: return "Near";
-		case 14: return "Far";
-		default:
-			int r = (i - 15) % 6;
-			int c = (i - 15) / 6;
-			switch(r) {
-			case 0: return "Channel " + (c + 1) + " color min";
-			case 1: return "Channel " + (c + 1) + " color max";
-			case 2: return "Channel " + (c + 1) + " color gamma";
-			case 3: return "Channel " + (c + 1) + " alpha min";
-			case 4: return "Channel " + (c + 1) + " alpha max";
-			case 5: return "Channel " + (c + 1) + " alpha gamma";
-			}
-		}
-		return null;
+		return "Channel " + (cha + 1) + " " + props[nonChannelProps + rem].getLabel();
 	}
 
 	public Timelines(int nChannels) {
 		this.nChannels = nChannels;
-		int i = 0;
-		for(i = 0; i < 15; i++)
-			names.add(getName(i));
+		int nonChannelProps = Keyframe.getNumberOfNonChannelProperties();
+		int channelProps = Keyframe.getNumberOfChannelProperties();
 
-		for(int c = 0; c < nChannels; c++) {
-			for(int j = 0; j < 6; j++)
-				names.add(getName(i++));
-		}
-
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-
-		timelines.add(new CtrlPoints());
-
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-
-		timelines.add(new CtrlPoints());
-		timelines.add(new CtrlPoints());
-
-		for(int c = 0; c < nChannels; c++) {
+		int n = nonChannelProps + nChannels * channelProps;
+		for(int i = 0; i < n; i++)
 			timelines.add(new CtrlPoints());
-			timelines.add(new CtrlPoints());
-			timelines.add(new CtrlPoints());
-			timelines.add(new CtrlPoints());
-			timelines.add(new CtrlPoints());
-			timelines.add(new CtrlPoints());
-		}
 	}
 
 	public void getBoundingBox(Point ll, Point ur) {
@@ -174,35 +124,9 @@ public class Timelines {
 		int i = 0;
 		int t = kf.getFrame();
 
-		record(i++, t, kf.dx);
-		record(i++, t, kf.dy);
-		record(i++, t, kf.dz);
-
-		record(i++, t, kf.angleX);
-		record(i++, t, kf.angleY);
-		record(i++, t, kf.angleZ);
-
-		record(i++, t, kf.scale);
-
-		record(i++, t, kf.bbx0);
-		record(i++, t, kf.bby0);
-		record(i++, t, kf.bbz0);
-		record(i++, t, kf.bbx1);
-		record(i++, t, kf.bby1);
-		record(i++, t, kf.bbz1);
-
-		record(i++, t, kf.near);
-		record(i++, t, kf.far);
-
-		for(int c = 0; c < nChannels; c++) {
-			RenderingSettings rs = kf.renderingSettings[c];
-			record(i++, t, rs.colorMin);
-			record(i++, t, rs.colorMax);
-			record(i++, t, rs.colorGamma);
-			record(i++, t, rs.alphaMin);
-			record(i++, t, rs.alphaMax);
-			record(i++, t, rs.alphaGamma);
-		}
+		KeyframeProperty[] props = kf.getRenderingProperties();
+		for(KeyframeProperty p : props)
+			record(i++, t, p.getValue());
 	}
 
 	double getInterpolatedValue(int i, int t, double def) {
@@ -213,80 +137,28 @@ public class Timelines {
 	}
 
 	public Keyframe getInterpolatedFrame(int t, Keyframe def) {
-		Keyframe kf = new Keyframe(t);
-		int i = 0;
+		Keyframe kfr = Keyframe.createEmptyKeyframe(nChannels);
+		kfr.setFrame(t);
 
-		kf.dx = (float)getInterpolatedValue(i++, t, def.dx);
-		kf.dy = (float)getInterpolatedValue(i++, t, def.dy);
-		kf.dz = (float)getInterpolatedValue(i++, t, def.dz);
+		KeyframeProperty[] kfrProps = kfr.getRenderingProperties();
+		KeyframeProperty[] defProps = def.getRenderingProperties();
 
-		kf.angleX = (float)getInterpolatedValue(i++, t, def.angleX);
-		kf.angleY = (float)getInterpolatedValue(i++, t, def.angleY);
-		kf.angleZ = (float)getInterpolatedValue(i++, t, def.angleZ);
+		for(int i = 0; i < kfrProps.length; i++)
+			kfrProps[i].setValue(getInterpolatedValue(i, t, defProps[i].getValue()));
 
-		kf.scale = (float)getInterpolatedValue(i++, t, def.scale);
-
-		kf.bbx0 = (int)Math.round(getInterpolatedValue(i++, t, def.bbx0));
-		kf.bby0 = (int)Math.round(getInterpolatedValue(i++, t, def.bby0));
-		kf.bbz0 = (int)Math.round(getInterpolatedValue(i++, t, def.bbz0));
-		kf.bbx1 = (int)Math.round(getInterpolatedValue(i++, t, def.bbx1));
-		kf.bby1 = (int)Math.round(getInterpolatedValue(i++, t, def.bby1));
-		kf.bbz1 = (int)Math.round(getInterpolatedValue(i++, t, def.bbz1));
-
-		kf.near = (float)getInterpolatedValue(i++, t, def.near);
-		kf.far  = (float)getInterpolatedValue(i++, t, def.far);
-
-		kf.renderingSettings = new RenderingSettings[nChannels];
-		for(int c = 0; c < nChannels; c++) {
-			kf.renderingSettings[c] = new RenderingSettings(
-					(float)getInterpolatedValue(i + 0, t, def.renderingSettings[c].colorMin),
-					(float)getInterpolatedValue(i + 1, t, def.renderingSettings[c].colorMax),
-					(float)getInterpolatedValue(i + 2, t, def.renderingSettings[c].colorGamma),
-					(float)getInterpolatedValue(i + 3, t, def.renderingSettings[c].alphaMin),
-					(float)getInterpolatedValue(i + 4, t, def.renderingSettings[c].alphaMax),
-					(float)getInterpolatedValue(i + 5, t, def.renderingSettings[c].alphaGamma));
-			i += 6;
-		}
-		return kf;
+		return kfr;
 	}
 
 	public Keyframe getInterpolatedFrame(int t) {
-		Keyframe kf = new Keyframe(t);
-		int i = 0;
+		Keyframe kfr = Keyframe.createEmptyKeyframe(nChannels);
+		kfr.setFrame(t);
 
-		kf.dx = (float)timelines.get(i++).getInterpolatedValue(t);
-		kf.dy = (float)timelines.get(i++).getInterpolatedValue(t);
-		kf.dz = (float)timelines.get(i++).getInterpolatedValue(t);
+		KeyframeProperty[] kfrProps = kfr.getRenderingProperties();
 
-		kf.angleX = timelines.get(i++).getInterpolatedValue(t);
-		kf.angleY = timelines.get(i++).getInterpolatedValue(t);
-		kf.angleZ = timelines.get(i++).getInterpolatedValue(t);
+		for(int i = 0; i < kfrProps.length; i++)
+			kfrProps[i].setValue(timelines.get(i).getInterpolatedValue(t));
 
-		kf.scale = (float)timelines.get(i++).getInterpolatedValue(t);
-
-		kf.bbx0 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bby0 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbz0 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbx1 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bby1 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-		kf.bbz1 = (int)Math.round(timelines.get(i++).getInterpolatedValue(t));
-
-		kf.near = (float)timelines.get(i++).getInterpolatedValue(t);
-		kf.far  = (float)timelines.get(i++).getInterpolatedValue(t);
-
-		kf.renderingSettings = new RenderingSettings[nChannels];
-		for(int c = 0; c < nChannels; c++) {
-			kf.renderingSettings[c] = new RenderingSettings(
-					(float)timelines.get(i + 0).getInterpolatedValue(t), // colormin
-					(float)timelines.get(i + 1).getInterpolatedValue(t), // colormax
-					(float)timelines.get(i + 2).getInterpolatedValue(t), // colorgamma
-					(float)timelines.get(i + 3).getInterpolatedValue(t), // alphamin
-					(float)timelines.get(i + 4).getInterpolatedValue(t), // alphamax
-					(float)timelines.get(i + 5).getInterpolatedValue(t)  // alphagamma
-			);
-			i += 6;
-		}
-		return kf;
+		return kfr;
 	}
 
 	private double get(int i, int t) {
@@ -297,41 +169,13 @@ public class Timelines {
 	}
 
 	public Keyframe getKeyframeNoInterpol(int t) {
-		Keyframe kf = new Keyframe(t);
-		int i = 0;
+		Keyframe kf = Keyframe.createEmptyKeyframe(nChannels);
+		kf.setFrame(t);
 
-		kf.dx = (float)get(i++, t);
-		kf.dy = (float)get(i++, t);
-		kf.dz = (float)get(i++, t);
+		KeyframeProperty[] kfrProps = kf.getRenderingProperties();
+		for(int i = 0; i < kfrProps.length; i++)
+			kfrProps[i].setValue(get(i, t));
 
-		kf.angleX = get(i++, t);
-		kf.angleY = get(i++, t);
-		kf.angleZ = get(i++, t);
-
-		kf.scale = (float)get(i++, t);
-
-		kf.bbx0 = (int)Math.round(get(i++, t));
-		kf.bby0 = (int)Math.round(get(i++, t));
-		kf.bbz0 = (int)Math.round(get(i++, t));
-		kf.bbx1 = (int)Math.round(get(i++, t));
-		kf.bby1 = (int)Math.round(get(i++, t));
-		kf.bbz1 = (int)Math.round(get(i++, t));
-
-		kf.near = (float)get(i++, t);
-		kf.far  = (float)get(i++, t);
-
-		kf.renderingSettings = new RenderingSettings[nChannels];
-		for(int c = 0; c < nChannels; c++) {
-			kf.renderingSettings[c] = new RenderingSettings(
-					(float)get(i + 0, t), // colormin
-					(float)get(i + 1, t), // colormax
-					(float)get(i + 2, t), // colorgamma
-					(float)get(i + 3, t), // alphamin
-					(float)get(i + 4, t), // alphamax
-					(float)get(i + 5, t)  // alphagamma
-			);
-			i += 6;
-		}
 		return kf;
 	}
 
@@ -340,12 +184,6 @@ public class Timelines {
 	}
 
 	public int size() {
-		return names.size();
+		return timelines.size();
 	}
-
-//	public String[] getNames() {
-//		String[] names = new String[size()];
-//		this.names.toArray(names);
-//		return names;
-//	}
 }
