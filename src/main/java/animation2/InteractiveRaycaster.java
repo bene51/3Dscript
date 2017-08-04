@@ -57,6 +57,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 	private RenderingThread worker;
 
+	private float[] pdOut;
+
 	private float[] fromCalib;
 	private float[] toTransform;
 	private float[] nearfar;
@@ -91,7 +93,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		fromCalib = Transform.fromCalibration(pd[0], pd[1], pd[2], 0, 0, 0, null);
 
-		final float[] pdOut = new float[] {pd[0], pd[0], pd[0]}; // TODO phOut
+		pdOut = new float[] {pd[0], pd[0], pd[0]}; // TODO phOut
 
 		toTransform = Transform.fromCalibration(
 				pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
@@ -342,21 +344,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		transformationPanel.addTransformationPanelListener(new TransformationPanel.Listener() {
 			@Override
 			public void transformationChanged(float ax, float ay, float az, float dx, float dy, float dz, float s) {
-				Transform.fromEulerAngles(rotation, new double[] {
-						Math.PI * ax / 180,
-						Math.PI * ay / 180,
-						Math.PI * az / 180});
-
-				scale[0] = s;
-
-				translation[0] = dx;
-				translation[1] = dy;
-				translation[2] = dz;
-
-				render();
-				Calibration cal = worker.out.getCalibration();
-				cal.pixelWidth = pdOut[0] / scale[0];
-				cal.pixelHeight = pdOut[1] / scale[0];
+				setTransformation(ax, ay, az, dx, dy, dz, s);
 			}
 
 			@Override
@@ -371,11 +359,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void resetTransformation() {
-				scale[0] = 1;
-				translation[0] = translation[1] = translation[2] = 0;
-				Transform.fromIdentity(rotation);
-				render();
-				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
+				resetTransformation();
 			}
 		});
 
@@ -673,6 +657,14 @@ public class InteractiveRaycaster implements PlugInFilter {
 		worker.push(renderingSettings, fwd, inv, nearfar);
 	}
 
+	public float[] getRotationCenter() {
+		return rotcenter;
+	}
+
+	public int getNChannels() {
+		return luts.length;
+	}
+
 	public void resetRenderingSettings() {
 		for(int c = 0; c < luts.length; c++) {
 			renderingSettings[c].alphaMin = (float)luts[c].min;
@@ -687,6 +679,35 @@ public class InteractiveRaycaster implements PlugInFilter {
 		Color col = getLUTColor(luts[c]);
 		contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
 		render();
+	}
+
+	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
+		Transform.fromEulerAngles(rotation, new double[] {
+				Math.PI * ax / 180,
+				Math.PI * ay / 180,
+				Math.PI * az / 180});
+
+		scale[0] = s;
+
+		translation[0] = dx;
+		translation[1] = dy;
+		translation[2] = dz;
+
+		render();
+		Calibration cal = worker.out.getCalibration();
+		cal.pixelWidth = pdOut[0] / scale[0];
+		cal.pixelHeight = pdOut[1] / scale[0];
+	}
+
+	public void resetTransformation() {
+		scale[0] = 1;
+		translation[0] = translation[1] = translation[2] = 0;
+		Transform.fromIdentity(rotation);
+		render();
+		Calibration cal = worker.out.getCalibration();
+		cal.pixelWidth = pdOut[0] / scale[0];
+		cal.pixelHeight = pdOut[1] / scale[0];
+		transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
 	}
 
 	private Keyframe createKeyframe(int frame,
