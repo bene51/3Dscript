@@ -62,7 +62,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		public void renderingSettingsChanged();
 		public void channelChanged();
 		public void renderingSettingsReset();
-		public void record(NumberField src, String timelineName, boolean delete);
+		public void record(NumberField src, int timelineIdx, boolean delete);
 	}
 
 	private ArrayList<Listener> listeners =
@@ -204,9 +204,9 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			l.channelChanged();
 	}
 
-	private void fireRecord(NumberField src, String timelineName, boolean delete) {
+	private void fireRecord(NumberField src, int timelineIdx, boolean delete) {
 		for(Listener l : listeners)
-			l.record(src, timelineName, delete);
+			l.record(src, timelineIdx, delete);
 	}
 
 	@Override
@@ -222,21 +222,21 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 	@Override
 	public void record(NumberField src, boolean delete) {
-		String timelineName = null;
+		int timelineIdx = -1;
 		int c = channelChoice.getSelectedIndex();
 		if(src == minCTF)
-			timelineName = "Channel " + (c + 1) + " color min";
+			timelineIdx = Keyframe.COLOR_MIN   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
 		else if(src == maxCTF)
-			timelineName = "Channel " + (c + 1) + " color max";
+			timelineIdx = Keyframe.COLOR_MAX   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
 		else if(src == gammaCTF)
-			timelineName = "Channel " + (c + 1) + " color gamma";
+			timelineIdx = Keyframe.COLOR_GAMMA + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
 		else if(src == minATF)
-			timelineName = "Channel " + (c + 1) + " alpha min";
+			timelineIdx = Keyframe.ALPHA_MIN   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
 		else if(src == maxATF)
-			timelineName = "Channel " + (c + 1) + " alpha max";
+			timelineIdx = Keyframe.ALPHA_MAX   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
 		else if(src == gammaATF)
-			timelineName = "Channel " + (c + 1) + " alpha gamma";
-		fireRecord(src, timelineName, delete);
+			timelineIdx = Keyframe.ALPHA_GAMMA + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
+		fireRecord(src, timelineIdx, delete);
 	}
 
 	@Override

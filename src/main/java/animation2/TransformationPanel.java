@@ -32,7 +32,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 	public static interface Listener {
 		public void transformationChanged(float ax, float ay, float az, float dx, float dy, float dz, float s);
-		public void record(NumberField src, String timelineName, boolean delete);
+		public void record(NumberField src, int timelineIdx, boolean delete);
 		public void resetTransformation();
 	}
 
@@ -147,23 +147,23 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 	@Override
 	public void record(NumberField src, boolean delete) {
-		String timelineName = null;
+		int timelineIdx = -1;
 
 		if(src == angleX)
-			timelineName = "X Rotation";
+			timelineIdx = Keyframe.ROTX;
 		else if(src == angleY)
-			timelineName = "Y Rotation";
+			timelineIdx = Keyframe.ROTY;
 		else if(src == angleZ)
-			timelineName = "Z Rotation";
+			timelineIdx = Keyframe.ROTZ;
 		else if(src == dX)
-			timelineName = "X Translation";
+			timelineIdx = Keyframe.TRANSX;
 		else if(src == dY)
-			timelineName = "Y Translation";
+			timelineIdx = Keyframe.TRANSY;
 		else if(src == dZ)
-			timelineName = "Z Translation";
+			timelineIdx = Keyframe.TRANSZ;
 		else if(src == scale)
-			timelineName = "Scale";
-		fireRecord(src, timelineName, delete);
+			timelineIdx = Keyframe.SCALE;
+		fireRecord(src, timelineIdx, delete);
 	}
 
 	public float getAngleX() {
@@ -227,9 +227,9 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 					getScale());
 	}
 
-	private void fireRecord(NumberField src, String timelineName, boolean delete) {
+	private void fireRecord(NumberField src, int timelineIdx, boolean delete) {
 		for(Listener l : listeners)
-			l.record(src, timelineName, delete);
+			l.record(src, timelineIdx, delete);
 	}
 
 	private void fireResetTransformation() {

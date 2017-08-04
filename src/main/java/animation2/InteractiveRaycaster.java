@@ -329,18 +329,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void record(NumberField src, String timelineName, boolean delete) {
-				for(int i = 0; i < timelines.size(); i++) {
-					if(Timelines.getName(i).equals(timelineName)) {
-						int frame = animationPanel.getCurrentFrame();
-						if(delete)
-							timelines.get(i).removePointAt(frame);
-						else
-							timelines.get(i).add(frame, Double.parseDouble(src.getText()));
-						animationPanel.repaint();
-						break;
-					}
-				}
+			public void record(NumberField src, int timelineIdx, boolean delete) {
+				int frame = animationPanel.getCurrentFrame();
+				if(delete)
+					timelines.get(timelineIdx).removePointAt(frame);
+				else
+					timelines.get(timelineIdx).add(frame, Double.parseDouble(src.getText()));
+				animationPanel.repaint();
 			}
 		});
 
@@ -365,18 +360,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void record(NumberField src, String timelineName, boolean delete) {
-				for(int i = 0; i < timelines.size(); i++) {
-					if(Timelines.getName(i).equals(timelineName)) {
-						int frame = animationPanel.getCurrentFrame();
-						if(delete)
-							timelines.get(i).removePointAt(frame);
-						else
-							timelines.get(i).add(frame, Double.parseDouble(src.getText()));
-						animationPanel.repaint();
-						break;
-					}
-				}
+			public void record(NumberField src, int timelineIdx, boolean delete) {
+				int frame = animationPanel.getCurrentFrame();
+				if(delete)
+					timelines.get(timelineIdx).removePointAt(frame);
+				else
+					timelines.get(timelineIdx).add(frame, Double.parseDouble(src.getText()));
+				animationPanel.repaint();
 			}
 
 			@Override
@@ -405,18 +395,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void record(NumberField src, String timelineName, boolean delete) {
-				for(int i = 0; i < timelines.size(); i++) {
-					if(Timelines.getName(i).equals(timelineName)) {
-						int frame = animationPanel.getCurrentFrame();
-						if(delete)
-							timelines.get(i).removePointAt(frame);
-						else
-							timelines.get(i).add(frame, Double.parseDouble(src.getText()));
-						animationPanel.repaint();
-						break;
-					}
-				}
+			public void record(NumberField src, int timelineIdx, boolean delete) {
+				int frame = animationPanel.getCurrentFrame();
+				if(delete)
+					timelines.get(timelineIdx).removePointAt(frame);
+				else
+					timelines.get(timelineIdx).add(frame, Double.parseDouble(src.getText()));
+				animationPanel.repaint();
 			}
 
 			@Override

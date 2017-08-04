@@ -38,7 +38,7 @@ public class CroppingPanel extends Panel {
 	public static interface Listener {
 		public void nearFarChanged(int near, int far);
 		public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1);
-		public void record(NumberField src, String timelineName, boolean delete);
+		public void record(NumberField src, int timelineIdx, boolean delete);
 		public void cutOffROI();
 	}
 
@@ -147,23 +147,23 @@ public class CroppingPanel extends Panel {
 		bbY.addSliderChangeListener(bbListener);
 		bbZ.addSliderChangeListener(bbListener);
 
-		addNumberFieldListener(nearfar.getMinField(), "Near");
-		addNumberFieldListener(nearfar.getMaxField(), "Far");
-		addNumberFieldListener(bbX.getMinField(), "Bounding Box X Min");
-		addNumberFieldListener(bbX.getMaxField(), "Bounding Box X Max");
-		addNumberFieldListener(bbY.getMinField(), "Bounding Box Y Min");
-		addNumberFieldListener(bbY.getMaxField(), "Bounding Box Y Max");
-		addNumberFieldListener(bbZ.getMinField(), "Bounding Box Z Min");
-		addNumberFieldListener(bbZ.getMaxField(), "Bounding Box Z Max");
+		addNumberFieldListener(nearfar.getMinField(), Keyframe.NEAR);
+		addNumberFieldListener(nearfar.getMaxField(), Keyframe.FAR);
+		addNumberFieldListener(bbX.getMinField(), Keyframe.BOUNDINGBOX_XMIN);
+		addNumberFieldListener(bbX.getMaxField(), Keyframe.BOUNDINGBOX_XMAX);
+		addNumberFieldListener(bbY.getMinField(), Keyframe.BOUNDINGBOX_YMIN);
+		addNumberFieldListener(bbY.getMaxField(), Keyframe.BOUNDINGBOX_YMAX);
+		addNumberFieldListener(bbZ.getMinField(), Keyframe.BOUNDINGBOX_ZMIN);
+		addNumberFieldListener(bbZ.getMaxField(), Keyframe.BOUNDINGBOX_ZMAX);
 	}
 
-	private void addNumberFieldListener(NumberField nf, final String timelineName) {
+	private void addNumberFieldListener(NumberField nf, final int timelineIdx) {
 		nf.addListener(new NumberField.Listener() {
 			@Override public void valueChanged(double v) {}
 
 			@Override
 			public void record(NumberField src, boolean delete) {
-				fireRecord(src, timelineName, delete);
+				fireRecord(src, timelineIdx, delete);
 			}
 		});
 	}
@@ -224,9 +224,9 @@ public class CroppingPanel extends Panel {
 			l.nearFarChanged(near, far);
 	}
 
-	private void fireRecord(NumberField src, String timelineName, boolean delete) {
+	private void fireRecord(NumberField src, int timelineIdx, boolean delete) {
 		for(Listener l : listeners)
-			l.record(src, timelineName, delete);
+			l.record(src, timelineIdx, delete);
 	}
 
 	private void fireCutOffROI() {
