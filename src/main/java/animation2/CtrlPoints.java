@@ -34,29 +34,86 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		return list.listIterator();
 	}
 
+	/**
+	 * Add a new LinePoint at the specified position; if there exists already a LinePoint at
+	 * the given x coordinate, move the existing point to the given position
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	public LinePoint add(int x, double y) {
-		LinePoint existing = null;
-		for(LinePoint lp : list) { // TODO replace with binary search
-			if(lp.x == x) {
-				existing = lp;
-				break;
-			}
-		}
-		if(existing == null)
+		int e = getIndexAt(x);
+		if(e == -1)
 			return add(new LinePoint(x, y));
-		else {
-			Point ll = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
-			Point ur = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
-//			getBoundingBox(ll, ur);
-			existing.moveTo(x, y, ll, ur);
-			return existing;
-		}
+		LinePoint existing = get(e);
+		Point ll = new Point(Integer.MIN_VALUE, Double.NEGATIVE_INFINITY);
+		Point ur = new Point(Integer.MAX_VALUE, Double.POSITIVE_INFINITY);
+		existing.moveTo(x, y, ll, ur);
+		return existing;
 	}
 
 	public LinePoint add(LinePoint c) {
 		list.add(c);
 		Collections.sort(list);
 		return c;
+	}
+
+	/**
+	 * Removes the given point, CtrlPoint or LinePoint
+	 * @param cp
+	 */
+	public void remove(Point cp) {
+		for(int i = 0; i < list.size(); i++) {
+			LinePoint lp = list.get(i);
+			if(lp == cp) {
+				list.remove(i);
+				return;
+			}
+
+			if(lp.c1 == cp) {
+				lp.c1.moveTo(lp.x, lp.y, lp, lp);
+				return;
+			}
+			if(lp.c2 == cp) {
+				lp.c2.moveTo(lp.x, lp.y, lp, lp);
+				return;
+			}
+		}
+		System.out.println("Could not remove " + cp);
+	}
+
+	public void removePointAt(int x) {
+		int toRemove = getIndexAt(x);
+		if(toRemove != -1)
+			list.remove(toRemove);
+	}
+
+	public int getIndexAt(int x) {
+		for(int i = 0; i < list.size(); i++) {  // TODO replace with binary search
+			LinePoint lp = list.get(i);
+			if(lp.x == x)
+				return i;
+		}
+		return -1;
+	}
+
+	public LinePoint getPointAt(int x) {
+		int i = getIndexAt(x);
+		if(i == -1)
+			return null;
+		return get(i);
+	}
+
+	public LinePoint get(int index) {
+		return list.get(index);
+	}
+
+	public int indexOf(LinePoint lp) {
+		return list.indexOf(lp);
+	}
+
+	public int size() {
+		return list.size();
 	}
 
 	public void sort() {
@@ -101,31 +158,7 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		return p1.getY();
 	}
 
-	public void removePointAt(int x) {
-		int toRemove = -1;
-		for(int i = 0; i < list.size(); i++) { // TODO replace with binary search
-			LinePoint lp = list.get(i);
-			if(lp.x == x) {
-				toRemove = i;
-				break;
-			}
-		}
-		if(toRemove != -1)
-			list.remove(toRemove);
-	}
-
-	public LinePoint getPointAt(int x) {
-		LinePoint existing = null;
-		for(LinePoint lp : list) { // TODO replace with binary search
-			if(lp.x == x) {
-				existing = lp;
-				break;
-			}
-		}
-		return existing;
-	}
-
-	public double getInterpolatedValue(double x, Point p1, Point p2, Point p3, Point p4) {
+	public static double getInterpolatedValue(double x, Point p1, Point p2, Point p3, Point p4) {
 		// P(t) = (1-t)^3P0 + 3(1-t)^2tP1 + 3(1-t)t^2P2 + t^3P3 with t running
 		// from 0 to 1.
 		double x1 = p1.x, x2 = p2.x, x3 = p3.x, x4 = p4.x;
@@ -159,38 +192,6 @@ public class CtrlPoints implements Iterable<LinePoint> {
 		double iy = Math.pow(1 - t, 3) * y1 + 3 * Math.pow(1 - t, 2) * t * y2
 				+ 3 * (1 - t) * t * t * y3 + t * t * t * y4;
 		return iy;
-	}
-
-	public int size() {
-		return list.size();
-	}
-
-	public void remove(Point cp) {
-		for(int i = 0; i < list.size(); i++) {
-			LinePoint lp = list.get(i);
-			if(lp == cp) {
-				list.remove(i);
-				return;
-			}
-
-			if(lp.c1 == cp) {
-				lp.c1.moveTo(lp.x, lp.y, lp, lp);
-				return;
-			}
-			if(lp.c2 == cp) {
-				lp.c2.moveTo(lp.x, lp.y, lp, lp);
-				return;
-			}
-		}
-		System.out.println("Could not remove " + cp);
-	}
-
-	public LinePoint get(int index) {
-		return list.get(index);
-	}
-
-	public int indexOf(LinePoint lp) {
-		return list.indexOf(lp);
 	}
 
 	public void getBoundingBox(Point lowerleft, Point upperright) {
