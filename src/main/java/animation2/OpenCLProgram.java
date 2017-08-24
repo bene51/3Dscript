@@ -2,6 +2,11 @@ package animation2;
 
 public class OpenCLProgram {
 
+	public static void main(String[] args) {
+		System.out.println(makeSourceForMIP(2, true));
+	}
+
+	public static String makeSource(int channels, boolean backgroundTexture) {
 		String source =
 			"bool\n" +
 			"intersects(float3 bb0, float3 bb1, float3 r0, float3 rd, float *i0, float *i1) {\n" +
@@ -69,6 +74,14 @@ public class OpenCLProgram {
 		source = source +
 			"		float alphastop,\n" +
 			"		float3 dir,\n" +
+			"		float3 inc,\n";
+		if(backgroundTexture)
+			source = source +
+			"		__read_only image2d_t bgtexture, sampler_t bgsampler,\n";
+		else
+			source = source +
+			"		int3 background,\n";
+		source = source +
 			"		int bitsPerSample)\n" +
 			"{\n" +
 			"	int x = get_global_id(0);\n" +
@@ -78,7 +91,15 @@ public class OpenCLProgram {
 			"		float3 r0 = multiplyMatrixVector(inverseTransform, (float4)(x, y, 0, 1));\n" +
 			"		float inear = 0;\n" +
 			"		float ifar = 0;\n" +
+			"\n";
+		if(backgroundTexture) {
+			source = source +
 			"\n" +
+			"		float2 p = (float2)((float)x / target_size.x, (float)y / target_size.y);\n" +
+			"		uint4 background = read_imageui(bgtexture, bgsampler, p);\n" +
+			"\n";
+		}
+			source = source +
 			"		int3 bb0 = data_origin;\n" +
 			"		int3 bb1 = data_origin + data_size;\n" +
 			"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, dir, &inear, &ifar);\n" +

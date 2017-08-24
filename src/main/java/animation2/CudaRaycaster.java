@@ -82,6 +82,9 @@ public class CudaRaycaster {
 	private static native void setTexture8(int channel, byte[][] data);
 	private static native void setTexture16(int channel, short[][] data);
 
+	private static native void setBackground(int[] data, int w, int h);
+	private static native void clearBackground();
+
 	private static native void setTargetSize(int width, int height);
 	private static native void setZStep(float zStep);
 
@@ -126,7 +129,7 @@ public class CudaRaycaster {
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 		setImage(imp);
-		setKernel(OpenCLProgram.makeSource(nChannels));
+		setKernel(OpenCLProgram.makeSource(nChannels, false));
 	}
 
 	public ImagePlus getImage() {
@@ -167,6 +170,18 @@ public class CudaRaycaster {
 		}
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
+	}
+
+	public void setBackground(ColorProcessor cp) {
+		if(cp == null) {
+			clearBackground();
+			setKernel(OpenCLProgram.makeSource(nChannels, false));
+			return;
+		}
+		int[] rgb = (int[])cp.getPixels();
+		setBackground(rgb, cp.getWidth(), cp.getHeight());
+		// setKernel(OpenCLProgram.makeSourceForMIP(nChannels, true));
+		setKernel(OpenCLProgram.makeSource(nChannels, true));
 	}
 
 	public ImageProcessor project(
