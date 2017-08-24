@@ -16,6 +16,8 @@ import java.awt.event.MouseEvent;
 
 public class SwitchablePanel extends Panel {
 
+	private static final long serialVersionUID = -6728763866288689347L;
+
 	private Label label;
 	private Label label2;
 	private Panel labels;
@@ -75,9 +77,8 @@ public class SwitchablePanel extends Panel {
 	}
 
 	private static class UnderlinedLabel extends Label {
-		public UnderlinedLabel() {
-			this("");
-		}
+
+		private static final long serialVersionUID = 7777367978433059747L;
 
 		public UnderlinedLabel(String text) {
 			super(text);

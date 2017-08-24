@@ -21,7 +21,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 		TransformationPanel tp = new TransformationPanel(0, 0, 0, 0, 0, 0, 0);
 		f.add(tp);
 		f.pack();
-		f.show();
+		f.setVisible(true);
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -32,7 +32,6 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 	public static interface Listener {
 		public void transformationChanged(float ax, float ay, float az, float dx, float dy, float dz, float s);
-		public void record(NumberField src, int timelineIdx, boolean delete);
 		public void resetTransformation();
 	}
 
@@ -123,7 +122,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 	}
 
 	private NumberField makeNumberfield() {
-		NumberField nf = new NumberField(4, true);
+		NumberField nf = new NumberField(4);
 		nf.addListener(this);
 		nf.addNumberFieldFocusListener(this);
 		return nf;
@@ -143,27 +142,6 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 	@Override
 	public void valueChanged(double v) {
 		fireTransformationChanged();
-	}
-
-	@Override
-	public void record(NumberField src, boolean delete) {
-		int timelineIdx = -1;
-
-		if(src == angleX)
-			timelineIdx = Keyframe.ROTX;
-		else if(src == angleY)
-			timelineIdx = Keyframe.ROTY;
-		else if(src == angleZ)
-			timelineIdx = Keyframe.ROTZ;
-		else if(src == dX)
-			timelineIdx = Keyframe.TRANSX;
-		else if(src == dY)
-			timelineIdx = Keyframe.TRANSY;
-		else if(src == dZ)
-			timelineIdx = Keyframe.TRANSZ;
-		else if(src == scale)
-			timelineIdx = Keyframe.SCALE;
-		fireRecord(src, timelineIdx, delete);
 	}
 
 	public float getAngleX() {
@@ -225,11 +203,6 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 					getTranslationY(),
 					getTranslationZ(),
 					getScale());
-	}
-
-	private void fireRecord(NumberField src, int timelineIdx, boolean delete) {
-		for(Listener l : listeners)
-			l.record(src, timelineIdx, delete);
 	}
 
 	private void fireResetTransformation() {

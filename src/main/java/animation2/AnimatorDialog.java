@@ -166,8 +166,8 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public AnimationPanel addAnimationPanel(String[] timelineNames, Timelines ctrls, int timeline, int frame) {
-		final AnimationPanel panel = new AnimationPanel(timelineNames, ctrls, timeline, frame);
+	public AnimationPanel addAnimationPanel() {
+		final AnimationPanel panel = new AnimationPanel();
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
@@ -195,11 +195,7 @@ public class AnimatorDialog extends GenericDialog {
 
 		gd.addOutputPanel(255, 255, 1);
 
-		final Timelines timelines = new Timelines(1);
-		final String[] timelineNames = new String[timelines.size()];
-		for (int i = 0; i < timelineNames.length; i++)
-			timelineNames[i] = Timelines.getName(i);
-		gd.addAnimationPanel(timelineNames, timelines, 0, 0);
+		gd.addAnimationPanel();
 
 		gd.setModal(false);
 		gd.showDialog();

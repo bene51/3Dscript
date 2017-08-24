@@ -1,20 +1,12 @@
 package animation2;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.FontMetrics;
 import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Panel;
-import java.awt.RenderingHints;
 import java.awt.TextField;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
@@ -27,15 +19,12 @@ public class NumberField extends Panel {
 
 	private boolean integersOnly = false;
 
-	private boolean isRecordable = false;
-
 	private TextField textfield;
 
 	private ArrayList<Listener> listener = new ArrayList<Listener>();
 
 	public static interface Listener {
 		public void valueChanged(double v);
-		public void record(NumberField src, boolean delete);
 	}
 
 	public void addListener(Listener l) {
@@ -58,24 +47,10 @@ public class NumberField extends Panel {
 		textfield.setText(s);
 	}
 
-	@Override
-	public Dimension getPreferredSize() {
-		if(!isRecordable)
-			return super.getPreferredSize();
-		Dimension d = textfield.getPreferredSize();
-		int r = (textfield.getHeight() - 6) / 2;
-		return new Dimension(d.width + 2 * r + 2, d.height);
-	}
-
 	private void fireValueChanged(double v) {
 		System.out.println("fire");
 		for(Listener l : listener)
 			l.valueChanged(v);
-	}
-
-	private void fireRecord(NumberField src, boolean delete) {
-		for(Listener l : listener)
-			l.record(src, delete);
 	}
 
 	public static void main(String[] args) {
@@ -87,10 +62,6 @@ public class NumberField extends Panel {
 			@Override
 			public void valueChanged(double v) {
 				System.out.println("value changed to " + v);
-			}
-			@Override
-			public void record(NumberField src, boolean delete) {
-				System.out.println("record");
 			}
 		});
 		Frame frame = new Frame("");
@@ -245,12 +216,7 @@ public class NumberField extends Panel {
 	}
 
 	public NumberField(int n) {
-		this(n, false);
-	}
-
-	public NumberField(int n, final boolean isRecordable) {
 		super(new FlowLayout(0, 0, 0));
-		this.isRecordable = isRecordable;
 		textfield = new TextField(n);
 		add(textfield);
 //		InputMap im = getInputMap();
@@ -305,59 +271,5 @@ public class NumberField extends Panel {
 				}
 			}
 		});
-
-		if(isRecordable) {
-			super.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(MouseEvent e) {
-					int x = e.getX();
-					int y = e.getY();
-					if(within(x, y)) {
-						recordButtonColor = Color.ORANGE;
-						repaint();
-					}
-				}
-
-				@Override
-				public void mouseReleased(MouseEvent e) {
-					if(recordButtonColor.equals(Color.ORANGE)) {
-						recordButtonColor = defaultRecordButtonColor;
-						repaint();
-						fireRecord(NumberField.this, e.isShiftDown());
-					}
-				}
-
-				public boolean within(int x, int y) {
-					int r = (textfield.getHeight() - 6) / 2;
-					int x0 = textfield.getX() + textfield.getWidth() + 2;
-					int y0 = textfield.getY() + textfield.getHeight()/2 - r;
-					return x >= x0 && x <= x0 + 2 * r && y >= y0 && y <= y0 + 2 * r;
-				}
-			});
-		}
-	}
-
-	private Color defaultRecordButtonColor = new Color(80, 80, 80);
-	private Color recordButtonColor = defaultRecordButtonColor;
-
-
-	@Override
-	public void paint(Graphics g) {
-		Graphics2D g2d = (Graphics2D)g;
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		super.paint(g);
-		if(!isRecordable)
-			return;
-		int r = (textfield.getHeight() - 6) / 2;
-		int x = textfield.getX() + textfield.getWidth() + 2;
-		int y = textfield.getY() + textfield.getHeight()/2 - r;
-		g.setColor(recordButtonColor);
-		g.fillOval(x, y, 2 * r, 2 * r);
-		g.setColor(Color.WHITE);
-		FontMetrics fm = g2d.getFontMetrics();
-		g2d.drawString("R",
-				x + r - fm.stringWidth("R") / 2f,
-				y + r + fm.getAscent() - (float)(fm.getHeight() / 2));
 	}
 }

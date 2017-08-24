@@ -71,11 +71,6 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		fireOutputSizeChanged();
 	}
 
-	@Override
-	public void record(NumberField src, boolean delete) {
-
-	}
-
 	public int getOutputWidth() {
 		return (int)Double.parseDouble(widthTF.getText());
 	}

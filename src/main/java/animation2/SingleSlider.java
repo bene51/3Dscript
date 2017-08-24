@@ -22,11 +22,11 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
-public class DoubleSlider extends Panel implements FocusListener, NumberField.Listener {
+public class SingleSlider extends Panel implements FocusListener, NumberField.Listener {
 
 	public static void main(String[] args) {
 		Frame frame = new Frame();
-		DoubleSlider slider = new DoubleSlider(new int[] {-100, 100}, new int[] {20, 50}, new Color(255, 0, 0, 100));
+		SingleSlider slider = new SingleSlider(100, 75, new Color(255, 0, 0, 100));
 		frame.add(slider);
 		frame.pack();
 		frame.setVisible(true);
@@ -38,23 +38,19 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 
 	private static final long serialVersionUID = 1L;
 
-	private DoubleSliderCanvas slider;
-	private NumberField minTF = new NumberField(4);
+	private SingleSliderCanvas slider;
 	private NumberField maxTF = new NumberField(4);
 
 	private ArrayList<Listener> listeners = new ArrayList<Listener>();
 
-	public DoubleSlider(int[] realMinMax, int[] setMinMax, Color color) {
+	public SingleSlider(int realMax, int setMax, Color color) {
 		super();
 
-		minTF.setIntegersOnly(true);
-		minTF.addListener(this);
-		minTF.addNumberFieldFocusListener(this);
 		maxTF.setIntegersOnly(true);
 		maxTF.addListener(this);
 		maxTF.addNumberFieldFocusListener(this);
 
-		this.slider = new DoubleSliderCanvas(realMinMax, setMinMax, color, this);
+		this.slider = new SingleSliderCanvas(realMax, setMax, color, this);
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
@@ -73,37 +69,25 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 		c.insets = new Insets(3, 3, 0, 3);
 		c.gridx = 1;
 		c.anchor = GridBagConstraints.WEST;
-		add(minTF, c);
-		c.gridx = 2;
-		c.anchor = GridBagConstraints.EAST;
 		add(maxTF, c);
+//		c.gridx = 2;
+//		c.anchor = GridBagConstraints.EAST;
+//		add(maxTF, c);
 
 		updateTextfieldsFromSliders();
-	}
-
-	public NumberField getMinField() {
-		return minTF;
 	}
 
 	public NumberField getMaxField() {
 		return maxTF;
 	}
 
-	public int getMin() {
-		return slider.setMinMax[0];
-	}
-
 	public int getMax() {
-		return slider.setMinMax[1];
+		return slider.setMax;
 	}
 
-	public void setMinAndMax(int min, int max) {
-		slider.setMinMax[0] = min;
-		minTF.setText(Integer.toString(min));
-
-		slider.setMinMax[1] = max;
+	public void setMax(int max) {
+		slider.setMax = max;
 		maxTF.setText(Integer.toString(max));
-
 		slider.repaint();
 	}
 
@@ -121,8 +105,7 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 	@Override
 	public void valueChanged(double v) {
 		try {
-			slider.setMinMax[0] = Integer.parseInt(minTF.getText());
-			slider.setMinMax[1] = Integer.parseInt(maxTF.getText());
+			slider.setMax = Integer.parseInt(maxTF.getText());
 			slider.repaint();
 			fireSliderChanged();
 		} catch(Exception ex) {
@@ -130,13 +113,12 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 	}
 
 	private void updateTextfieldsFromSliders() {
-		minTF.setText(Integer.toString(slider.setMinMax[0]));
-		maxTF.setText(Integer.toString(slider.setMinMax[1]));
+		maxTF.setText(Integer.toString(slider.setMax));
 		fireSliderChanged();
 	}
 
-	public void set(final int[] realMinMax, final int[] setMinMax, Color color) {
-		slider.set(realMinMax, setMinMax, color);
+	public void set(final int realMax, final int setMax, Color color) {
+		slider.set(realMax, setMax, color);
 	}
 
 	public void addSliderChangeListener(Listener l) {
@@ -152,26 +134,26 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 			l.sliderChanged();
 	}
 
-	private static class DoubleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
+	private static class SingleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
 
 		private static final long serialVersionUID = 1L;
 		private Color color;
-		private int[] realMinMax;
-		private int[] setMinMax;
+		private int realMax;
+		private int setMax;
 
 		private DiagramCanvas diagram;
 
-		private DoubleSlider slider;
+		private SingleSlider slider;
 
-		public DoubleSliderCanvas(final int[] realMinMax, int[] setMinMax, Color color, DoubleSlider slider) {
+		public SingleSliderCanvas(final int realMax, int setMax, Color color, SingleSlider slider) {
 			this.color = color;
 			this.slider = slider;
-			this.setMinMax = setMinMax;
-			this.realMinMax = realMinMax;
+			this.setMax = setMax;
+			this.realMax = realMax;
 
 			this.diagram = new DiagramCanvas();
 			diagram.setMargins(2, 2, 2, 2);
-			diagram.setBoundingBox(realMinMax[0], 0, realMinMax[1], 5);
+			diagram.setBoundingBox(0, 0, realMax, 5);
 
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
@@ -197,11 +179,11 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 
 		}
 
-		void set(final int[] realMinMax, final int[] setMinMax, Color color) {
+		void set(final int realMax, final int setMax, Color color) {
 			this.color = color;
-			this.setMinMax = setMinMax;
-			this.realMinMax = realMinMax;
-			diagram.setBoundingBox(realMinMax[0], 0, realMinMax[1], 5);
+			this.setMax = setMax;
+			this.realMax = realMax;
+			diagram.setBoundingBox(0, 0, realMax, 5);
 			repaint();
 		}
 
@@ -214,7 +196,6 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 		public void mouseExited(MouseEvent e) {}
 
 		private final int DRAG_NONE  = 0;
-		private final int DRAG_LEFT  = 1;
 		private final int DRAG_RIGHT = 2;
 
 		private int drag = DRAG_NONE;
@@ -223,10 +204,7 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 		public void mousePressed(MouseEvent e) {
 			int x = e.getX();
 
-			if(Math.abs(x - diagram.canvasX(setMinMax[0])) < 3) {
-				drag = DRAG_LEFT;
-			}
-			else if(Math.abs(x - diagram.canvasX(setMinMax[1])) < 3) {
+			if(Math.abs(x - diagram.canvasX(setMax)) < 3) {
 				drag = DRAG_RIGHT;
 			}
 			else {
@@ -249,11 +227,8 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 			if(drag == DRAG_NONE)
 				return;
 
-			if(drag == DRAG_LEFT) {
-				setMinMax[0] = clamp((int)Math.round(diagram.realX(e.getX())), realMinMax[0], realMinMax[1]);
-			}
-			else if(drag == DRAG_RIGHT) {
-				setMinMax[1] = clamp((int)Math.round(diagram.realX(e.getX())), realMinMax[0], realMinMax[1]);
+			if(drag == DRAG_RIGHT) {
+				setMax = clamp((int)Math.round(diagram.realX(e.getX())), 0, realMax);
 			}
 			slider.updateTextfieldsFromSliders();
 			repaint();
@@ -263,10 +238,7 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 		public void mouseMoved(MouseEvent e) {
 			int x = e.getX();
 
-			if(Math.abs(x - diagram.canvasX(setMinMax[0])) < 3) {
-				setCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
-			}
-			else if(Math.abs(x - diagram.canvasX(setMinMax[1])) < 3) {
+			if(Math.abs(x - diagram.canvasX(setMax)) < 3) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
 			}
 			else {
@@ -281,13 +253,12 @@ public class DoubleSlider extends Panel implements FocusListener, NumberField.Li
 			g.clearRect(0, 0, getWidth(), getHeight());
 
 			g.setColor(color);
-			int x0 = diagram.canvasX(setMinMax[0]);
-			int x1 = diagram.canvasX(setMinMax[1]);
-			int wi = x1 - x0;
-			g.fillRect(x0, diagram.getTopPixel() - 1, wi, diagram.getAvailableHeight() + 1);
+			int x1 = diagram.canvasX(setMax);
+			int wi = x1 - 0;
+			g.fillRect(0, diagram.getTopPixel() - 1, wi, diagram.getAvailableHeight() + 1);
 
 			g.setColor(Color.BLACK);
-			g.drawRect(x0, diagram.getTopPixel() - 1, wi, diagram.getAvailableHeight() + 1);
+			g.drawRect(0, diagram.getTopPixel() - 1, wi, diagram.getAvailableHeight() + 1);
 
 			g.setColor(Color.BLACK);
 			diagram.drawFrame(gx);

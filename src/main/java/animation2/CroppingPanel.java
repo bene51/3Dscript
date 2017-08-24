@@ -38,7 +38,6 @@ public class CroppingPanel extends Panel {
 	public static interface Listener {
 		public void nearFarChanged(int near, int far);
 		public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1);
-		public void record(NumberField src, int timelineIdx, boolean delete);
 		public void cutOffROI();
 	}
 
@@ -146,26 +145,6 @@ public class CroppingPanel extends Panel {
 		bbX.addSliderChangeListener(bbListener);
 		bbY.addSliderChangeListener(bbListener);
 		bbZ.addSliderChangeListener(bbListener);
-
-		addNumberFieldListener(nearfar.getMinField(), Keyframe.NEAR);
-		addNumberFieldListener(nearfar.getMaxField(), Keyframe.FAR);
-		addNumberFieldListener(bbX.getMinField(), Keyframe.BOUNDINGBOX_XMIN);
-		addNumberFieldListener(bbX.getMaxField(), Keyframe.BOUNDINGBOX_XMAX);
-		addNumberFieldListener(bbY.getMinField(), Keyframe.BOUNDINGBOX_YMIN);
-		addNumberFieldListener(bbY.getMaxField(), Keyframe.BOUNDINGBOX_YMAX);
-		addNumberFieldListener(bbZ.getMinField(), Keyframe.BOUNDINGBOX_ZMIN);
-		addNumberFieldListener(bbZ.getMaxField(), Keyframe.BOUNDINGBOX_ZMAX);
-	}
-
-	private void addNumberFieldListener(NumberField nf, final int timelineIdx) {
-		nf.addListener(new NumberField.Listener() {
-			@Override public void valueChanged(double v) {}
-
-			@Override
-			public void record(NumberField src, boolean delete) {
-				fireRecord(src, timelineIdx, delete);
-			}
-		});
 	}
 
 	public int getBBXMin() {
@@ -222,11 +201,6 @@ public class CroppingPanel extends Panel {
 	private void fireNearFarChanged(int near, int far) {
 		for(Listener l : listeners)
 			l.nearFarChanged(near, far);
-	}
-
-	private void fireRecord(NumberField src, int timelineIdx, boolean delete) {
-		for(Listener l : listeners)
-			l.record(src, timelineIdx, delete);
 	}
 
 	private void fireCutOffROI() {

@@ -1,5 +1,7 @@
 package animation2;
 
+import renderer3d.RenderingProperty;
+
 public class RenderingSettings {
 
 	@RenderingProperty(label = "Color Min")

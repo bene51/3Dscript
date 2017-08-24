@@ -6,6 +6,8 @@ import java.awt.Panel;
 
 public class DoubleBuffer extends Panel {
 
+	private static final long serialVersionUID = 8434831121029967633L;
+
 	private int bufferWidth;
 	private int bufferHeight;
 	private Image bufferImage;

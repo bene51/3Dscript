@@ -26,6 +26,8 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import renderer3d.Keyframe;
+
 public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
 
 	public static void main(String[] args) {
@@ -43,13 +45,13 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private static final long serialVersionUID = 1L;
 
 
-	private NumberField minCTF = new NumberField(4, true);
-	private NumberField maxCTF = new NumberField(4, true);
-	private NumberField gammaCTF = new NumberField(4, true);
+	private NumberField minCTF = new NumberField(4);
+	private NumberField maxCTF = new NumberField(4);
+	private NumberField gammaCTF = new NumberField(4);
 
-	private NumberField minATF = new NumberField(4, true);
-	private NumberField maxATF = new NumberField(4, true);
-	private NumberField gammaATF = new NumberField(4, true);
+	private NumberField minATF = new NumberField(4);
+	private NumberField maxATF = new NumberField(4);
+	private NumberField gammaATF = new NumberField(4);
 
 	private Choice channelChoice;
 
@@ -63,7 +65,6 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		public void renderingSettingsChanged();
 		public void channelChanged();
 		public void renderingSettingsReset();
-		public void record(NumberField src, int timelineIdx, boolean delete);
 	}
 
 	private int[][] histogram;
@@ -73,6 +74,9 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private RenderingSettings[] renderingSettings;
 
 	private int channel = 0;
+
+	@SuppressWarnings("unused")
+	private int timelineIdx = 0;
 
 	private ArrayList<Listener> listeners =
 			new ArrayList<Listener>();
@@ -203,23 +207,11 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 				}
 			});
 
-			int timelineIdx = Keyframe.WEIGHT + Keyframe.getNumberOfNonChannelProperties() + i * Keyframe.getNumberOfChannelProperties();
-			addNumberFieldListener(wslider.getMaxField(), timelineIdx);
+			timelineIdx = Keyframe.WEIGHT + Keyframe.getNumberOfNonChannelProperties() + i * Keyframe.getNumberOfChannelProperties();
 			weightSliders[i] = wslider;
 		}
 
 		updateTextfieldsFromSliders();
-	}
-
-	private void addNumberFieldListener(NumberField nf, final int timelineIdx) {
-		nf.addListener(new NumberField.Listener() {
-			@Override public void valueChanged(double v) {}
-
-			@Override
-			public void record(NumberField src, boolean delete) {
-				fireRecord(src, timelineIdx, delete);
-			}
-		});
 	}
 
 	private SingleSlider addSingleSlider(String label, int realMax, int setMax, Color color, GridBagConstraints c) {
@@ -278,11 +270,6 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			l.channelChanged();
 	}
 
-	private void fireRecord(NumberField src, int timelineIdx, boolean delete) {
-		for(Listener l : listeners)
-			l.record(src, timelineIdx, delete);
-	}
-
 	@Override
 	public void focusGained(FocusEvent e) {
 		TextField tf = (TextField)e.getSource();
@@ -292,25 +279,6 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	@Override
 	public void focusLost(FocusEvent e) {
 		valueChanged(0);
-	}
-
-	@Override
-	public void record(NumberField src, boolean delete) {
-		int timelineIdx = -1;
-		int c = channelChoice.getSelectedIndex();
-		if(src == minCTF)
-			timelineIdx = Keyframe.COLOR_MIN   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
-		else if(src == maxCTF)
-			timelineIdx = Keyframe.COLOR_MAX   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
-		else if(src == gammaCTF)
-			timelineIdx = Keyframe.COLOR_GAMMA + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
-		else if(src == minATF)
-			timelineIdx = Keyframe.ALPHA_MIN   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
-		else if(src == maxATF)
-			timelineIdx = Keyframe.ALPHA_MAX   + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
-		else if(src == gammaATF)
-			timelineIdx = Keyframe.ALPHA_GAMMA + Keyframe.getNumberOfNonChannelProperties() + c * Keyframe.getNumberOfChannelProperties();
-		fireRecord(src, timelineIdx, delete);
 	}
 
 	@Override

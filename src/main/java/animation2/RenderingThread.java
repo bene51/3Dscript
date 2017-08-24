@@ -1,6 +1,8 @@
 package animation2;
 
 import ij.ImagePlus;
+import renderer3d.CudaRaycaster;
+import renderer3d.Transform;
 
 public class RenderingThread {
 

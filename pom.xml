@@ -30,6 +30,14 @@
 		    <groupId>com.google.code.gson</groupId>
 		    <artifactId>gson</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.fifesoft</groupId>
+			<artifactId>rsyntaxtextarea</artifactId>
+		</dependency>
+		<dependency>
+    		<groupId>com.fifesoft</groupId>
+			<artifactId>autocomplete</artifactId>
+		</dependency>
 	</dependencies>
 
 	<repositories>

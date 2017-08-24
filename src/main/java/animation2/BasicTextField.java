@@ -206,6 +206,8 @@ public class BasicTextField implements MouseListener, KeyListener {
 		tf4.setPosition(x,  y);
 		tf4.setJustification(JUSTIFY_LEFT, JUSTIFY_TOP);
 		Panel p = new Panel() {
+			private static final long serialVersionUID = 1420261164629448825L;
+
 			@Override
 			public void paint(Graphics g) {
 				g.drawLine(0, y, getWidth(), y);
