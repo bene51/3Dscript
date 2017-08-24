@@ -100,8 +100,8 @@ public class AnimatorDialog extends GenericDialog {
 			super.actionPerformed(e);
 	}
 
-	public ContrastPanel addContrastPanel(int[] histo8, Color color, double min, double max, RenderingSettings r, int nChannels) {
-		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, r, nChannels);
+	public ContrastPanel addContrastPanel(int[][] histo8, Color[] color, double min[], double max[], RenderingSettings[] r) {
+		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, r);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
@@ -186,7 +186,7 @@ public class AnimatorDialog extends GenericDialog {
 		RenderingSettings rs = new RenderingSettings(0, 255, 1, 0, 255, 2);
 
 		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster", null);
-		gd.addContrastPanel(histo, Color.RED, 0, 255, rs, 1);
+		gd.addContrastPanel(new int[][] {histo}, new Color[] {Color.RED}, new double[] {0}, new double[] {255}, new RenderingSettings[] {rs});
 
 		gd.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 

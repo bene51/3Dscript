@@ -183,7 +183,7 @@ public class CudaRaycaster {
 					renderingSettings[c].alphaMin,
 					renderingSettings[c].alphaMax,
 					renderingSettings[c].alphaGamma,
-					1f, // TODO weight
+					renderingSettings[c].weight,
 					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}

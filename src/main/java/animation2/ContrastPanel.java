@@ -5,7 +5,6 @@ import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,15 +29,15 @@ import java.util.Locale;
 public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
 
 	public static void main(String[] args) {
-		Frame frame = new Frame();
-		int[] histo = new int[256];
-		for(int i = 0; i < 256; i++)
-			histo[i] = i;
-		RenderingSettings r = new RenderingSettings(0, 255, 1, 0, 255, 1);
-		ContrastPanel slider = new ContrastPanel(histo, Color.RED, 0, 255, r, 2);
-		frame.add(slider);
-		frame.pack();
-		frame.setVisible(true);
+//		Frame frame = new Frame();
+//		int[] histo = new int[256];
+//		for(int i = 0; i < 256; i++)
+//			histo[i] = i;
+//		RenderingSettings r = new RenderingSettings(0, 255, 1, 0, 255, 1);
+//		ContrastPanel slider = new ContrastPanel(histo, Color.RED, 0, 255, r, 2);
+//		frame.add(slider);
+//		frame.pack();
+//		frame.setVisible(true);
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -56,6 +55,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 	private DoubleSliderCanvas slider;
 
+	private SingleSlider[] weightSliders;
+
 	private DecimalFormat df;
 
 	public static interface Listener {
@@ -65,11 +66,25 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		public void record(NumberField src, int timelineIdx, boolean delete);
 	}
 
+	private int[][] histogram;
+	private Color[] color;
+	private double[] min;
+	private double[] max;
+	private RenderingSettings[] renderingSettings;
+
+	private int channel = 0;
+
 	private ArrayList<Listener> listeners =
 			new ArrayList<Listener>();
 
-	public ContrastPanel(int[] histogram, Color color, double min, double max, RenderingSettings r, int nChannels) {
+	public ContrastPanel(int[][] histogram, Color[] color, double[] min, double max[], final RenderingSettings[] r) {
 		super();
+
+		this.histogram = histogram;
+		this.color = color;
+		this.min = min;
+		this.max = max;
+		this.renderingSettings = r;
 
 		Locale locale  = new Locale("en", "US");
 		String pattern = "##0.0#";
@@ -90,10 +105,10 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		gammaATF.addListener(this);
 		gammaATF.addNumberFieldFocusListener(this);
 
-		gammaCTF.setText(df.format(r.colorGamma));
-		gammaATF.setText(df.format(r.alphaGamma));
+		gammaCTF.setText(df.format(r[channel].colorGamma));
+		gammaATF.setText(df.format(r[channel].alphaGamma));
 
-		this.slider = new DoubleSliderCanvas(histogram, color, min, max, r, this);
+		this.slider = new DoubleSliderCanvas(histogram[channel], color[channel], min[channel], max[channel], r[channel], this);
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
@@ -101,7 +116,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		c.gridx = c.gridy = 0;
 		c.insets = new Insets(5, 2, 10, 5);
 		channelChoice = new Choice();
-		for(int i = 0; i < nChannels; i++)
+		for(int i = 0; i < renderingSettings.length; i++)
 			channelChoice.add("Channel " + (i + 1));
 		add(channelChoice, c);
 		channelChoice.addItemListener(new ItemListener() {
@@ -170,17 +185,76 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		c.anchor = GridBagConstraints.EAST;
 		add(maxATF, c);
 
+		weightSliders = new SingleSlider[renderingSettings.length];
+
+		for(int i = 0; i < renderingSettings.length; i++) {
+			final int ch = i;
+			final SingleSlider wslider = addSingleSlider(
+					"Channel " + i + " weight",
+					100,
+					100,
+					color[ch],
+					c);
+			wslider.addSliderChangeListener(new SingleSlider.Listener() {
+				@Override
+				public void sliderChanged() {
+					r[ch].weight = wslider.getMax() / 100f;
+					fireRenderingSettingsChanged();
+				}
+			});
+
+			int timelineIdx = Keyframe.WEIGHT + Keyframe.getNumberOfNonChannelProperties() + i * Keyframe.getNumberOfChannelProperties();
+			addNumberFieldListener(wslider.getMaxField(), timelineIdx);
+			weightSliders[i] = wslider;
+		}
+
 		updateTextfieldsFromSliders();
+	}
+
+	private void addNumberFieldListener(NumberField nf, final int timelineIdx) {
+		nf.addListener(new NumberField.Listener() {
+			@Override public void valueChanged(double v) {}
+
+			@Override
+			public void record(NumberField src, boolean delete) {
+				fireRecord(src, timelineIdx, delete);
+			}
+		});
+	}
+
+	private SingleSlider addSingleSlider(String label, int realMax, int setMax, Color color, GridBagConstraints c) {
+		SingleSlider slider = new SingleSlider(realMax, setMax, color);
+
+		GridBagLayout layout = (GridBagLayout)getLayout();
+		c.gridy++;
+
+		c.gridx = 0;
+		if(label != null) {
+			Label theLabel = new Label(label);
+			c.anchor = GridBagConstraints.EAST;
+			c.gridwidth = 1;
+			c.weightx = 0;
+			layout.setConstraints(theLabel, c);
+			add(theLabel);
+			c.gridx++;
+		}
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		layout.setConstraints(slider, c);
+		add(slider);
+		return slider;
 	}
 
 	public int getChannel() {
 		return channelChoice.getSelectedIndex();
 	}
 
-	public void set(int[] histogram, Color color, double min, double max, RenderingSettings r) {
-		gammaATF.setText(df.format(r.alphaGamma));
-		gammaCTF.setText(df.format(r.colorGamma));
-		slider.set(histogram, color, min, max, r);
+	public void setChannel(int c) {
+		this.channel = c;
+		gammaATF.setText(df.format(renderingSettings[c].alphaGamma));
+		gammaCTF.setText(df.format(renderingSettings[c].colorGamma));
+		slider.set(histogram[c], color[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		repaint();
 	}

@@ -34,6 +34,7 @@ public class Keyframe implements Comparable<Keyframe> {
 	public static final int ALPHA_MIN   = 3;
 	public static final int ALPHA_MAX   = 4;
 	public static final int ALPHA_GAMMA = 5;
+	public static final int WEIGHT      = 6;
 
 
 	public static int UNSET = Integer.MIN_VALUE;
@@ -86,7 +87,7 @@ public class Keyframe implements Comparable<Keyframe> {
 	}
 
 	public static int getNumberOfChannelProperties() {
-		return 6;
+		return 7;
 	}
 
 	public Keyframe(
@@ -136,7 +137,7 @@ public class Keyframe implements Comparable<Keyframe> {
 		return kf;
 	}
 
-	public class KeyframeProperty {
+	public static class KeyframeProperty {
 		public final Field field;
 		public final Object object;
 

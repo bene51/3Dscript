@@ -2,7 +2,6 @@ package animation2;
 
 public class OpenCLProgram {
 
-	public static String makeSource(int channels) {
 		String source =
 			"bool\n" +
 			"intersects(float3 bb0, float3 bb1, float3 r0, float3 rd, float *i0, float *i1) {\n" +
@@ -64,13 +63,12 @@ public class OpenCLProgram {
 		for(int c = 0; c < channels; c++) {
 			source = source +
 			"		float alphamin" + c + ", float alphamax" + c + ", float alphagamma" + c + ",\n" +
-			"		float colormin" + c + ", float colormax" + c + ", float colorgamma" + c + ",\n";
+			"		float colormin" + c + ", float colormax" + c + ", float colorgamma" + c + ",\n" +
+			"		float weight" + c + ",\n";
 		}
 		source = source +
 			"		float alphastop,\n" +
 			"		float3 dir,\n" +
-			"		float3 inc,\n" +
-			"		int3 background,\n" +
 			"		int bitsPerSample)\n" +
 			"{\n" +
 			"	int x = get_global_id(0);\n" +
@@ -127,8 +125,9 @@ public class OpenCLProgram {
 			"				// alpha = alpha + (1 - alpha) * alphar;\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
-			"				float a" + c + " = (" + sum("alpha", channels) + ");\n" +
-			"\n" +
+					"\n" +
+			"				// float a" + c + " = (" + sum("alpha", channels) + ");\n" +
+			"				float a" + c + " = alpha" + c + ";\n" +
 			"				float tmp" + c + " = (1 - a" + c + ") * rAlphaColor" + c + ".x;\n" +
 			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n" +
 			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n";
@@ -136,11 +135,16 @@ public class OpenCLProgram {
 		source = source +
 			"			}\n" +
 			"			p0 = p0 + inc;\n" +
-			"		}\n" +
+			"		}\n";
+		for(int c = 0; c < channels; c++) {
+			source = source +
+			"		color" + c + " = color" + c + " * weight" + c + ";\n";
+		}
+		source = source +
 			"		unsigned int out_r = " + sumOfProducts("color", "rgb", ".x", channels) + ";\n" +
 			"		unsigned int out_g = " + sumOfProducts("color", "rgb", ".y", channels) + ";\n" +
 			"		unsigned int out_b = " + sumOfProducts("color", "rgb", ".z", channels) + ";\n" +
-			"		float alpha = " + sum("alpha", channels) + ";\n" +
+			"		float alpha = clamp(" + sum("alpha", channels) + ", 0.0f, 1.0f);\n" +
 			"		out_r = (unsigned int)(clamp(alpha * out_r + (1 - alpha) * background.x, 0.0f, 255.0f));\n" +
 			"		out_g = (unsigned int)(clamp(alpha * out_g + (1 - alpha) * background.y, 0.0f, 255.0f));\n" +
 			"		out_b = (unsigned int)(clamp(alpha * out_b + (1 - alpha) * background.z, 0.0f, 255.0f));\n" +
@@ -163,8 +167,9 @@ public class OpenCLProgram {
 	// returns "a0 * b0.x + a1 * b1.x + a2 * b2.x"
 	private static String sumOfProducts(String prefix1, String prefix2, String postfix2, int nChannels) {
 		String ret = new String();
-		for(int c = 0; c < nChannels - 1; c++)
+		for(int c = 0; c < nChannels - 1; c++) {
 			ret += prefix1 + c + " * " + prefix2 + c + postfix2 + " + ";
+		}
 		ret += prefix1 + (nChannels - 1) + " * " + prefix2 + (nChannels - 1) + postfix2;
 		return ret;
 	}

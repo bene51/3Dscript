@@ -121,10 +121,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 				Transform.fromIdentity(null),
 				Transform.fromIdentity(null), nearfar, zStep);
 
-		Color col = getLUTColor(luts[0]);
-
 		dialog = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
-		contrastPanel = dialog.addContrastPanel(histo8[0], col, min[0], max[0], renderingSettings[0], renderingSettings.length);
+		contrastPanel = dialog.addContrastPanel(histo8, getLUTColors(luts), min, max, renderingSettings);
 
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 
@@ -321,8 +319,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void channelChanged() {
 				int c = contrastPanel.getChannel();
-				Color col = getLUTColor(luts[c]);
-				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+				contrastPanel.setChannel(c);
 			}
 
 			@Override
@@ -457,8 +454,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				}
 
 				int c = contrastPanel.getChannel();
-				Color col = getLUTColor(luts[c]);
-				contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+				contrastPanel.setChannel(c);
 
 				croppingPanel.setBoundingBox(k.bbx0, k.bby0, k.bbz0, k.bbx1, k.bby1, k.bbz1);
 
@@ -673,11 +669,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 			renderingSettings[c].colorMin = (float)luts[c].min;
 			renderingSettings[c].colorMax = (float)luts[c].max;
 			renderingSettings[c].colorGamma = 1;
+			renderingSettings[c].weight = 1;
 		}
 
 		int c = contrastPanel.getChannel();
-		Color col = getLUTColor(luts[c]);
-		contrastPanel.set(histo8[c], col, min[c], max[c], renderingSettings[c]);
+		contrastPanel.setChannel(c);
 		render();
 	}
 
@@ -751,6 +747,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 			return new Color(r, g, b);
 		else
 			return Color.black;
+	}
+
+	private Color[] getLUTColors(LUT[] lut) {
+		Color[] colors = new Color[lut.length];
+		for(int i = 0; i < lut.length; i++)
+			colors[i] = getLUTColor(lut[i]);
+		return colors;
 	}
 
 	private static float[] calculateForwardTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
