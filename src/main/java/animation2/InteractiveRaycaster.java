@@ -1,6 +1,5 @@
 package animation2;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -23,11 +22,11 @@ import ij.gui.Toolbar;
 import ij.measure.Calibration;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
-import ij.process.LUT;
+import renderer3d.CombinedTransform;
 import renderer3d.Keyframe;
+import renderer3d.Renderer3DAdapter;
 import renderer3d.Transform;
 
 /*
@@ -56,20 +55,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private OutputPanel outputPanel;
 	private AnimationPanel animationPanel;
 
+	private Renderer3DAdapter renderer;
 	private RenderingThread worker;
-
-	private float[] pdOut;
-
-//	private float[] fromCalib;
-//	private float[] toTransform;
-//	private float[] nearfar;
-//	private float[] scale;
-//	private float[] translation;
-//	private float[] rotation;
-//	private float[] rotcenter;
-
-//	private RenderingSettings[] renderingSettings;
-//	private LUT[] luts;
 
 	public InteractiveRaycaster() {
 		instance = this;
@@ -83,71 +70,32 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 	@Override
 	public void run(ImageProcessor ip) {
-//		luts = image.isComposite() ?
-//				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
-
-//		final int nC = image.getNChannels();
-
 		calculateChannelMinAndMax();
 
-//		final float[] pd = new float[] {
-//				(float)image.getCalibration().pixelWidth,
-//				(float)image.getCalibration().pixelHeight,
-//				(float)image.getCalibration().pixelDepth
-//		};
-//
-//		fromCalib = Transform.fromCalibration(pd[0], pd[1], pd[2], 0, 0, 0, null);
-//
-//		pdOut = new float[] {pd[0], pd[0], pd[0]}; // TODO phOut
-//
-//		toTransform = Transform.fromCalibration(
-//				pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
-//		Transform.invert(toTransform);
-//
-//		nearfar = new float[] {0, 0};
-//		scale = new float[] {1};
-//		translation = new float[3];
-//		rotation = Transform.fromIdentity(null);
-//		rotcenter = new float[] {
-//				image.getWidth()   * pd[0] / 2,
-//				image.getHeight()  * pd[1] / 2,
-//				image.getNSlices() * pd[2] / 2};
-//
-//		renderingSettings = new RenderingSettings[nC];
-//		for(int c = 0; c < nC; c++) {
-//			renderingSettings[c] = new RenderingSettings(
-//					(float)luts[c].min, (float)luts[c].max, 1,
-//					(float)luts[c].min, (float)luts[c].max, 2);
-//		}
 		final float zStep = 2;
-		worker = new RenderingThread(
-				image,
-				renderingSettings,
-				Transform.fromIdentity(null),
-				Transform.fromIdentity(null), nearfar, zStep);
+		renderer = new Renderer3DAdapter(image, image.getWidth(), image.getHeight(), zStep);
+		Keyframe keyframe = renderer.getKeyframe();
+		worker = new RenderingThread(renderer);
 
 		dialog = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
-		contrastPanel = dialog.addContrastPanel(histo8, getLUTColors(luts), min, max, renderingSettings);
+		contrastPanel = dialog.addContrastPanel(
+				histo8,
+				renderer.getChannelColors(),
+				min, max,
+				renderer.getKeyframe().renderingSettings);
 
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 
 		croppingPanel = dialog.addCroppingPanel(image);
-
-		nearfar[0] = croppingPanel.getNear();
-		nearfar[1] = croppingPanel.getFar();
+		keyframe.near = croppingPanel.getNear();
+		keyframe.far  = croppingPanel.getFar();
 
 		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
 
 		animationPanel = dialog.addAnimationPanel();
 
-//		Calibration cal = worker.out.getCalibration();
-//		cal.pixelWidth = pdOut[0] / scale[0];
-//		cal.pixelHeight = pdOut[1] / scale[0];
-//		cal.setUnit(image.getCalibration().getUnit());
-
-		// TODO shutdown
-
 		final Point mouseDown = new Point();
+		final Keyframe mouseDownFrame = keyframe.clone();
 		final boolean[] isRotation = new boolean[] {false};
 
 		final ImageCanvas canvas = worker.out.getCanvas();
@@ -158,6 +106,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					return;
 				mouseDown.setLocation(e.getPoint());
 				isRotation[0] = !e.isShiftDown();
+				mouseDownFrame.setFrom(renderer.getKeyframe());
 			}
 
 			@Override
@@ -167,7 +116,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int dx = e.getX() - mouseDown.x;
 				int dy = e.getY() - mouseDown.y;
 				if(!isRotation[0]) {
-					renderer.translateBy(dx, dy, 0, true);
+					Keyframe kf = mouseDownFrame.clone();
+					CombinedTransform t = kf.getFwdTransform();
+					t.translateBy(dx, dy, 0, true);
+					worker.push(kf, -1, -1, -1);
 				}
 				else {
 					float speed = 0.7f;
@@ -179,7 +131,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 					}
 					int ax = -Math.round(dx * speed);
 					int ay =  Math.round(dy * speed);
-					renderer.rotateBy(ax, ay);
+					Keyframe kf = mouseDownFrame.clone();
+					CombinedTransform t = kf.getFwdTransform();
+					t.rotateBy(ax, ay);
+					worker.push(kf, -1, -1, -1);
 				}
 			}
 		};
@@ -190,31 +145,19 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void mouseDragged(MouseEvent e) {
 				if(Toolbar.getToolId() != Toolbar.HAND)
 					return;
+
+				int dx = e.getX() - mouseDown.x;
+				int dy = e.getY() - mouseDown.y;
 				// translation
 				if(!isRotation[0]) {
-					System.out.println(e.getX() + ", " + e.getY());
-					int dx = e.getX() - mouseDown.x;
-					int dy = e.getY() - mouseDown.y;
-					float[] trans = new float[] {
-							translation[0] + dx * pdOut[0],// / scale[0],
-							translation[1] + dy * pdOut[1],// / scale[0],
-							translation[2]};
-					float[] fwd = calculateForwardTransform(
-							scale[0],
-							trans,
-							rotation,
-							rotcenter,
-							fromCalib,
-							toTransform);
-					float[] inv = calculateInverseTransform(fwd);
-					transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), trans, scale[0]);
-					worker.push(renderingSettings, fwd, inv, nearfar);
+					Keyframe kf = mouseDownFrame.clone();
+					CombinedTransform t = kf.getFwdTransform();
+					t.translateBy(dx, dy, 0, true);
+					worker.push(kf, -1, -1, -1);
 				}
 				// rotation
 				else {
 					float speed = 0.7f;
-					int dx = e.getX() - mouseDown.x;
-					int dy = e.getY() - mouseDown.y;
 					if(e.isAltDown()) {
 						if(Math.abs(dx) > Math.abs(dy))
 							dy = 0;
@@ -223,29 +166,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 					}
 					int ax = -Math.round(dx * speed);
 					int ay =  Math.round(dy * speed);
+					Keyframe kf = mouseDownFrame.clone();
+					CombinedTransform t = kf.getFwdTransform();
+					t.rotateBy(ax, ay);
+					worker.push(kf, -1, -1, -1);
 
 					IJ.showStatus(ax + "\u00B0" + ", " + ay + "\u00B0");
-
-					float[] rx = Transform.fromAngleAxis(new float[] {0, 1, 0}, ax * (float)Math.PI / 180f, null);
-					float[] ry = Transform.fromAngleAxis(new float[] {1, 0, 0}, ay * (float)Math.PI / 180f, null);
-
-					float[] r = Transform.mul(rx, ry);
-					float[] rot = Transform.mul(r, rotation);
-
-					System.out.println(rot[3] + ", "+ rot[7] + ", " + rot[11]);
-//					float[] cinv = Transform.fromTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], null);
-//					float[] c = Transform.fromTranslation(rotcenter[0], rotcenter[1], rotcenter[2], null);
-//					float[] rot = Transform.mul(c, Transform.mul(r, Transform.mul(cinv, rotation)));
-					float[] fwd = calculateForwardTransform(
-							scale[0],
-							translation,
-							rot,
-							rotcenter,
-							fromCalib,
-							toTransform);
-					float[] inv = calculateInverseTransform(fwd);
-					transformationPanel.setTransformation(guessEulerAnglesDegree(rot), translation, scale[0]);
-					worker.push(renderingSettings, fwd, inv, nearfar);
+					transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 				}
 			}
 
@@ -263,40 +190,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int ex = e.getX();
 				int ey = e.getY();
 
-				float[] transform = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
+				Keyframe kf = renderer.getKeyframe().clone();
+				CombinedTransform t = kf.getFwdTransform();
+				t.zoomInto(ex, ey, factor);
+				worker.push(kf, -1, -1, -1);
 
-				// calculate the current output pixel coordinate of the rotation center
-				// transform is the transformation that gets pixel coordinates as input
-				// and transforms to pixel output
-				float[] c = Transform.apply(transform, rotcenter[0] / pd[0], rotcenter[1] / pd[1], rotcenter[2] / pd[2], null);
-
-				// dx and dy are the x- and y-distances of the mouse point to the rotation center
-				// imagine a output size of 10x10, a rotation center at (5,5), the mouse at (1,1)
-				// and a scale factor of 0.5
-				// then dx = (4, 4)
-				float dx = c[0] - ex;
-				float dy = c[1] - ey;
-
-				// calculate where the transformed (scaled) mouse point appears (using rotcenter as scaling
-				// center)
-				// in the example: p = (5,5) - 0.5*(4,4) = (3,3)
-				float px = c[0] - factor * dx;
-				float py = c[1] - factor * dy;
-
-				// the transformed mouse point is at (px, py) (3,3), but should be at the original (untransformed)
-				// mouse position (1, 1), therefore, we need to shift the image back
-				translation[0] += (ex - px) * pdOut[0];
-				translation[1] += (ey - py) * pdOut[1];
-
-				scale[0] *= factor;
-
-				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				float[] inv = calculateInverseTransform(fwd);
-				transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
-				worker.push(renderingSettings, fwd, inv, nearfar);
-				Calibration cal = worker.out.getCalibration();
-				cal.pixelWidth = pdOut[0] / scale[0];
-				cal.pixelHeight = pdOut[1] / scale[0];
+				transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 			}
 		};
 		canvas.addMouseWheelListener(mouseWheelListener);
@@ -304,14 +203,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged() {
-				render();
+				worker.push(renderer.getKeyframe(), -1, -1, -1);
 			}
 
 			@Override
-			public void channelChanged() {
-				int c = contrastPanel.getChannel();
-				contrastPanel.setChannel(c);
-			}
+			public void channelChanged() {}
 
 			@Override
 			public void renderingSettingsReset() {
@@ -327,23 +223,29 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void resetTransformation() {
-				resetTransformation();
+				InteractiveRaycaster.this.resetTransformation();
 			}
 		});
 
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
 			@Override
 			public void nearFarChanged(int near, int far) {
-				nearfar[0] = near;
-				nearfar[1] = far;
-				render();
+				Keyframe kf = renderer.getKeyframe().clone();
+				kf.near = near;
+				kf.far  = far;
+				worker.push(kf, -1, -1, -1);
 			}
 
 			@Override
 			public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
-				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				float[] inv = calculateInverseTransform(fwd);
-				worker.push(renderingSettings, fwd, inv, nearfar,  bbx0, bby0, bbz0, bbx1, bby1, bbz1);
+				Keyframe kf = renderer.getKeyframe().clone();
+				kf.bbx0 = bbx0;
+				kf.bby0 = bby0;
+				kf.bbz0 = bbz0;
+				kf.bbx1 = bbx1;
+				kf.bby1 = bby1;
+				kf.bbz1 = bbz1;
+				worker.push(kf, -1, -1, -1);
 			}
 
 			@Override
@@ -359,10 +261,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 					mask.resetRoi();
 					mask.invert();
 
-					float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-					worker.getRaycaster().crop(image, mask, fwd);
-					float[] inv = calculateInverseTransform(fwd);
-					worker.push(renderingSettings, fwd, inv, nearfar);
+					Keyframe kf = renderer.getKeyframe();
+					float[] fwd = kf.getFwdTransform().calculateForwardTransform();
+					renderer.crop(image, mask, fwd);
+
+					worker.push(kf, -1, -1, -1);
 				}
 				else {
 					IJ.error("Selection required");
@@ -373,21 +276,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		outputPanel.addOutputPanelListener(new OutputPanel.Listener() {
 			@Override
 			public void outputSizeChanged(int tgtW, int tgtH, float zStep) {
-				pdOut[0] = image.getWidth() * pd[0] / tgtW;
-				pdOut[1] = image.getHeight() * pd[1] / tgtH;
-
-				final float[] tt = Transform.fromCalibration(
-						pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
-				Transform.invert(tt);
-				System.arraycopy(tt, 0, toTransform, 0, 12);
-
-				worker.getRaycaster().setTargetZStep(zStep);
-				float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-				float[] inv = calculateInverseTransform(fwd);
-				worker.push(renderingSettings, fwd, inv, nearfar, tgtW, tgtH);
-				Calibration cal = worker.out.getCalibration();
-				cal.pixelWidth = pdOut[0] / scale[0];
-				cal.pixelHeight = pdOut[1] / scale[0];
+				setOutputSize(tgtW, tgtH);
+				setZStep(zStep);
 			}
 		});
 
@@ -420,86 +310,45 @@ public class InteractiveRaycaster implements PlugInFilter {
 		outsize.height = (int)Math.round(outsize.height * mag);
 
 		outputPanel.setOutputSize(outsize.width, outsize.height, zStep);
-		pdOut[0] = image.getWidth() * pd[0] / outsize.width;
-		pdOut[1] = image.getHeight() * pd[1] / outsize.height;
 
-		final float[] tt = Transform.fromCalibration(
-				pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
-		Transform.invert(tt);
-		System.arraycopy(tt, 0, toTransform, 0, 12);
-
-		float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-		float[] inv = calculateInverseTransform(fwd);
-		worker.getRaycaster().setTargetZStep(zStep);
-		worker.push(renderingSettings, fwd, inv, nearfar, outsize.width, outsize.height);
-		cal = worker.out.getCalibration();
-		cal.pixelWidth = pdOut[0] / scale[0];
-		cal.pixelHeight = pdOut[1] / scale[0];
+		setOutputSize(outsize.width, outsize.height);
+		setZStep(zStep);
 
 		Toolbar.getInstance().setTool(Toolbar.HAND);
 
-		ImageProcessor bg = IJ.openImage("D:\\PSoteloHitschfeld\\cover\\bg3.tif").getProcessor();
-		ColorProcessor cp = bg.convertToColorProcessor();
-		worker.getRaycaster().setBackground(cp);
+//		ImageProcessor bg = IJ.openImage("D:\\PSoteloHitschfeld\\cover\\bg3.tif").getProcessor();
+//		ColorProcessor cp = bg.convertToColorProcessor();
+//		renderer.setBackground(cp);
 	}
 
-	public void render() {
-		float[] fwd = calculateForwardTransform(scale[0], translation, rotation, rotcenter, fromCalib, toTransform);
-		float[] inv = calculateInverseTransform(fwd);
-		worker.push(renderingSettings, fwd, inv, nearfar);
+	public void setOutputSize(int tgtW, int tgtH) {
+		renderer.setTargetSize(tgtW, tgtH);
+
+		Calibration cal = worker.out.getCalibration();
+		renderer.getKeyframe().getFwdTransform().adjustOutputCalibration(cal);
+		worker.push(renderer.getKeyframe(), tgtW, tgtH, -1);
 	}
 
-	public float[] getRotationCenter() {
-		return rotcenter;
-	}
-
-	public int getNChannels() {
-		return luts.length;
+	public void setZStep(float zStep) {
+		renderer.setTargetZStep(zStep);
+		worker.push(renderer.getKeyframe(), -1, -1, -1);
 	}
 
 	public void resetRenderingSettings() {
-		for(int c = 0; c < luts.length; c++) {
-			renderingSettings[c].alphaMin = (float)luts[c].min;
-			renderingSettings[c].alphaMax = (float)luts[c].max;
-			renderingSettings[c].alphaGamma = 2;
-			renderingSettings[c].colorMin = (float)luts[c].min;
-			renderingSettings[c].colorMax = (float)luts[c].max;
-			renderingSettings[c].colorGamma = 1;
-			renderingSettings[c].weight = 1;
-		}
-
-		int c = contrastPanel.getChannel();
-		contrastPanel.setChannel(c);
-		render();
+		renderer.resetRenderingSettings();
+		worker.push(renderer.getKeyframe(), -1, -1, -1);
+		contrastPanel.setChannel(contrastPanel.getChannel());
 	}
 
 	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
-		Transform.fromEulerAngles(rotation, new double[] {
-				Math.PI * ax / 180,
-				Math.PI * ay / 180,
-				Math.PI * az / 180});
-
-		scale[0] = s;
-
-		translation[0] = dx;
-		translation[1] = dy;
-		translation[2] = dz;
-
-		render();
-		Calibration cal = worker.out.getCalibration();
-		cal.pixelWidth = pdOut[0] / scale[0];
-		cal.pixelHeight = pdOut[1] / scale[0];
+		Keyframe kf = renderer.getKeyframe().clone();
+		kf.getFwdTransform().setTransformation(ax, ay, az, dx, dy, dz, s);
+		worker.push(kf, -1, -1, -1);
+		transformationPanel.setTransformation(new float[] {ax, ay, az}, new float[] {dx, dy, dz}, s);
 	}
 
 	public void resetTransformation() {
-		scale[0] = 1;
-		translation[0] = translation[1] = translation[2] = 0;
-		Transform.fromIdentity(rotation);
-		render();
-		Calibration cal = worker.out.getCalibration();
-		cal.pixelWidth = pdOut[0] / scale[0];
-		cal.pixelHeight = pdOut[1] / scale[0];
-		transformationPanel.setTransformation(guessEulerAnglesDegree(rotation), translation, scale[0]);
+		setTransformation(0, 0, 0, 0, 0, 0, 1);
 	}
 
 //	public void record(int from, int to, List<TransformationAnimation> animations, Timelines timelines) {
@@ -545,89 +394,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 //	}
 
 	public void startTextBasedAnimation() {
-		AnimationEditor editor = new AnimationEditor(this);
+		AnimationEditor editor = new AnimationEditor(renderer);
 		editor.setVisible(true);
-	}
-
-	private Keyframe createKeyframe(int frame,
-			CroppingPanel croppingPanel,
-			RenderingSettings[] renderingSettings,
-			float[] rotation,
-			float[] translation,
-			float[] scale,
-			float[] nearfar) {
-		RenderingSettings[] rs = new RenderingSettings[renderingSettings.length];
-		for(int i = 0; i < rs.length; i++)
-			rs[i] = new RenderingSettings(renderingSettings[i]);
-		int bbx0 = croppingPanel.getBBXMin();
-		int bby0 = croppingPanel.getBBYMin();
-		int bbz0 = croppingPanel.getBBZMin();
-		int bbx1 = croppingPanel.getBBXMax();
-		int bby1 = croppingPanel.getBBYMax();
-		int bbz1 = croppingPanel.getBBZMax();
-
-		double[] eulerAngles = new double[3];
-		Transform.guessEulerAngles(rotation, eulerAngles);
-		eulerAngles[0] = eulerAngles[0] * 180 / Math.PI;
-		eulerAngles[1] = eulerAngles[1] * 180 / Math.PI;
-		eulerAngles[2] = eulerAngles[2] * 180 / Math.PI;
-		return new Keyframe(
-				frame, rs,
-				nearfar[0], nearfar[1],
-				scale[0],
-				translation[0], translation[1], translation[2],
-				eulerAngles[0], eulerAngles[1], eulerAngles[2],
-				bbx0, bby0, bbz0, bbx1, bby1, bbz1);
-	}
-
-	private Color getLUTColor(LUT lut) {
-		int index = lut.getMapSize() - 1;
-		int r = lut.getRed(index);
-		int g = lut.getGreen(index);
-		int b = lut.getBlue(index);
-		//IJ.log(index+" "+r+" "+g+" "+b);
-		if (r<100 || g<100 || b<100)
-			return new Color(r, g, b);
-		else
-			return Color.black;
-	}
-
-	private Color[] getLUTColors(LUT[] lut) {
-		Color[] colors = new Color[lut.length];
-		for(int i = 0; i < lut.length; i++)
-			colors[i] = getLUTColor(lut[i]);
-		return colors;
-	}
-
-	private static float[] calculateForwardTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
-		float[] scaleM = Transform.fromScale(scale, null);
-		float[] transM = Transform.fromTranslation(translation[0], translation[1], translation[2], null);
-		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
-
-		float[] x = Transform.mul(scaleM, Transform.mul(rotation, centerM));
-		Transform.applyTranslation(center[0], center[1], center[2], x);
-		x = Transform.mul(transM, x);
-
-		x = Transform.mul(x, fromCalib);
-		x = Transform.mul(toTransform, x);
-
-		return x;
-	}
-
-	private static float[] calculateInverseTransform(float[] fwd) {
-		float[] copy = new float[12];
-		System.arraycopy(fwd, 0, copy, 0, 12);
-		Transform.invert(copy);
-		return copy;
-	}
-
-	private float[] guessEulerAnglesDegree(float[] rotation) {
-		float[] eulerAngles = new float[3];
-		Transform.guessEulerAngles(rotation, eulerAngles);
-		eulerAngles[0] = eulerAngles[0] * 180 / (float)Math.PI;
-		eulerAngles[1] = eulerAngles[1] * 180 / (float)Math.PI;
-		eulerAngles[2] = eulerAngles[2] * 180 / (float)Math.PI;
-		return eulerAngles;
 	}
 
 	private void calculateChannelMinAndMax() {
@@ -707,7 +475,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		String dir = "D:\\VLanger\\20161205-Intravital-Darm\\";
 		String name = "cy5-shg-2p-maus3919-gecleart-20x-big-stack1.resampled.tif";
 		// ImagePlus imp = IJ.openImage(dir + name);
-		ImagePlus imp = IJ.openImage("D:\\flybrain.tif");
+		ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
 		// ImagePlus imp = IJ.openImage("D:\\MHoffmann\\20160126-Markus2.small.tif");
 		// ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
 		imp.show();

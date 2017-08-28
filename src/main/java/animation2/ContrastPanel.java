@@ -126,6 +126,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		channelChoice.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				setChannel(channelChoice.getSelectedIndex());
 				fireChannelChanged();
 			}
 		});
@@ -239,7 +240,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	public int getChannel() {
-		return channelChoice.getSelectedIndex();
+		return channel;
 	}
 
 	public void setChannel(int c) {
@@ -248,6 +249,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		gammaCTF.setText(df.format(renderingSettings[c].colorGamma));
 		slider.set(histogram[c], color[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
+		slider.repaint();
 		repaint();
 	}
 

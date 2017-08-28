@@ -246,6 +246,14 @@ public class CudaRaycaster {
 		setTargetSize(w, h);
 	}
 
+	public int getTargetWidth() {
+		return wOut;
+	}
+
+	public int getTargetHeight() {
+		return hOut;
+	}
+
 	public void setTargetZStep(float zStep) {
 		setZStep(zStep);
 	}

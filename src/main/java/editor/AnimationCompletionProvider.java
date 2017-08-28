@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
 import org.fife.ui.autocomplete.BasicCompletion;
@@ -21,6 +18,7 @@ import parser.Autocompletion.ChoiceAutocompletion;
 import parser.Autocompletion.StringAutocompletion;
 import parser.Interpreter;
 import parser.ParsingResult;
+import parser.Preprocessor;
 
 public class AnimationCompletionProvider extends CompletionProviderBase {
 
@@ -34,27 +32,30 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 	public String getAlreadyEnteredText(JTextComponent comp) {
 
 		System.out.println("getAlreadyEnteredText");
-		Document doc = comp.getDocument();
+//		Document doc = comp.getDocument();
 		int dot = comp.getCaretPosition();
-		Element root = doc.getDefaultRootElement();
-		int index = root.getElementIndex(dot);
-		Element elem = root.getElement(index);
+//		Element root = doc.getDefaultRootElement();
+//		int index = root.getElementIndex(dot);
+//		Element elem = root.getElement(index);
 
-		int start = elem.getStartOffset();
-		int len = dot - start;
+//		int start = elem.getStartOffset();
+//		int len = dot - start;
 
 		String input = "";
-		try {
-			input = doc.getText(start, len);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			return input;
-		}
+//		try {
+//			input = doc.getText(start, len);
+//		} catch (BadLocationException e) {
+//			e.printStackTrace();
+//			return input;
+//		}
 
 
-		ParsingResult result = null;
+		ParsingResult result = new ParsingResult();
 		try {
-			result = Interpreter.parse(input, dot - start, new float[] {100, 100, 100});
+			input = Preprocessor.getLineForCursor(comp.getText(), dot);
+			System.out.println("Current line = " + input);
+//			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
+			Interpreter.parse(input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -68,7 +69,8 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			if(options == null || options.length == 0)
 				return "";
 
-			String alreadyEntered = input.substring(ca.getInsertionPosition(), dot - start);
+//			String alreadyEntered = input.substring(ca.getInsertionPosition(), dot - start);
+			String alreadyEntered = input.substring(ca.getInsertionPosition(), input.length());
 			System.out.println("alreadyEntered: " + alreadyEntered);
 			return alreadyEntered;
 		}
@@ -78,7 +80,8 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			if(option == null || option.length() == 0)
 				return "";
 
-			String alreadyEntered = input.substring(ca.getInsertionPosition(), dot - start);
+//			String alreadyEntered = input.substring(ca.getInsertionPosition(), dot - start);
+			String alreadyEntered = input.substring(ca.getInsertionPosition(), input.length());
 			System.out.println("alreadyEntered: " + alreadyEntered);
 			return alreadyEntered;
 		}
@@ -102,27 +105,29 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 		List<Completion> completions = new ArrayList<Completion>();
 
 		System.out.println("getAlreadyEnteredText");
-		Document doc = comp.getDocument();
+//		Document doc = comp.getDocument();
 		int dot = comp.getCaretPosition();
-		Element root = doc.getDefaultRootElement();
-		int index = root.getElementIndex(dot);
-		Element elem = root.getElement(index);
+//		Element root = doc.getDefaultRootElement();
+//		int index = root.getElementIndex(dot);
+//		Element elem = root.getElement(index);
 
-		int start = elem.getStartOffset();
-		int len = dot - start;
+//		int start = elem.getStartOffset();
+//		int len = dot - start;
 
 		String input = "";
-		try {
-			input = doc.getText(start, len);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			return completions;
-		}
+//		try {
+//			input = doc.getText(start, len);
+//		} catch (BadLocationException e) {
+//			e.printStackTrace();
+//			return completions;
+//		}
 
-
-		ParsingResult result = null;
+		ParsingResult result = new ParsingResult();
 		try {
-			result = Interpreter.parse(input, dot - start, new float[] {100, 100, 100});
+			input = Preprocessor.getLineForCursor(comp.getText(), dot);
+			System.out.println("Current line = " + input);
+//			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
+			Interpreter.parse(input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

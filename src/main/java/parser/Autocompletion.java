@@ -6,7 +6,8 @@ public abstract class Autocompletion {
 	public static final int AUTOCOMPLETION_LIST    = 1;
 	public static final int AUTOCOMPLETION_REAL    = 2;
 	public static final int AUTOCOMPLETION_INTEGER = 3;
-	public static final int AUTOCOMPLETION_TRIPLE  = 4;
+	public static final int AUTOCOMPLETION_TUPLE   = 4;
+	public static final int AUTOCOMPLETION_TRIPLE  = 5;
 
 	public final int type;
 
@@ -65,6 +66,13 @@ public abstract class Autocompletion {
 
 		public RealAutocompletion() {
 			super(Autocompletion.AUTOCOMPLETION_REAL);
+		}
+	}
+
+	public static class TupleAutocompletion extends Autocompletion {
+
+		public TupleAutocompletion() {
+			super(Autocompletion.AUTOCOMPLETION_TUPLE);
 		}
 	}
 

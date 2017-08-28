@@ -80,7 +80,7 @@ public class Keyframe implements Comparable<Keyframe> {
 
 	public RenderingSettings[] renderingSettings;
 
-	private float[] fwdTransform;
+	private CombinedTransform fwdTransform;
 
 	public Keyframe(int frame) {
 		this.frame = frame;
@@ -92,6 +92,44 @@ public class Keyframe implements Comparable<Keyframe> {
 
 	public static int getNumberOfChannelProperties() {
 		return 7;
+	}
+
+	public Keyframe(
+			int frame,
+			RenderingSettings[] renderingSettings,
+			float near, float far,
+			CombinedTransform fwdTransform,
+			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
+		super();
+		this.frame = frame;
+		this.renderingSettings = renderingSettings;
+		this.near = near;
+		this.far = far;
+		this.bbx0 = bbx0;
+		this.bby0 = bby0;
+		this.bbz0 = bbz0;
+		this.bbx1 = bbx1;
+		this.bby1 = bby1;
+		this.bbz1 = bbz1;
+		this.fwdTransform = fwdTransform;
+		calculateFieldsFromTransformation();
+	}
+
+	void calculateFieldsFromTransformation() {
+		float[] eulerAngles = fwdTransform.guessEulerAnglesDegree();
+		float[] translation = fwdTransform.getTranslation();
+		float scale = fwdTransform.getScale();
+		this.scale = scale;
+		this.dx = translation[0];
+		this.dy = translation[1];
+		this.dz = translation[2];
+		this.angleX = eulerAngles[0];
+		this.angleY = eulerAngles[1];
+		this.angleZ = eulerAngles[2];
+	}
+
+	void calculateTransformationFromFields() {
+		fwdTransform.setTransformation((float)angleX, (float)angleY, (float)angleZ, dx, dy, dz, scale);
 	}
 
 	public Keyframe(
@@ -122,11 +160,46 @@ public class Keyframe implements Comparable<Keyframe> {
 		this.bbz1 = bbz1;
 	}
 
-	public void setFwdTransform(float[] fwd) {
+	@Override
+	public Keyframe clone() {
+		Keyframe kf = createEmptyKeyframe(renderingSettings.length);
+		kf.setFrom(this);
+		return kf;
+	}
+
+	public void setFrom(Keyframe o) {
+		this.frame = o.frame;
+		if(this.renderingSettings.length != o.renderingSettings.length)
+			renderingSettings = new RenderingSettings[o.renderingSettings.length];
+		for(int i = 0; i < renderingSettings.length; i++)
+			renderingSettings[i].set(o.renderingSettings[i]);
+		this.near = o.near;
+		this.far = o.far;
+		this.scale = o.scale;
+		this.dx = o.dx;
+		this.dy = o.dy;
+		this.dz = o.dz;
+		this.angleX = o.angleX;
+		this.angleY = o.angleY;
+		this.angleZ = o.angleZ;
+		this.bbx0 = o.bbx0;
+		this.bby0 = o.bby0;
+		this.bbz0 = o.bbz0;
+		this.bbx1 = o.bbx1;
+		this.bby1 = o.bby1;
+		this.bbz1 = o.bbz1;
+		if(o.fwdTransform != null) {
+			this.fwdTransform = o.fwdTransform.clone();
+		} else {
+			this.fwdTransform = null;
+		}
+	}
+
+	public void setFwdTransform(CombinedTransform fwd) {
 		this.fwdTransform = fwd;
 	}
 
-	public float[] getFwdTransform() {
+	public CombinedTransform getFwdTransform() {
 		return this.fwdTransform;
 	}
 

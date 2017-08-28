@@ -10,43 +10,54 @@ import renderer3d.Keyframe.KeyframeProperty;
 
 public class ChangeAnimation extends Animation {
 
-	private int timelineIdx;
-	private NumberOrMacro vTo;
+	private int[] timelineIndices;
+	private NumberOrMacro[] vTos;
 
 	public ChangeAnimation(int fromFrame, int toFrame, int timelineIdx, NumberOrMacro vTo) {
 		super(fromFrame, toFrame);
-		this.timelineIdx = timelineIdx;
-		this.vTo = vTo;
+		this.timelineIndices = new int[] { timelineIdx };
+		this.vTos = new NumberOrMacro[] { vTo };
+	}
+
+	public ChangeAnimation(int fromFrame, int toFrame, int[] timelineIdx, NumberOrMacro[] vTo) {
+		super(fromFrame, toFrame);
+		this.timelineIndices = timelineIdx;
+		this.vTos = vTo;
 	}
 
 	@Override
 	public void pickScripts(Map<String, String> scripts) throws NoSuchMacroException {
-		pickScripts(scripts, vTo);
+		pickScripts(scripts, vTos);
 	}
 
 	@Override
 	public void adjustKeyframe(Keyframe current, List<Keyframe> previous) {
-		KeyframeProperty kfpCurr = current.getRenderingProperties()[timelineIdx];
+		for(int i = 0; i < timelineIndices.length; i++) {
+			int timelineIdx = timelineIndices[i];
+			NumberOrMacro vTo = vTos[i];
 
-		// if it's a macro, just set the value to the macro evaluation
-		if(vTo.isMacro()) {
-			kfpCurr.setValue(vTo.evaluateMacro(current.getFrame()));
-			return;
-		}
+			KeyframeProperty kfpCurr = current.getRenderingProperties()[timelineIdx];
 
-		double valFrom = -1;
-		double valTo = vTo.getValue();
-		// otherwise, let's see if there exists a value at fromFrame; if not
-		// just use the same value as the target value
-		Keyframe kfFrom = previous.get(fromFrame);
-		if(kfFrom == null) {
-			valFrom = valTo;
-		}
-		else {
-			KeyframeProperty kfpFrom = kfFrom.getRenderingProperties()[timelineIdx];
-			valFrom = kfpFrom.getValue();
-		}
+			// if it's a macro, just set the value to the macro evaluation
+			if(vTo.isMacro()) {
+				kfpCurr.setValue(vTo.evaluateMacro(current.getFrame()));
+				return;
+			}
 
-		kfpCurr.setValue(super.interpolate(current.getFrame(), valFrom, valTo));
+			double valFrom = -1;
+			double valTo = vTo.getValue();
+			// otherwise, let's see if there exists a value at fromFrame; if not
+			// just use the same value as the target value
+			Keyframe kfFrom = null;
+			if(previous == null || previous.size() <= fromFrame || (kfFrom = previous.get(fromFrame)) == null) {
+				valFrom = valTo;
+			}
+			else {
+				KeyframeProperty kfpFrom = kfFrom.getRenderingProperties()[timelineIdx];
+				valFrom = kfpFrom.getValue();
+			}
+
+			kfpCurr.setValue(super.interpolate(current.getFrame(), valFrom, valTo));
+		}
 	}
 }

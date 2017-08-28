@@ -54,19 +54,25 @@ public interface Keyword {
 		BOUNDING_BOX_Y_MAX("bounding box max y", Keyframe.BOUNDINGBOX_YMAX),
 		BOUNDING_BOX_Z_MAX("bounding box max z", Keyframe.BOUNDINGBOX_ZMAX),
 
+		BOUNDING_BOX_X("bounding box x", Keyframe.BOUNDINGBOX_XMIN, Keyframe.BOUNDINGBOX_XMAX),
+		BOUNDING_BOX_Y("bounding box y", Keyframe.BOUNDINGBOX_YMIN, Keyframe.BOUNDINGBOX_YMAX),
+		BOUNDING_BOX_Z("bounding box z", Keyframe.BOUNDINGBOX_ZMIN, Keyframe.BOUNDINGBOX_ZMAX),
+
 		FRONT_CLIPPING("front clipping", Keyframe.NEAR),
-		BACK_CLIPPING("back clipping", Keyframe.FAR);
+		BACK_CLIPPING("back clipping", Keyframe.FAR),
+
+		FRONT_BACK_CLIPPING("front/back clipping", Keyframe.NEAR, Keyframe.FAR);
 
 		private final String text;
-		private final int timelineIdx;
+		private final int[] timelineIdcs;
 
-		private NonchannelProperty(String text, int timelineIdx) {
+		private NonchannelProperty(String text, int... timelineIdcs) {
 			this.text = text;
-			this.timelineIdx = timelineIdx;
+			this.timelineIdcs = timelineIdcs;
 		}
 
-		public int getTimelineIndex() {
-			return timelineIdx;
+		public int[] getTimelineIndices() {
+			return timelineIdcs;
 		}
 
 		@Override
@@ -90,18 +96,28 @@ public interface Keyword {
 		ALPHA_MAX("max alpha",     Keyframe.ALPHA_MAX),
 		ALPHA_GAMMA("alpha gamma", Keyframe.ALPHA_GAMMA),
 
+		COLOR("color",             Keyframe.COLOR_MIN, Keyframe.COLOR_MAX, Keyframe.COLOR_GAMMA),
+		ALPHA("alpha",             Keyframe.ALPHA_MIN, Keyframe.ALPHA_MAX, Keyframe.ALPHA_GAMMA),
+
 		WEIGHT("weight",           Keyframe.WEIGHT);
 
 		private final String text;
-		private final int timelineIdx;
+		private final int[] timelineIdcs;
 
-		private ChannelProperty(String text, int timelineIdx) {
+		private ChannelProperty(String text, int... timelineIdcs) {
 			this.text = text;
-			this.timelineIdx = timelineIdx;
+			this.timelineIdcs = timelineIdcs;
 		}
 
-		public int getTimelineIndex(int channel) {
+		private int getTimelineIndex(int channel, int timelineIdx) {
 			return Keyframe.getNumberOfNonChannelProperties() + channel * Keyframe.getNumberOfChannelProperties() + timelineIdx;
+		}
+
+		public int[] getTimelineIndices(int channel) {
+			int[] indices = new int[timelineIdcs.length];
+			for(int i = 0; i < indices.length; i++)
+				indices[i] = getTimelineIndex(channel, timelineIdcs[i]);
+			return indices;
 		}
 
 		@Override

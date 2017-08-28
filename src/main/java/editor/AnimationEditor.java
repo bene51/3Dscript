@@ -47,11 +47,12 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import animation2.Animator;
-import animation2.InteractiveRaycaster;
+import ij.ImagePlus;
 import ij.Prefs;
 import ij.io.OpenDialog;
 import parser.ParsingResult;
 import parser.Preprocessor;
+import renderer3d.Renderer3D;
 import textanim.Animation;
 
 
@@ -84,11 +85,11 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	private JCheckBoxMenuItem wrapLines, tabsEmulated;
 	private JTextArea errorScreen = new JTextArea();
 
-	private InteractiveRaycaster raycaster;
+	private Renderer3D renderer;
 
-	public AnimationEditor(InteractiveRaycaster raycaster) {
+	public AnimationEditor(Renderer3D renderer) {
 		super("Script Editor");
-		this.raycaster = raycaster;
+		this.renderer = renderer;
 
 		loadPreferences();
 
@@ -692,11 +693,18 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		try {
 			Preprocessor.preprocess(tab.editorPane.getText(), lines, macros);
 
-			Animator animator = new Animator();
+			ImagePlus imp = renderer.getImage();
+			float[] rotcenter = new float[] {
+					(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
+					(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
+					(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
+			};
+			Animator animator = new Animator(renderer);
 			int from = Integer.MAX_VALUE;
 			int to = 0;
 			for(String line : lines) {
-				ParsingResult pr = parser.Interpreter.parse(line, raycaster.getRotationCenter());
+				ParsingResult pr = new ParsingResult();
+				parser.Interpreter.parse(line, rotcenter, pr);
 				from = Math.min(from, pr.getFrom());
 				to   = Math.max(to, pr.getTo());
 				Animation ta = pr.getResult();
@@ -705,7 +713,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 					animator.addAnimation(ta);
 				}
 			}
-			animator.render(from, to);
+			animator.render(from, to).show();
 		} catch(Exception ex) {
 			handleException(ex);
 			throw new RuntimeException("Error reading animations", ex);
