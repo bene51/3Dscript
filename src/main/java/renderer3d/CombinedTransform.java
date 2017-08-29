@@ -193,6 +193,17 @@ public class CombinedTransform {
 		return calculateForwardTransform(scale, translation, rotation, center, fromCalib, toTransform);
 	}
 
+	public float[] calculateForwardTransformWithoutCalibration() {
+		float[] scaleM = Transform.fromScale(scale, null);
+		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
+
+		float[] x = Transform.mul(scaleM, Transform.mul(rotation, centerM));
+		Transform.applyTranslation(center[0], center[1], center[2], x);
+		Transform.applyTranslation(translation[0], translation[1], translation[2], x);
+
+		return x;
+	}
+
 	/**
 	 * Calculates toTransform * Translation * Center^{-1} * Scale * Rotation * Center
 	 * @param scale

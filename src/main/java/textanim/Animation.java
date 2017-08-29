@@ -1,5 +1,6 @@
 package textanim;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,20 @@ public abstract class Animation {
 		}
 	}
 
-	public abstract void pickScripts(Map<String, String> scripts) throws NoSuchMacroException;
+	protected abstract NumberOrMacro[] getNumberOrMacros();
+
+	public List<String> getUsedMacroFunctions() {
+		List<String> ret = new ArrayList<String>();
+		for(NumberOrMacro nom : getNumberOrMacros()) {
+			if(nom.isMacro())
+				ret.add(nom.getFunctionName());
+		}
+		return ret;
+	}
+
+	public void pickScripts(Map<String, String> scripts) throws NoSuchMacroException {
+		pickScripts(scripts, getNumberOrMacros());
+	}
 
 	public abstract void adjustKeyframe(Keyframe current, List<Keyframe> previous);
 

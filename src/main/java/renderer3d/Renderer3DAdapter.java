@@ -2,7 +2,6 @@ package renderer3d;
 
 import java.awt.Color;
 
-import animation2.RenderingSettings;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.ColorProcessor;

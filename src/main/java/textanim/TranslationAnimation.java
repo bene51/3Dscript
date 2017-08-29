@@ -1,9 +1,7 @@
 package textanim;
 
 import java.util.List;
-import java.util.Map;
 
-import parser.NoSuchMacroException;
 import parser.NumberOrMacro;
 import renderer3d.Keyframe;
 import renderer3d.Transform;
@@ -22,15 +20,15 @@ public class TranslationAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void pickScripts(Map<String, String> scripts) throws NoSuchMacroException {
-		pickScripts(scripts, byX, byY, byZ);
+	public NumberOrMacro[] getNumberOrMacros() {
+		return new NumberOrMacro[] {byX, byY, byZ};
 	}
 
 	@Override
 	public void adjustKeyframe(Keyframe current, List<Keyframe> previous) {}
 
 	private float evalOrInterpolate(int frame, NumberOrMacro n) {
-		return n.isMacro() ? (float)n.evaluateMacro(frame) : (float)interpolate(frame, 0, n.getValue());
+		return n.isMacro() ? (float)n.evaluateMacro(frame, fromFrame, toFrame) : (float)interpolate(frame, 0, n.getValue());
 	}
 
 	@Override

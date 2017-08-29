@@ -17,6 +17,7 @@ import java.awt.event.ActionListener;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
+import renderer3d.RenderingSettings;
 
 
 public class AnimatorDialog extends GenericDialog {

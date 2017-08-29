@@ -15,15 +15,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.util.Set;
 
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.AutoCompletionEvent;
@@ -40,6 +45,10 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.RecordableTextAction;
 
 import ij.Prefs;
+import parser.Interpreter;
+import parser.ParsingResult;
+import parser.Preprocessor;
+import textanim.Animation;
 
 
 public class EditorPane extends RSyntaxTextArea implements DocumentListener {
@@ -75,7 +84,6 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 
 		CompletionProvider provider = new AnimationCompletionProvider();
 		final AutoCompletion ac = new AutoCompletion(provider);
-		System.out.println(ac.getTriggerKey());
 		ac.setTriggerKey(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK, false));
 		ac.setAutoCompleteEnabled(true);
 		ac.setAutoActivationDelay(5);
@@ -93,36 +101,95 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 
 		this.getDocument().addDocumentListener(new DocumentListener() {
 
-			private String last;
+			private boolean isNewline(char c) {
+				return c == '\r' || c == '\n';
+			}
+
+			private String getLineForPosition(String text, int pos) {
+				try {
+					int line = getLineOfOffset(pos);
+					int lineStart = getLineStartOffset(line);
+					int lineEnd = getLineEndOffset(line);
+					return text.substring(lineStart, lineEnd);
+				} catch (BadLocationException e) {
+					return null;
+				}
+			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-//				System.out.println("insertUpdate");
-//				Document d = e.getDocument();
-//				String text = null;
-//				try {
-//					text = d.getText(0, d.getLength());
-//				} catch(BadLocationException ex) {
-//					return;
-//				}
-//				if(!text.equals(last))
-//					if(Character.isDigit(text.charAt(text.length() - 1)))
-//						ac.hideChildWindows();
-//					ac.doCompletion();
-//
-//				last = text;
+				Document d = e.getDocument();
+				String ttext = null;
+				try {
+					ttext = d.getText(0, d.getLength());
+				} catch(BadLocationException ex) {
+					return;
+				}
+
+				final int dot = getCaretPosition();
+				if(dot <= 0)
+					return;
+
+				char lastCharacter = ttext.charAt(dot);
+				System.out.println("EditorPane: insertUpdate(): lastCharacter = " + lastCharacter + "(" + Integer.toHexString(lastCharacter) + ")");
+				if(!isNewline(lastCharacter))
+					return;
+
+				String prevLine = getLineForPosition(ttext, dot).trim();
+				System.out.println("EditorPane: insertUpdate(): prevLine = " + prevLine);
+				if(prevLine.endsWith(":") || prevLine.startsWith("-")) {
+					final String text = new StringBuffer(ttext).insert(dot + 1, "- ").toString();
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							setText(text);
+							setCaretPosition(dot + 3);
+						}
+					});
+				}
+
+				String line = Preprocessor.getLineForCursor(ttext, dot - 1);
+				System.out.println("EditorPane: insertUpdate(): line = " + line);
+				ParsingResult result = new ParsingResult();
+				try {
+					Interpreter.parse(line, new float[] {}, result);
+				} catch(Exception ex) {
+					return;
+				}
+				Animation a = result.getResult();
+				Set<String> availableFunctions = Preprocessor.getMacroFunctions(ttext);
+				if(a == null || a.getUsedMacroFunctions().isEmpty())
+					return;
+
+				final StringBuffer toAppend = new StringBuffer();
+
+				for(String funName : a.getUsedMacroFunctions())
+					if(!availableFunctions.contains(funName))
+						toAppend.append(Preprocessor.getMacroSkeletonForFunction(funName));
+
+				int nNewLines = availableFunctions.size() == 0 ? 3 : 2;
+
+				final String text = ttext;
+				if(toAppend.length() > 0) {
+					for(int i = 0; i < nNewLines; i++)
+						if(!isNewline(text.charAt(text.length() - i - 1)))
+							toAppend.insert(0, '\n');
+
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							setText(text + toAppend.toString());
+							setCaretPosition(dot + 1);
+						}
+					});
+				}
 			}
 
 			@Override
-			public void removeUpdate(DocumentEvent e) {
-//				System.out.println("removeUpdate");
-			}
+			public void removeUpdate(DocumentEvent e) {}
 
 			@Override
-			public void changedUpdate(DocumentEvent e) {
-//				System.out.println("changedUpdate");
-			}
-
+			public void changedUpdate(DocumentEvent e) {}
 		});
 	}
 
@@ -149,8 +216,12 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 		sp.setIconRowHeaderEnabled(true);
 
 		gutter = sp.getGutter();
-		iconGroup = new IconGroup("bullets", "images/", null, "png", null);
-		gutter.setBookmarkIcon(iconGroup.getIcon("var"));
+//		iconGroup = new IconGroup("bullets", "images/", null, "png", null);
+//		gutter.setBookmarkIcon(iconGroup.getIcon("var"));
+
+		URL url = ClassLoader.getSystemClassLoader().getResource("eye.png");
+		ImageIcon icon = new ImageIcon(url);
+		gutter.setBookmarkIcon(icon);
 		gutter.setBookmarkingEnabled(true);
 
 		return sp;

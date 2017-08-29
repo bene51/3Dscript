@@ -1,6 +1,4 @@
-package animation2;
-
-import renderer3d.RenderingProperty;
+package renderer3d;
 
 public class RenderingSettings {
 

@@ -380,7 +380,7 @@ public class Interpreter {
 		if(keyword(GeneralKeyword.CHANNEL, true) != null) {
 			space(result, false);
 			result.setAutocompletion(new IntegerAutocompletion());
-			int channel = integer();
+			int channel = integer() - 1;
 			space(result, false);
 			timelineIdcs = channelproperty(channel, result, cursorpos);
 		}

@@ -52,7 +52,7 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 
 		ParsingResult result = new ParsingResult();
 		try {
-			input = Preprocessor.getLineForCursor(comp.getText(), dot);
+			input = Preprocessor.getLineForCursor(comp.getText(), dot - 1);
 			System.out.println("Current line = " + input);
 //			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
 			Interpreter.parse(input, input.length(), new float[] {100, 100, 100}, result);
@@ -124,7 +124,7 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 
 		ParsingResult result = new ParsingResult();
 		try {
-			input = Preprocessor.getLineForCursor(comp.getText(), dot);
+			input = Preprocessor.getLineForCursor(comp.getText(), dot - 1);
 			System.out.println("Current line = " + input);
 //			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
 			Interpreter.parse(input, input.length(), new float[] {100, 100, 100}, result);

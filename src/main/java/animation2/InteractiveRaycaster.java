@@ -10,6 +10,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.Arrays;
 
 import editor.AnimationEditor;
@@ -432,7 +433,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 		}
 	}
 
-	public static void main(String... args) {
+	public static void main(String... args) throws IOException {
+//		new ij.ImageJ();
+//		URL url = ClassLoader.getSystemClassLoader().getResource("eye.png");
+//		Image image = ImageIO.read(url);
+//		new ImagePlus("", image).show();
+//		if(true)
+//			return;
 
 //		new ij.ImageJ();
 //
@@ -476,6 +483,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		String name = "cy5-shg-2p-maus3919-gecleart-20x-big-stack1.resampled.tif";
 		// ImagePlus imp = IJ.openImage(dir + name);
 		ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
+		imp = IJ.openImage("D:\\PTripal\\20161109\\wonderbear_C7-wt-PBS-Axiocam_2.background.resampled.8-bit.tif");
 		// ImagePlus imp = IJ.openImage("D:\\MHoffmann\\20160126-Markus2.small.tif");
 		// ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
 		imp.show();

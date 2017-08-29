@@ -1,9 +1,7 @@
 package textanim;
 
 import java.util.List;
-import java.util.Map;
 
-import parser.NoSuchMacroException;
 import parser.NumberOrMacro;
 import renderer3d.Keyframe;
 import renderer3d.Keyframe.KeyframeProperty;
@@ -26,8 +24,8 @@ public class ChangeAnimation extends Animation {
 	}
 
 	@Override
-	public void pickScripts(Map<String, String> scripts) throws NoSuchMacroException {
-		pickScripts(scripts, vTos);
+	protected NumberOrMacro[] getNumberOrMacros() {
+		return vTos;
 	}
 
 	@Override
@@ -40,7 +38,7 @@ public class ChangeAnimation extends Animation {
 
 			// if it's a macro, just set the value to the macro evaluation
 			if(vTo.isMacro()) {
-				kfpCurr.setValue(vTo.evaluateMacro(current.getFrame()));
+				kfpCurr.setValue(vTo.evaluateMacro(current.getFrame(), fromFrame, toFrame));
 				return;
 			}
 

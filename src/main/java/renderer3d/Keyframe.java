@@ -5,8 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import animation2.RenderingSettings;
-
 public class Keyframe implements Comparable<Keyframe> {
 
 	// order is the order of the declared fields

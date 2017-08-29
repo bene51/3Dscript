@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import animation2.RenderingSettings;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;

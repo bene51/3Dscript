@@ -524,4 +524,88 @@ public class Transform {
 	    m[a21] = (float)(sh * sa * cb + ch * sb);
 	    m[a22] = (float)(-sh * sa * sb + ch * cb);
 	}
+
+	/*
+	 * http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+	 */
+	public static float[] toAxisAngle(float[] m) {
+		double angle,x,y,z; // variables for result
+		double epsilon = 0.01; // margin to allow for rounding errors
+		double epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
+		// optional check that input is pure rotation, 'isRotationMatrix' is defined at:
+		// https://www.euclideanspace.com/maths/algebra/matrix/orthogonal/rotation/
+		if((Math.abs(m[a01] - m[a10]) < epsilon)
+			&& (Math.abs(m[a02] - m[a20]) < epsilon)
+			&& (Math.abs(m[a12] - m[a21]) < epsilon)) {
+			// singularity found
+			// first check for identity matrix which must have +1 for all terms
+			//  in leading diagonaland zero in other terms
+			if ((Math.abs(m[a01]+m[a10]) < epsilon2)
+					&& (Math.abs(m[a02]+m[a20]) < epsilon2)
+					&& (Math.abs(m[a12]+m[a21]) < epsilon2)
+					&& (Math.abs(m[a00]+m[a11]+m[a22]-3) < epsilon2)) {
+				// this singularity is identity matrix so angle = 0
+				return new float[] {0, 1, 0, 0}; // zero angle, arbitrary axis
+			}
+			// otherwise this singularity is angle = 180
+			angle = Math.PI;
+			double xx = (m[a00] + 1) / 2;
+			double yy = (m[a11] + 1) / 2;
+			double zz = (m[a22] + 1) / 2;
+			double xy = (m[a01] + m[a10]) / 4;
+			double xz = (m[a02] + m[a20]) / 4;
+			double yz = (m[a12] + m[a21]) / 4;
+			if ((xx > yy) && (xx > zz)) { // m[0][0] is the largest diagonal term
+				if (xx< epsilon) {
+					x = 0;
+					y = 0.7071;
+					z = 0.7071;
+				} else {
+					x = Math.sqrt(xx);
+					y = xy/x;
+					z = xz/x;
+				}
+			} else if (yy > zz) { // m[1][1] is the largest diagonal term
+				if (yy< epsilon) {
+					x = 0.7071;
+					y = 0;
+					z = 0.7071;
+				} else {
+					y = Math.sqrt(yy);
+					x = xy/y;
+					z = yz/y;
+				}
+			} else { // m[2][2] is the largest diagonal term so base result on this
+				if (zz< epsilon) {
+					x = 0.7071;
+					y = 0.7071;
+					z = 0;
+				} else {
+					z = Math.sqrt(zz);
+					x = xz/z;
+					y = yz/z;
+				}
+			}
+			return new float[] {(float)x, (float)y, (float)z, (float)angle}; // return 180 deg rotation
+		}
+		// as we have reached here there are no singularities so we can handle normally
+		double s = Math.sqrt((m[a21] - m[a12]) * (m[a21] - m[a12])
+							+ (m[a02] - m[a20]) * (m[a02] - m[a20])
+							+ (m[a10] - m[a01]) * (m[a10] - m[a01])); // used to normalise
+		if (Math.abs(s) < 0.001) s=1;
+			// prevent divide by zero, should not happen if matrix is orthogonal and should be
+			// caught by singularity test above, but I've left it in just in case
+		angle = Math.acos((m[a00] + m[a11] + m[a22] - 1) / 2);
+		x = (m[a21] - m[a12]) / s;
+		y = (m[a02] - m[a20]) / s;
+		z = (m[a10] - m[a01]) / s;
+		return new float[] {(float)x, (float)y, (float)z, (float)angle};
+	}
+
+	public static String toString(float[] m) {
+		return
+				m[a00] + "\t" + m[a01] + "\t" + m[a02] + "\t" + m[a03] + "\n" +
+				m[a10] + "\t" + m[a11] + "\t" + m[a12] + "\t" + m[a13] + "\n" +
+				m[a20] + "\t" + m[a21] + "\t" + m[a22] + "\t" + m[a23] + "\n";
+	}
 }

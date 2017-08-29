@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class Preprocessor {
 
@@ -19,6 +20,26 @@ public class Preprocessor {
 		public PreprocessingException(String msg, Throwable cause) {
 			super(msg, cause);
 		}
+	}
+
+	public static String getMacroSkeletonForFunction(String function) {
+		return
+				"script\n" +
+				"function " + function + "(t) {\n" +
+				"	return 0;\n" +
+				"}\n";
+	}
+
+	public static Set<String> getMacroFunctions(String ttext) {
+		StringBuffer text = new StringBuffer(ttext);
+		MacroExtractor me = new MacroExtractor(text);
+		try {
+			me.parse();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		return me.scripts.keySet();
 	}
 
 	public static String getLineForCursor(String ttext, int pos) {
@@ -93,6 +114,9 @@ public class Preprocessor {
 //		}
 //		return text.substring(lineStart, lineEnd + 1);
 		String line = trimLeading(text.substring(lineStart, pos + 1));
+		if(line.trim().endsWith(":"))
+			return null;
+
 		if(line.startsWith("-")) {
 			line = trimLeading(line.substring(1));
 			line = lastLineWithoutDash + " " + line;

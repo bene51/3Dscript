@@ -50,9 +50,14 @@ import animation2.Animator;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.io.OpenDialog;
+import parser.Keyword.ChannelProperty;
+import parser.Keyword.GeneralKeyword;
 import parser.ParsingResult;
 import parser.Preprocessor;
+import renderer3d.Keyframe;
 import renderer3d.Renderer3D;
+import renderer3d.RenderingSettings;
+import renderer3d.Transform;
 import textanim.Animation;
 
 
@@ -75,9 +80,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			findNext, findPrevious, clearScreen,
 			nextTab, previousTab, runSelection, run,
 			decreaseFontSize, increaseFontSize, chooseFontSize,
-			savePreferences;
+			savePreferences,
+			recordContrast, recordTransitionStart, recordTransitionEnd;
 
-	private JMenu tabsMenu, fontSizeMenu, tabSizeMenu, runMenu;
+	private JMenu tabsMenu, fontSizeMenu, tabSizeMenu, runMenu, recordMenu;
 
 	private int tabsMenuTabsStart;
 	private Set<JMenuItem> tabsMenuItems;
@@ -228,6 +234,14 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 		edit.addSeparator();
 		mbar.add(edit);
+
+
+		recordMenu = new JMenu("Record");
+		recordContrast = addToMenu(recordMenu, "Record contrast", 0, 0);
+		recordMenu.addSeparator();
+		recordTransitionStart = addToMenu(recordMenu, "Start recording transition", 0, 0);
+		recordTransitionEnd = addToMenu(recordMenu, "Stop recording transition", 0, 0);
+		mbar.add(recordMenu);
 
 
 		runMenu = new JMenu("Run");
@@ -549,6 +563,9 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		else if (source == save) save();
 		else if (source == saveas) saveAs();
 		else if (source == run) runText(false);
+		else if (source == recordContrast) recordContrast();
+		else if (source == recordTransitionStart) recordTransitionStart();
+		else if (source == recordTransitionEnd) recordTransitionEnd();
 		else if (source == runSelection) runText(true);
 		else if (source == kill) cancelAnimation();
 		else if (source == close) if (tabbed.getTabCount() < 2) processWindowEvent(new WindowEvent(
@@ -681,6 +698,140 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		return false;
 	}
 
+	private Keyframe keyframeRecordStart = null;
+
+	public void recordTransitionStart() {
+		keyframeRecordStart = renderer.getKeyframe().clone();
+	}
+
+	public void recordTransitionEnd() {
+		ImagePlus imp = renderer.getImage();
+		float[] rotcenter = new float[] {
+				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
+				(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
+				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
+		};
+
+		Keyframe keyframeRecordEnd = renderer.getKeyframe().clone();
+
+		float[] t0 = keyframeRecordStart.getFwdTransform().calculateForwardTransformWithoutCalibration();
+		float[] t1 = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
+
+		System.out.println("t0 = \n" + Transform.toString(t0));
+
+		// T0 * M = T1  =>  M = T0^{-1} * T1
+		Transform.invert(t0);
+		System.out.println("t0 = \n" + Transform.toString(t0));
+		System.out.println("t1 = \n" + Transform.toString(t1));
+		float[] m = Transform.mul(t0, t1);
+		System.out.println("m = \n" + Transform.toString(m));
+		Transform.applyTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], m);
+		Transform.applyTranslation(m, rotcenter[0], rotcenter[1], rotcenter[2]);
+
+		// extract scale
+		float scale = (float)Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+
+		// extract translation
+		float dx = m[3];
+		float dy = m[7];
+		float dz = m[11];
+
+		m[3] = m[7] = m[11] = 0;
+		for(int i = 0; i < 12; i++)
+			m[i] *= 1f / scale;
+
+		// extract rotation
+		float[] axisAngle = Transform.toAxisAngle(m);
+		float angle = (float)(180 * axisAngle[3] / Math.PI);
+
+
+		final TextEditorTab tab = getTab();
+		StringBuffer text = new StringBuffer("From frame X to frame Y:\n");
+		text.append("- ")
+			.append(GeneralKeyword.ROTATE.text()).append(" ")
+			.append(angle).append(" ")
+			.append(GeneralKeyword.DEGREES.text()).append(" ")
+			.append(GeneralKeyword.AROUND.text()).append(" ")
+			.append("(")
+			.append(axisAngle[0]).append(", ")
+			.append(axisAngle[1]).append(", ")
+			.append(axisAngle[2])
+			.append(")\n");
+		text.append("- ")
+			.append(GeneralKeyword.ZOOM.text()).append(" ")
+			.append(scale)
+			.append("\n");
+		text.append("- ")
+			.append(GeneralKeyword.TRANSLATE.text()).append(" ")
+			.append(GeneralKeyword.BY.text()).append(" ")
+			.append("(")
+			.append(dx).append(", ")
+			.append(dy).append(", ")
+			.append(dz)
+			.append(")\n");
+
+		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
+		int lineOfCursor = tab.editorPane.getCaretLineNumber();
+		int offset = tab.editorPane.getText().length();
+		try {
+			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
+		} catch(Exception e) {}
+		originalText.insert(offset, text.toString());
+		tab.editorPane.setText(originalText.toString());
+
+		int xStart = text.indexOf("X") + offset;
+		tab.editorPane.setSelectionStart(xStart);
+		tab.editorPane.setSelectionEnd(xStart + 1);
+
+		keyframeRecordStart = null;
+		keyframeRecordEnd = null;
+	}
+
+	public void recordContrast() {
+		final TextEditorTab tab = getTab();
+		RenderingSettings[] rs = renderer.getKeyframe().renderingSettings;
+		StringBuffer text = new StringBuffer("At frame X:\n");
+		for(int c = 0; c < rs.length; c++) {
+			text.append("- change channel ")
+				.append(c + 1)
+				.append(" ")
+				.append(ChannelProperty.COLOR.text())
+				.append(" to (")
+				.append(rs[c].colorMin).append(", ")
+				.append(rs[c].colorMax).append(", ")
+				.append(rs[c].colorGamma)
+				.append(")\n");
+			text.append("- change channel ")
+				.append(c + 1)
+				.append(" ")
+				.append(ChannelProperty.ALPHA.text())
+				.append(" to (")
+				.append(rs[c].alphaMin).append(", ")
+				.append(rs[c].alphaMax).append(", ")
+				.append(rs[c].alphaGamma)
+				.append(")\n");
+			text.append("- change channel ")
+				.append(c + 1)
+				.append(" ")
+				.append(ChannelProperty.WEIGHT.text())
+				.append(" to ")
+				.append(rs[c].weight)
+				.append("\n");
+		}
+		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
+		int lineOfCursor = tab.editorPane.getCaretLineNumber();
+		int offset = tab.editorPane.getText().length();
+		try {
+			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
+		} catch(Exception e) {}
+		originalText.insert(offset, text.toString());
+		tab.editorPane.setText(originalText.toString());
+
+		int xStart = text.indexOf("X") + offset;
+		tab.editorPane.setSelectionStart(xStart);
+		tab.editorPane.setSelectionEnd(xStart + 1);
+	}
+
 	// TODO respect selection
 	public void runText(boolean selection) {
 		final TextEditorTab tab = getTab();
@@ -774,9 +925,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	public TextEditorTab open(final File file) {
 		if (isBinary(file)) {
-			// TODO!
-			throw new RuntimeException("TODO: open image using IJ2");
-			// return null;
+			throw new RuntimeException("Cannot open binary file");
 		}
 
 		try {
@@ -828,7 +977,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		if (file == null) {
 			file = new File("", editorPane.getFileName());
 		}
-		ij.io.SaveDialog sd = new ij.io.SaveDialog("Save as...", file.getName(), "txt");
+		ij.io.SaveDialog sd = new ij.io.SaveDialog("Save as...", file.getName(), ".animation.txt");
 		String dir = sd.getDirectory();
 		String name = sd.getFileName();
 		if(dir == null || name == null)
@@ -849,6 +998,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				"?", "Replace " + path + "?", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return false;
 		if (!write(file)) return false;
 		setEditorPaneFileName(file);
+		setTitle();
 		return true;
 	}
 
@@ -1069,7 +1219,8 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	}
 
 	private File openWithDialog(final File defaultDir) {
-		OpenDialog od = new OpenDialog("Open", defaultDir.getAbsolutePath(), "");
+		String defaultdir = defaultDir == null ? "" : defaultDir.getAbsolutePath();
+		OpenDialog od = new OpenDialog("Open", defaultdir, "");
 		String path = od.getPath();
 		return path == null ? null : new File(path);
 	}

@@ -1,9 +1,7 @@
 package textanim;
 
 import java.util.List;
-import java.util.Map;
 
-import parser.NoSuchMacroException;
 import parser.NumberOrMacro;
 import renderer3d.Keyframe;
 import renderer3d.Transform;
@@ -23,8 +21,8 @@ public class RotationAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void pickScripts(Map<String, String> scripts) throws NoSuchMacroException {
-		pickScripts(scripts, axis[0], axis[1], axis[2], byDegree);
+	public NumberOrMacro[] getNumberOrMacros() {
+		return new NumberOrMacro[] {axis[0], axis[1], axis[2], byDegree};
 	}
 
 	@Override
@@ -35,7 +33,7 @@ public class RotationAnimation extends TransformationAnimation {
 	public void getTransformationAt(int frame, float[] matrix) {
 		double angle = 0;
 		if(byDegree.isMacro())
-			angle = byDegree.evaluateMacro(frame);
+			angle = byDegree.evaluateMacro(frame, fromFrame, toFrame);
 		else
 			angle = interpolate(frame, 0, byDegree.getValue());
 
@@ -43,7 +41,7 @@ public class RotationAnimation extends TransformationAnimation {
 		double sum = 0;
 		for(int i = 0; i < 3; i++) {
 			NumberOrMacro ai = axis[i];
-			a[i] = (float)(ai.isMacro() ? ai.evaluateMacro(frame) : ai.getValue());
+			a[i] = (float)(ai.isMacro() ? ai.evaluateMacro(frame, fromFrame, toFrame) : ai.getValue());
 			sum += a[i] * a[i];
 		}
 

@@ -34,7 +34,8 @@ public class NumberOrMacro {
 		return functionName;
 	}
 
-	public double evaluateMacro(int t) {
+	public double evaluateMacro(int t, int from, int to) {
+		t = Math.min(to, Math.max(from, t));
 		return Double.parseDouble(IJ.runMacro(macro + "\nreturn d2s(" + functionName + "(" + t + "), 5);"));
 	}
 }

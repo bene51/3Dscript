@@ -2,7 +2,6 @@ package renderer3d;
 
 import java.awt.Color;
 
-import animation2.RenderingSettings;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;

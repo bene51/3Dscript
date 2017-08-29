@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import renderer3d.Keyframe;
+import renderer3d.RenderingSettings;
 
 public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
 
@@ -195,7 +196,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		for(int i = 0; i < renderingSettings.length; i++) {
 			final int ch = i;
 			final SingleSlider wslider = addSingleSlider(
-					"Channel " + i + " weight",
+					"Channel " + (i + 1) + " weight",
 					100,
 					100,
 					color[ch],
