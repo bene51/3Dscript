@@ -57,32 +57,72 @@ public abstract class Autocompletion {
 
 	public static class IntegerAutocompletion extends Autocompletion {
 
-		public IntegerAutocompletion() {
+		private final String desc;
+
+		public IntegerAutocompletion(String desc) {
 			super(Autocompletion.AUTOCOMPLETION_INTEGER);
+			this.desc = desc;
+		}
+
+		public String getDescription() {
+			return desc;
 		}
 	}
 
 	public static class RealAutocompletion extends Autocompletion {
 
-		public RealAutocompletion() {
+		private final String desc;
+
+		public RealAutocompletion(String desc) {
 			super(Autocompletion.AUTOCOMPLETION_REAL);
+			this.desc = desc;
+		}
+
+		public String getDescription() {
+			return desc;
 		}
 	}
 
 	public static class TupleAutocompletion extends Autocompletion {
 
-		public TupleAutocompletion() {
+		private final String desc1;
+		private final String desc2;
+
+		public TupleAutocompletion(String desc1, String desc2) {
 			super(Autocompletion.AUTOCOMPLETION_TUPLE);
+			this.desc1 = desc1;
+			this.desc2 = desc2;
+		}
+
+		public String getDescription(int i) {
+			switch(i) {
+			case 0: return desc1;
+			case 1: return desc2;
+			}
+			return null;
 		}
 	}
 
 	public static class TripleAutocompletion extends Autocompletion {
 
-		public TripleAutocompletion() {
+		private final String desc1;
+		private final String desc2;
+		private final String desc3;
+
+		public TripleAutocompletion(String desc1, String desc2, String desc3) {
 			super(Autocompletion.AUTOCOMPLETION_TRIPLE);
+			this.desc1 = desc1;
+			this.desc2 = desc2;
+			this.desc3 = desc3;
+		}
+
+		public String getDescription(int i) {
+			switch(i) {
+			case 0: return desc1;
+			case 1: return desc2;
+			case 2: return desc3;
+			}
+			return null;
 		}
 	}
-
-
-
 }

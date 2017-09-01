@@ -225,6 +225,8 @@ public class CudaRaycaster {
 					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}
+		// TODO remove this line and set from GUI
+		Color bg = Toolbar.getBackgroundColor();
 		int[] result = cast(invTransform, near, far, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 		if(boundingBox) {

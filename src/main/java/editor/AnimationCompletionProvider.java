@@ -15,7 +15,11 @@ import org.fife.ui.autocomplete.TemplateCompletion;
 
 import parser.Autocompletion;
 import parser.Autocompletion.ChoiceAutocompletion;
+import parser.Autocompletion.IntegerAutocompletion;
+import parser.Autocompletion.RealAutocompletion;
 import parser.Autocompletion.StringAutocompletion;
+import parser.Autocompletion.TripleAutocompletion;
+import parser.Autocompletion.TupleAutocompletion;
 import parser.Interpreter;
 import parser.ParsingResult;
 import parser.Preprocessor;
@@ -137,13 +141,19 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 
 		if(atype == Autocompletion.AUTOCOMPLETION_LIST) {
 			ChoiceAutocompletion ca = (ChoiceAutocompletion)autocompletion;
+			int relevance = ca.getOptions().length;
 			for(String option : ca.getOptions()) {
 				if(option.matches(".*?\\(.*?,.*?,.*?\\).*")) {
 					String t = option.replaceAll("\\(.*?,.*?,.*?\\)", "(\\${x}, \\${y}, \\${z}).\\${cursor}");
-					completions.add(new TemplateCompletion(this, "input", option, t));
+					TemplateCompletion tc = new TemplateCompletion(this, "input", option, t);
+					tc.setRelevance(relevance--);
+					completions.add(tc);
 				}
-				else
-					completions.add(new BasicCompletion(this, option + " "));
+				else {
+					BasicCompletion bc = new BasicCompletion(this, option + " ");
+					bc.setRelevance(relevance--);
+					completions.add(bc);
+				}
 			}
 		}
 		else if(atype == Autocompletion.AUTOCOMPLETION_STRING) {
@@ -153,13 +163,27 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 				completions.add(new BasicCompletion(this, sa.getString() + " "));
 		}
 		else if(atype == Autocompletion.AUTOCOMPLETION_INTEGER) {
-			completions.add(new TemplateCompletion(this, "input", "0", "${x}${cursor}"));
+			IntegerAutocompletion ia = (IntegerAutocompletion)autocompletion;
+			String desc = ia.getDescription();
+			completions.add(new TemplateCompletion(this, "input", "0", "${" + desc + "}${cursor}"));
 		}
 		else if(atype == Autocompletion.AUTOCOMPLETION_REAL) {
-			completions.add(new TemplateCompletion(this, "input", "0", "${x}${cursor}"));
+			RealAutocompletion ia = (RealAutocompletion)autocompletion;
+			String desc = ia.getDescription();
+			completions.add(new TemplateCompletion(this, "input", "0", "${" + desc + "}${cursor}"));
 		}
 		else if(atype == Autocompletion.AUTOCOMPLETION_TRIPLE) {
-			completions.add(new TemplateCompletion(this, "input", "(0, 1, 0)", "(${x}, ${y}, ${z})${cursor}"));
+			TripleAutocompletion ia = (TripleAutocompletion)autocompletion;
+			String desc0 = ia.getDescription(0);
+			String desc1 = ia.getDescription(1);
+			String desc2 = ia.getDescription(2);
+			completions.add(new TemplateCompletion(this, "input", "(0, 1, 0)", "(${" + desc0 + "}, ${" + desc1 + "}, ${" + desc2 + "})${cursor}"));
+		}
+		else if(atype == Autocompletion.AUTOCOMPLETION_TUPLE) {
+			TupleAutocompletion ia = (TupleAutocompletion)autocompletion;
+			String desc0 = ia.getDescription(0);
+			String desc1 = ia.getDescription(1);
+			completions.add(new TemplateCompletion(this, "input", "(0, 1)", "(${" + desc0 + "}, ${" + desc1 + "})${cursor}"));
 		}
 		System.out.println("return completions: " + Arrays.toString(completions.toArray()));
 

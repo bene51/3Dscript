@@ -328,7 +328,8 @@ public class OpenCLProgram {
 			"		}\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
-			"		color" + c + " = color" + c + " * weight" + c + ";\n";
+			"		color" + c + " = color" + c + " * weight" + c + ";\n" +
+			"		alpha" + c + " = alpha" + c + " * weight" + c + ";\n";
 		}
 		source = source +
 			"		unsigned int out_r = " + sumOfProducts("color", "rgb", ".x", channels) + ";\n" +

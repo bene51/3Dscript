@@ -114,6 +114,9 @@ public class Preprocessor {
 //		}
 //		return text.substring(lineStart, lineEnd + 1);
 		String line = trimLeading(text.substring(lineStart, pos + 1));
+		if(line.startsWith("//"))
+			return null;
+
 		if(line.trim().endsWith(":"))
 			return null;
 
@@ -150,6 +153,8 @@ public class Preprocessor {
 			while((line = buf.readLine()) != null) {
 				line = line.trim();
 				if(line.isEmpty())
+					continue;
+				if(line.startsWith("//"))
 					continue;
 				if(line.endsWith(":"))
 					lastLineWithoutDash = line.substring(0, line.length() - 1);

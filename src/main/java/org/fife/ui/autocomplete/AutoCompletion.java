@@ -633,6 +633,10 @@ public class AutoCompletion {
 		String replacement = getReplacementText(c, textComp.getDocument(),
 				start, len);
 
+		// Bene
+		if(replacement != null && replacement.startsWith("(none)"))
+			return;
+
 		caret.setDot(start);
 		caret.moveDot(dot);
 		textComp.replaceSelection(replacement);
@@ -812,6 +816,10 @@ public class AutoCompletion {
 	 */
 	protected int refreshPopupWindow() {
 
+		// Bene:
+		if(pcc != null)
+			hideParameterCompletionPopups();
+
 		System.out.println("refreshPopupWindow");
 
 		// A return value of null => don't suggest completions
@@ -836,7 +844,8 @@ public class AutoCompletion {
 				.getCompletions(textComponent);
 		int count = completions==null ? 0 : completions.size();
 
-		if (count > 1 || (count == 1 && (isPopupVisible() /** Bene || textLen == 0 */))
+		if (count > 1
+// Bene				|| (count == 1 && (isPopupVisible() /** Bene || textLen == 0 */))
 				|| (count == 1 && !getAutoCompleteSingleChoices())) {
 
 			if (popupWindow == null) {
@@ -1359,7 +1368,7 @@ public class AutoCompletion {
 			System.out.println("insertUpdate");
 			justInserted = false;
 			if (isAutoCompleteEnabled() && isAutoActivationEnabled()
-					/* BS && e.getLength() == 1 */) {
+					/* Bene && e.getLength() == 1 */) {
 				if (provider.isAutoActivateOkay(textComponent)) {
 					timer.restart();
 					justInserted = true;

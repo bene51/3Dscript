@@ -215,7 +215,7 @@ public class Interpreter {
 
 		space(result, false);
 
-		result.setAutocompletion(new RealAutocompletion());
+		result.setAutocompletion(new RealAutocompletion("<degrees>"));
 
 		NumberOrMacro degrees = mor();
 
@@ -250,7 +250,7 @@ public class Interpreter {
 
 			space(result, false);
 
-			result.setAutocompletion(new TripleAutocompletion());
+			result.setAutocompletion(new TripleAutocompletion("<vx>", "<vy>", "<vz>"));
 			axis = triple(result);
 		}
 
@@ -284,7 +284,7 @@ public class Interpreter {
 
 			space(result, false);
 
-			result.setAutocompletion(new RealAutocompletion());
+			result.setAutocompletion(new RealAutocompletion("<dx>"));
 			dx[0] = mor();
 			dx[1] = new NumberOrMacro(0);
 			dx[2] = new NumberOrMacro(0);
@@ -297,7 +297,7 @@ public class Interpreter {
 
 			space(result, false);
 
-			result.setAutocompletion(new RealAutocompletion());
+			result.setAutocompletion(new RealAutocompletion("<dy>"));
 			dx[0] = new NumberOrMacro(0);
 			dx[1] = mor();
 			dx[2] = new NumberOrMacro(0);
@@ -320,7 +320,7 @@ public class Interpreter {
 		if(keyword(GeneralKeyword.ZOOM, true) == null)
 			return null;
 		space(result, false);
-		result.setAutocompletion(new RealAutocompletion());
+		result.setAutocompletion(new RealAutocompletion("<zoom>"));
 		NumberOrMacro factor = mor();
 		return new ScaleAnimation(from, to, factor, center);
 	}
@@ -328,14 +328,14 @@ public class Interpreter {
 	/**
 	 * channelproperty :: (color min | color max | color gamma | alpha min | alpha max | alpha gamma | weight | color | alpha)
 	 */
-	int[] channelproperty(int channel, ParsingResult result, int cursorpos) {
+	ChannelProperty channelproperty(int channel, ParsingResult result, int cursorpos) {
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
 				lexer.getAutocompletionList(cursorpos, ChannelProperty.values())));
 
 		for(ChannelProperty cp : ChannelProperty.values()) {
 			if(keyword(cp, true) != null) {
-				return cp.getTimelineIndices(channel);
+				return cp;
 			}
 		}
 		throw new RuntimeException("Expected channel property");
@@ -346,10 +346,10 @@ public class Interpreter {
 	 *                        bounding box min z | bounding box max z | front clipping | back clipping |
 	 *                        bounding box x | bounding box y | bounding box z)
 	 */
-	int[] nonchannelproperty(ParsingResult result, int cursorpos) {
+	NonchannelProperty nonchannelproperty(ParsingResult result, int cursorpos) {
 		for(NonchannelProperty cp : NonchannelProperty.values()) {
 			if(keyword(cp, true) != null) {
-				return cp.getTimelineIndices();
+				return cp;
 			}
 		}
 		throw new RuntimeException("Expected rendering property");
@@ -377,15 +377,20 @@ public class Interpreter {
 				lexer.getAutocompletionList(cursorpos, choice)));
 
 		int[] timelineIdcs = null;
+		String[] autocompletionDescriptions = null;
 		if(keyword(GeneralKeyword.CHANNEL, true) != null) {
 			space(result, false);
-			result.setAutocompletion(new IntegerAutocompletion());
+			result.setAutocompletion(new IntegerAutocompletion("<channel>"));
 			int channel = integer() - 1;
 			space(result, false);
-			timelineIdcs = channelproperty(channel, result, cursorpos);
+			ChannelProperty cp = channelproperty(channel, result, cursorpos);
+			timelineIdcs = cp.getTimelineIndices(channel);
+			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 		else {
-			timelineIdcs = nonchannelproperty(result, cursorpos);
+			NonchannelProperty cp = nonchannelproperty(result, cursorpos);
+			timelineIdcs = cp.getTimelineIndices();
+			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 
 		space(result, false);
@@ -397,15 +402,20 @@ public class Interpreter {
 		NumberOrMacro[] tgts = null;
 		switch(timelineIdcs.length) {
 		case 1:
-			result.setAutocompletion(new RealAutocompletion());
+			result.setAutocompletion(new RealAutocompletion(autocompletionDescriptions[0]));
 			tgts = new NumberOrMacro[] { mor() };
 			break;
 		case 2:
-			result.setAutocompletion(new TupleAutocompletion());
+			result.setAutocompletion(new TupleAutocompletion(
+					autocompletionDescriptions[0],
+					autocompletionDescriptions[1]));
 			tgts = tuple(result);
 			break;
 		case 3:
-			result.setAutocompletion(new TripleAutocompletion());
+			result.setAutocompletion(new TripleAutocompletion(
+					autocompletionDescriptions[0],
+					autocompletionDescriptions[1],
+					autocompletionDescriptions[2]));
 			tgts = triple(result);
 			break;
 		}
@@ -417,6 +427,8 @@ public class Interpreter {
 	}
 
 	float[] transition() {
+		if(keyword(Transition.NONE, true) != null)
+			return Transition.NONE.getTransition();
 		if(keyword(Transition.EASE_IN_OUT, true) != null)
 			return Transition.EASE_IN_OUT.getTransition();
 		if(keyword(Transition.EASE_IN, true) != null)
@@ -479,13 +491,13 @@ public class Interpreter {
 
 		if(keyword(GeneralKeyword.AT_FRAME, true) != null) {
 			space(result, false);
-			result.setAutocompletion(new IntegerAutocompletion());
+			result.setAutocompletion(new IntegerAutocompletion("<frame>"));
 			from = to = integer();
 		} else {
 			keyword(GeneralKeyword.FROM_FRAME, false);
 
 			space(result, false);
-			result.setAutocompletion(new IntegerAutocompletion());
+			result.setAutocompletion(new IntegerAutocompletion("<frame>"));
 			from = integer();
 
 			space(result, false);
@@ -493,7 +505,7 @@ public class Interpreter {
 			lexer.getNextToken(GeneralKeyword.TO_FRAME, false);
 
 			space(result, false);
-			result.setAutocompletion(new IntegerAutocompletion());
+			result.setAutocompletion(new IntegerAutocompletion("<frame>"));
 			to = integer();
 		}
 

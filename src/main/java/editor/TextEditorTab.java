@@ -63,7 +63,7 @@ public class TextEditorTab extends JSplitPane {
 
 			@Override
 			public void actionPerformed(final ActionEvent ae) {
-				kill();
+				textEditor.cancelAnimation();
 			}
 		});
 		bottom.add(killit, bc);
@@ -167,17 +167,12 @@ public class TextEditorTab extends JSplitPane {
 	}
 
 	private boolean isExecuting() {
-		// TODO
-		return false;
+		return textEditor.isExecuting();
 	}
 
 	public final String getTitle() {
 		return (editorPane.fileChanged() ? "*" : "") + editorPane.getFileName() +
 			(isExecuting() ? " (Running)" : "");
-	}
-
-	protected void kill() {
-		// TODO
 	}
 
 	public JTextComponent getEditorPane() {
