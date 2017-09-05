@@ -10,9 +10,9 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
 import renderer3d.Keyframe;
-import renderer3d.Renderer3D;
 import renderer3d.Transform;
 import textanim.Animation;
+import textanim.Renderer3D;
 import textanim.TransformationAnimation;
 
 public class Animator {

@@ -1,10 +1,11 @@
-package renderer3d;
+package textanim;
 
 import java.awt.Color;
 
 import ij.ImagePlus;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import renderer3d.Keyframe;
 
 public interface Renderer3D {
 

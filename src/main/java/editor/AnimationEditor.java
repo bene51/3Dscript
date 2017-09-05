@@ -57,10 +57,10 @@ import parser.Keyword.NonchannelProperty;
 import parser.ParsingResult;
 import parser.Preprocessor;
 import renderer3d.Keyframe;
-import renderer3d.Renderer3D;
 import renderer3d.RenderingSettings;
 import renderer3d.Transform;
 import textanim.Animation;
+import textanim.Renderer3D;
 
 
 @SuppressWarnings("serial")

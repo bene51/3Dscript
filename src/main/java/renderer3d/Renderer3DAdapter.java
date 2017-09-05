@@ -7,6 +7,7 @@ import ij.measure.Calibration;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
+import textanim.Renderer3D;
 
 public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 
