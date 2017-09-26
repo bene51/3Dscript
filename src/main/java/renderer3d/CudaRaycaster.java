@@ -11,6 +11,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Toolbar;
+import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
@@ -27,42 +28,10 @@ public class CudaRaycaster {
 
 	private final boolean boundingBox = true;
 
+	private final boolean scalebar3D = false;
+
 	static {
 		System.loadLibrary("CudaRaycaster");
-	}
-
-	public static void main(String... args) {
-		new ij.ImageJ();
-		String dir = "D:\\VLanger\\20161205-Intravital-Darm\\";
-		String name = "cy5-shg-2p-maus3919-gecleart-20x-big-stack1.resampled.tif";
-		ImagePlus imp = IJ.openImage(dir + name);
-		imp.show();
-
-		int d = imp.getNSlices();
-
-		RenderingSettings renderingSettings0 = new RenderingSettings(
-				300,    // colorMin,
-				3000,   // colorMax,
-				1,      // colorGamma,
-				300,    // alphaMin,
-				3000,   // alphaMax,
-				2f);    // alphaGamma,
-
-		RenderingSettings renderingSettings1 = new RenderingSettings(
-				300,   // colorMin,
-				3000,  // colorMax,
-				1,     // colorGamma,
-				300,   // alphaMin,
-				3000,  // alphaMax,
-				2);    // alphaGamma,
-
-		RenderingSettings[] renderingSettings = new RenderingSettings[] {renderingSettings0, renderingSettings1};
-
-		CudaRaycaster raycaster = new CudaRaycaster(imp, imp.getWidth(), imp.getHeight(), 1);
-		float[] xform = Transform.fromIdentity(null);
-		ImagePlus comp = raycaster.renderAndCompose(xform, xform, renderingSettings, 0, 2 * d);
-
-		new ImagePlus("", comp.getImage()).show();
 	}
 
 	private static native void initRaycaster8(
@@ -121,7 +90,8 @@ public class CudaRaycaster {
 		this.hOut = hOut;
 		this.nChannels = imp.getNChannels();
 
-		bbox = new BoundingBox(wIn, hIn, dIn);
+		Calibration cal = imp.getCalibration();
+		bbox = new BoundingBox(wIn, hIn, dIn, cal.pixelWidth, cal.pixelHeight, cal.pixelDepth);
 
 		if(imp.getType() == ImagePlus.GRAY8)
 			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
@@ -204,24 +174,25 @@ public class CudaRaycaster {
 		this.bg = c;
 	}
 
+	// TODO take an ExtendedKeyframe as an argument
 	public ImageProcessor project(
 			float[] fwdTransform,
 			float[] invTransform,
-			RenderingSettings[] renderingSettings,
+			double[][] channelProperties,
 			float near,
 			float far) {
 
-		float[][] channelSettings = new float[renderingSettings.length][];
+		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
 			System.out.println("channelColors[" + c + "] = " + channelColors[c]);
 			channelSettings[c] = new float[] {
-					renderingSettings[c].colorMin,
-					renderingSettings[c].colorMax,
-					renderingSettings[c].colorGamma,
-					renderingSettings[c].alphaMin,
-					renderingSettings[c].alphaMax,
-					renderingSettings[c].alphaGamma,
-					renderingSettings[c].weight,
+					(float)(channelProperties[c][ExtendedKeyframe.COLOR_MIN]),
+					(float)(channelProperties[c][ExtendedKeyframe.COLOR_MAX]),
+					(float)(channelProperties[c][ExtendedKeyframe.COLOR_GAMMA]),
+					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_MIN]),
+					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_MAX]),
+					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_GAMMA]),
+					(float)(channelProperties[c][ExtendedKeyframe.WEIGHT]),
 					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}
@@ -233,6 +204,11 @@ public class CudaRaycaster {
 			ret.setValue(Toolbar.getForegroundColor().getRGB());
 			ret.setLineWidth(Line.getWidth());
 			bbox.drawQuads(ret, fwdTransform, invTransform);
+		}
+		if(scalebar3D) {
+			ret.setValue(Toolbar.getForegroundColor().getRGB());
+			ret.setLineWidth(Line.getWidth());
+			bbox.drawScalebar(ret, fwdTransform, invTransform);
 		}
 		return ret;
 	}
@@ -265,11 +241,6 @@ public class CudaRaycaster {
 
 	public void setProgram(String src) {
 		setKernel(src);
-	}
-
-
-	public ImagePlus renderAndCompose(float[] fwd, float[] inv, RenderingSettings[] renderingSettings, float near, float far) {
-		return new ImagePlus("", project(fwd, inv, renderingSettings, near, far));
 	}
 
 	private LUT[] channelLUTs;

@@ -2,10 +2,6 @@ package parser;
 
 import java.util.ArrayList;
 
-import parser.Keyword.ChannelProperty;
-import parser.Keyword.GeneralKeyword;
-import parser.Keyword.NonchannelProperty;
-
 public class Lexer {
 
 	private final String input;
@@ -16,27 +12,11 @@ public class Lexer {
 		this.index = 0;
 	}
 
-	private String keywordAt(int pos) {
-		for(GeneralKeyword kw : GeneralKeyword.values()) {
-			if(input.regionMatches(true, pos, kw.text(), 0, kw.length()))
-				return kw.text();
-		}
-		for(ChannelProperty kw : ChannelProperty.values()) {
-			if(input.regionMatches(true, pos, kw.text(), 0, kw.length()))
-				return kw.text();
-		}
-		for(NonchannelProperty kw : NonchannelProperty.values()) {
-			if(input.regionMatches(true, pos, kw.text(), 0, kw.length()))
-				return kw.text();
-		}
-		return null;
-	}
-
-	public Token getNextToken(Keyword keyword, boolean optional) {
-		if(input.regionMatches(true, index, keyword.text(), 0, keyword.length())) {
+	public Token getNextToken(Keyword2 keyword, boolean optional) {
+		if(input.regionMatches(true, index, keyword.getKeyword(), 0, keyword.length())) {
 			int pos = index;
 			index += keyword.length();
-			return new Token(keyword.text(), TokenType.KEYWORD, pos);
+			return new Token(keyword.getKeyword(), TokenType.KEYWORD, pos);
 		}
 		if(optional)
 			return null; // without increasing index;
@@ -126,15 +106,7 @@ public class Lexer {
 		}
 
 		else if(token == TokenType.KEYWORD) {
-			String keyword = keywordAt(index);
-			if(keyword != null) {
-				int pos = index;
-				index += keyword.length();
-				return new Token(keyword, TokenType.KEYWORD, pos);
-			}
-			if(optional)
-				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new RuntimeException("Should not call getToken() with TokenType==KEYWORD");
 		}
 
 		else {
@@ -152,13 +124,13 @@ public class Lexer {
 	 * @param cursorpos
 	 * @return
 	 */
-	public String[] getAutocompletionList(int cursorpos, Keyword...keywords) {
+	public String[] getAutocompletionList(int cursorpos, Keyword2...keywords) {
 		String prefix = input.substring(index, cursorpos);
 		ArrayList<String> list = new ArrayList<String>();
 		System.out.println("*" + prefix + "*");
-		for(Keyword kw : keywords)
-			if(kw.text().regionMatches(true, 0, prefix, 0, prefix.length()))
-				list.add(kw.text());
+		for(Keyword2 kw : keywords)
+			if(kw.getKeyword().regionMatches(true, 0, prefix, 0, prefix.length()))
+				list.add(kw.getKeyword());
 
 		String[] ret = new String[list.size()];
 		list.toArray(ret);
@@ -178,10 +150,10 @@ public class Lexer {
 		return ret;
 	}
 
-	public String getAutocompletionString(int cursorpos, Keyword kw) {
+	public String getAutocompletionString(int cursorpos, Keyword2 kw) {
 		String prefix = input.substring(index, cursorpos);
-		if(kw.text().regionMatches(true, 0, prefix, 0, prefix.length()))
-			return kw.text();
+		if(kw.getKeyword().regionMatches(true, 0, prefix, 0, prefix.length()))
+			return kw.getKeyword();
 
 		return null;
 	}

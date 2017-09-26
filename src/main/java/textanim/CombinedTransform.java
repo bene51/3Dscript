@@ -1,6 +1,7 @@
-package renderer3d;
+package textanim;
 
 import ij.measure.Calibration;
+import renderer3d.Transform;
 
 public class CombinedTransform {
 

@@ -23,9 +23,15 @@ import parser.Autocompletion.TupleAutocompletion;
 import parser.Interpreter;
 import parser.ParsingResult;
 import parser.Preprocessor;
+import textanim.KeywordFactory;
 
 public class AnimationCompletionProvider extends CompletionProviderBase {
 
+	private final KeywordFactory kwFactory;
+
+	public AnimationCompletionProvider(KeywordFactory kwFactory) {
+		this.kwFactory = kwFactory;
+	}
 
 	@Override
 	public boolean isAutoActivateOkay(JTextComponent comp) {
@@ -59,12 +65,15 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			input = Preprocessor.getLineForCursor(comp.getText(), dot - 1);
 			System.out.println("Current line = " + input);
 //			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
-			Interpreter.parse(input, input.length(), new float[] {100, 100, 100}, result);
+			Interpreter.parse(kwFactory, input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 
 		Autocompletion autocompletion = result.getAutocompletion();
+		if(autocompletion == null)
+			return "";
+
 		int atype = autocompletion.type;
 
 		if(atype == Autocompletion.AUTOCOMPLETION_LIST) {
@@ -131,12 +140,15 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			input = Preprocessor.getLineForCursor(comp.getText(), dot - 1);
 			System.out.println("Current line = " + input);
 //			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
-			Interpreter.parse(input, input.length(), new float[] {100, 100, 100}, result);
+			Interpreter.parse(kwFactory, input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 
 		Autocompletion autocompletion = result.getAutocompletion();
+		if(autocompletion == null)
+			return completions;
+
 		int atype = autocompletion.type;
 
 		if(atype == Autocompletion.AUTOCOMPLETION_LIST) {

@@ -49,6 +49,7 @@ import parser.Interpreter;
 import parser.ParsingResult;
 import parser.Preprocessor;
 import textanim.Animation;
+import textanim.KeywordFactory;
 
 
 public class EditorPane extends RSyntaxTextArea implements DocumentListener {
@@ -63,11 +64,13 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 	private boolean undoInProgress;
 	private boolean redoInProgress;
 
+	private final KeywordFactory kwFactory;
 
 	/**
 	 * Constructor.
 	 */
-	public EditorPane() {
+	public EditorPane(final KeywordFactory kwFactory) {
+		this.kwFactory = kwFactory;
 		setLineWrap(false);
 		setTabSize(8);
 
@@ -82,7 +85,7 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 		ToolTipManager.sharedInstance().registerComponent(this);
 		getDocument().addDocumentListener(this);
 
-		CompletionProvider provider = new AnimationCompletionProvider();
+		CompletionProvider provider = new AnimationCompletionProvider(kwFactory);
 		final AutoCompletion ac = new AutoCompletion(provider);
 		ac.setTriggerKey(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK, false));
 		ac.setAutoCompleteEnabled(true);
@@ -152,7 +155,7 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 				System.out.println("EditorPane: insertUpdate(): line = " + line);
 				ParsingResult result = new ParsingResult();
 				try {
-					Interpreter.parse(line, new float[] {}, result);
+					Interpreter.parse(kwFactory, line, new float[] {}, result);
 				} catch(Exception ex) {
 					return;
 				}

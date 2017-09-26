@@ -46,29 +46,28 @@ import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import animation2.Animator;
-import animation2.Animator.Listener;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.io.OpenDialog;
-import parser.Keyword.ChannelProperty;
-import parser.Keyword.GeneralKeyword;
-import parser.Keyword.NonchannelProperty;
+import parser.Keyword2.GeneralKeyword;
 import parser.ParsingResult;
 import parser.Preprocessor;
-import renderer3d.Keyframe;
-import renderer3d.RenderingSettings;
 import renderer3d.Transform;
 import textanim.Animation;
+import textanim.Animator;
+import textanim.Animator.Listener;
+import textanim.IRecordingProvider;
+import textanim.IRecordingProvider.RecordingItem;
+import textanim.Keyframe2;
 import textanim.Renderer3D;
 
 
 @SuppressWarnings("serial")
 public class AnimationEditor extends JFrame implements ActionListener, ChangeListener, DocumentListener
 {
-	public static void main(String[] args) {
-		new AnimationEditor(null).setVisible(true);
-	}
+//	public static void main(String[] args) {
+//		new AnimationEditor(null).setVisible(true);
+//	}
 
 	public static final String WINDOW_HEIGHT = "animation.editor.height";
 	public static final String WINDOW_WIDTH = "animation.editor.width";
@@ -83,8 +82,11 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			nextTab, previousTab, runSelection, run,
 			decreaseFontSize, increaseFontSize, chooseFontSize,
 			savePreferences,
-			recordContrast, recordTransformation, recordCropping,
+//			recordContrast,
+			recordTransformation,
+//			recordCropping,
 			recordTransitionStart, recordTransitionEnd;
+	private List<JMenuItem> customRecording = new ArrayList<JMenuItem>();
 
 	private JMenu tabsMenu, fontSizeMenu, tabSizeMenu, runMenu, recordMenu;
 
@@ -97,9 +99,12 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	private final Renderer3D renderer;
 	private final Animator animator;
 
-	public AnimationEditor(Renderer3D renderer) {
+	private final IRecordingProvider recordingProvider;
+
+	public AnimationEditor(Renderer3D renderer, IRecordingProvider recordingProvider) {
 		super("Script Editor");
 		this.renderer = renderer;
+		this.recordingProvider = recordingProvider;
 		this.animator = new Animator(renderer);
 
 		loadPreferences();
@@ -242,10 +247,12 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 
 		recordMenu = new JMenu("Record");
-		recordContrast = addToMenu(recordMenu, "Record contrast", 0, 0);
 		recordTransformation = addToMenu(recordMenu, "Record transformation", 0, 0);
-		recordCropping = addToMenu(recordMenu, "Record cropping", 0, 0);
-		recordMenu.addSeparator();
+		if(recordingProvider != null) {
+			for(RecordingItem item : recordingProvider)
+				customRecording.add(addToMenu(recordMenu, item.getCommand(), 0, 0));
+			recordMenu.addSeparator();
+		}
 		recordTransitionStart = addToMenu(recordMenu, "Start recording transition", 0, 0);
 		recordTransitionEnd = addToMenu(recordMenu, "Stop recording transition", 0, 0);
 		mbar.add(recordMenu);
@@ -552,6 +559,14 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	@Override
 	public void actionPerformed(final ActionEvent ae) {
 		final Object source = ae.getSource();
+		int i = 0;
+		for(JMenuItem ri : customRecording) {
+			if(source == ri) {
+				handleCustomRecording(i);
+				return;
+			}
+			i++;
+		}
 		if (source == newFile) createNewDocument();
 		else if (source == open) {
 			final EditorPane editorPane = getEditorPane();
@@ -570,9 +585,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		else if (source == save) save();
 		else if (source == saveas) saveAs();
 		else if (source == run) runText(false);
-		else if (source == recordContrast) recordContrast();
 		else if (source == recordTransformation) recordTransformation();
-		else if (source == recordCropping) recordCropping();
 		else if (source == recordTransitionStart) recordTransitionStart();
 		else if (source == recordTransitionEnd) recordTransitionEnd();
 		else if (source == runSelection) runText(true);
@@ -707,7 +720,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		return false;
 	}
 
-	private Keyframe keyframeRecordStart = null;
+	private Keyframe2 keyframeRecordStart = null;
 
 	public void recordTransitionStart() {
 		keyframeRecordStart = renderer.getKeyframe().clone();
@@ -721,7 +734,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		Keyframe keyframeRecordEnd = renderer.getKeyframe().clone();
+		Keyframe2 keyframeRecordEnd = renderer.getKeyframe().clone();
 
 		float[] t0 = keyframeRecordStart.getFwdTransform().calculateForwardTransformWithoutCalibration();
 		float[] t1 = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
@@ -760,22 +773,22 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		final TextEditorTab tab = getTab();
 		StringBuffer text = new StringBuffer("From frame X to frame Y:\n");
 		text.append("- ")
-			.append(GeneralKeyword.ROTATE.text()).append(" ")
+			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
 			.append(angle).append(" ")
-			.append(GeneralKeyword.DEGREES.text()).append(" ")
-			.append(GeneralKeyword.AROUND.text()).append(" ")
+			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+			.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
 			.append("(")
 			.append(axisAngle[0]).append(", ")
 			.append(axisAngle[1]).append(", ")
 			.append(axisAngle[2])
 			.append(")\n");
 		text.append("- ")
-			.append(GeneralKeyword.ZOOM.text()).append(" ")
+			.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
 			.append(scale)
 			.append("\n");
 		text.append("- ")
-			.append(GeneralKeyword.TRANSLATE.text()).append(" ")
-			.append(GeneralKeyword.BY.text()).append(" ")
+			.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
+			.append(GeneralKeyword.BY.getKeyword()).append(" ")
 			.append("(")
 			.append(dx).append(", ")
 			.append(dy).append(", ")
@@ -799,47 +812,25 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		keyframeRecordEnd = null;
 	}
 
-	public void recordContrast() {
+	public void handleCustomRecording(int i) {
+		RecordingItem ri = recordingProvider.get(i);
+		String text = ri.getRecording(renderer.getKeyframe());
+		addRecording(text);
+	}
+
+	public void addRecording(String s) {
 		final TextEditorTab tab = getTab();
-		RenderingSettings[] rs = renderer.getKeyframe().renderingSettings;
-		StringBuffer text = new StringBuffer("At frame X:\n");
-		for(int c = 0; c < rs.length; c++) {
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(ChannelProperty.COLOR.text())
-				.append(" to (")
-				.append(rs[c].colorMin).append(", ")
-				.append(rs[c].colorMax).append(", ")
-				.append(rs[c].colorGamma)
-				.append(")\n");
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(ChannelProperty.ALPHA.text())
-				.append(" to (")
-				.append(rs[c].alphaMin).append(", ")
-				.append(rs[c].alphaMax).append(", ")
-				.append(rs[c].alphaGamma)
-				.append(")\n");
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(ChannelProperty.WEIGHT.text())
-				.append(" to ")
-				.append(rs[c].weight)
-				.append("\n");
-		}
+
 		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
 		int lineOfCursor = tab.editorPane.getCaretLineNumber();
 		int offset = tab.editorPane.getText().length();
 		try {
 			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
 		} catch(Exception e) {}
-		originalText.insert(offset, text.toString());
+		originalText.insert(offset, s);
 		tab.editorPane.setText(originalText.toString());
 
-		int xStart = text.indexOf("X") + offset;
+		int xStart = s.indexOf("X") + offset;
 		tab.editorPane.setSelectionStart(xStart);
 		tab.editorPane.setSelectionEnd(xStart + 1);
 	}
@@ -852,7 +843,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		Keyframe keyframeRecordEnd = renderer.getKeyframe().clone();
+		Keyframe2 keyframeRecordEnd = renderer.getKeyframe().clone();
 
 		float[] m = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
 
@@ -881,66 +872,26 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		final TextEditorTab tab = getTab();
 		StringBuffer text = new StringBuffer("At frame X:\n");
 		text.append("- ")
-			.append(GeneralKeyword.ROTATE.text()).append(" ")
+			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
 			.append(angle).append(" ")
-			.append(GeneralKeyword.DEGREES.text()).append(" ")
-			.append(GeneralKeyword.AROUND.text()).append(" ")
+			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+			.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
 			.append("(")
 			.append(axisAngle[0]).append(", ")
 			.append(axisAngle[1]).append(", ")
 			.append(axisAngle[2])
 			.append(")\n");
 		text.append("- ")
-			.append(GeneralKeyword.ZOOM.text()).append(" ")
+			.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
 			.append(scale)
 			.append("\n");
 		text.append("- ")
-			.append(GeneralKeyword.TRANSLATE.text()).append(" ")
-			.append(GeneralKeyword.BY.text()).append(" ")
+			.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
+			.append(GeneralKeyword.BY.getKeyword()).append(" ")
 			.append("(")
 			.append(dx).append(", ")
 			.append(dy).append(", ")
 			.append(dz)
-			.append(")\n");
-
-		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
-		int lineOfCursor = tab.editorPane.getCaretLineNumber();
-		int offset = tab.editorPane.getText().length();
-		try {
-			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
-		} catch(Exception e) {}
-		originalText.insert(offset, text.toString());
-		tab.editorPane.setText(originalText.toString());
-
-		int xStart = text.indexOf("X") + offset;
-		tab.editorPane.setSelectionStart(xStart);
-		tab.editorPane.setSelectionEnd(xStart + 1);
-	}
-
-	public void recordCropping() {
-		final TextEditorTab tab = getTab();
-		Keyframe kf = renderer.getKeyframe();
-		StringBuffer text = new StringBuffer("At frame X:\n");
-		text.append("- change ")
-			.append(NonchannelProperty.BOUNDING_BOX_X.text())
-			.append(" to (")
-			.append(kf.bbx0)
-			.append(", ")
-			.append(kf.bbx1)
-			.append(")\n");
-		text.append("- change ")
-			.append(NonchannelProperty.BOUNDING_BOX_Y.text())
-			.append(" to (")
-			.append(kf.bby0)
-			.append(", ")
-			.append(kf.bby1)
-			.append(")\n");
-		text.append("- change ")
-			.append(NonchannelProperty.BOUNDING_BOX_Z.text())
-			.append(" to (")
-			.append(kf.bbz0)
-			.append(", ")
-			.append(kf.bbz1)
 			.append(")\n");
 
 		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
@@ -980,7 +931,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			int to = 0;
 			for(String line : lines) {
 				ParsingResult pr = new ParsingResult();
-				parser.Interpreter.parse(line, rotcenter, pr);
+				parser.Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
 				from = Math.min(from, pr.getFrom());
 				to   = Math.max(to, pr.getTo());
 				Animation ta = pr.getResult();
@@ -1064,7 +1015,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			TextEditorTab tab = (tabbed.getTabCount() == 0) ? null : getTab();
 			final boolean wasNew = tab != null && tab.editorPane.isNew();
 			if (!wasNew) {
-				tab = new TextEditorTab(this);
+				tab = new TextEditorTab(this, renderer.getKeywordFactory());
 				tab.editorPane.loadPreferences();
 				tab.editorPane.getDocument().addDocumentListener(this);
 				addDefaultAccelerators(tab.editorPane);

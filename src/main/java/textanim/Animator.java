@@ -1,4 +1,4 @@
-package animation2;
+package textanim;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +9,7 @@ import java.util.concurrent.Executors;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
-import renderer3d.Keyframe;
 import renderer3d.Transform;
-import textanim.Animation;
-import textanim.Renderer3D;
-import textanim.TransformationAnimation;
 
 public class Animator {
 
@@ -36,7 +32,11 @@ public class Animator {
 		exec.submit(new Runnable() {
 			@Override
 			public void run() {
-				dorender(from, to, listener);
+				try {
+					dorender(from, to, listener);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
@@ -52,12 +52,14 @@ public class Animator {
 	private ImagePlus dorender(int from, int to, Listener listener) {
 		isExecuting = true;
 		stopRendering = false;
-		List<Keyframe> frames = createKeyframes(from, to);
+		List<Keyframe2> frames = createKeyframes(from, to);
 		ImageStack stack = null;
 		ImagePlus ret = null;
-		for(Keyframe kf : frames) {
+		for(Keyframe2 kf : frames) {
 			if(stopRendering)
 				break;
+//if(kf.getFrame() < 52)
+//	continue;
 			ImageProcessor ip = renderer.render(kf);
 			if(stack == null)
 				stack = new ImageStack(ip.getWidth(), ip.getHeight());
@@ -70,7 +72,7 @@ public class Animator {
 				ret.show();
 			}
 			if(ret != null) {
-				ret.setSlice(stack.size() - 1);
+				ret.setSlice(stack.size());
 				ret.updateAndDraw();
 			}
 		}
@@ -88,11 +90,11 @@ public class Animator {
 		animations.add(a);
 	}
 
-	public List<Keyframe> createKeyframes(int from, int to) {
-		List<Keyframe> keyframes = new ArrayList<Keyframe>();
-		Keyframe previous = renderer.getKeyframe();
+	public List<Keyframe2> createKeyframes(int from, int to) {
+		List<Keyframe2> keyframes = new ArrayList<Keyframe2>();
+		Keyframe2 previous = renderer.getKeyframe();
 		for(int t = from; t <= to; t++) {
-			Keyframe kf = previous.clone();
+			Keyframe2 kf = previous.clone();
 			kf.setFrame(t);
 			float[] fwd = Transform.fromIdentity(null);
 			for(Animation a : animations) {

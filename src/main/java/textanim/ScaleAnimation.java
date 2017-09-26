@@ -3,7 +3,6 @@ package textanim;
 import java.util.List;
 
 import parser.NumberOrMacro;
-import renderer3d.Keyframe;
 import renderer3d.Transform;
 
 public class ScaleAnimation extends TransformationAnimation {
@@ -24,7 +23,7 @@ public class ScaleAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustKeyframe(Keyframe current, List<Keyframe> previous) {}
+	public void adjustKeyframe(Keyframe2 current, List<Keyframe2> previous) {}
 
 
 	private float evalOrInterpolate(int frame, NumberOrMacro n) {

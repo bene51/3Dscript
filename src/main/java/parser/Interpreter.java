@@ -6,26 +6,27 @@ import parser.Autocompletion.RealAutocompletion;
 import parser.Autocompletion.StringAutocompletion;
 import parser.Autocompletion.TripleAutocompletion;
 import parser.Autocompletion.TupleAutocompletion;
-import parser.Keyword.ChannelProperty;
-import parser.Keyword.GeneralKeyword;
-import parser.Keyword.NonchannelProperty;
-import parser.Keyword.Transition;
+import parser.Keyword2.GeneralKeyword;
+import parser.Keyword2.Transition;
 import textanim.Animation;
 import textanim.ChangeAnimation;
+import textanim.KeywordFactory;
 import textanim.RotationAnimation;
 import textanim.ScaleAnimation;
 import textanim.TranslationAnimation;
 
 public class Interpreter {
 
-	private Lexer lexer;
+	private final KeywordFactory kwFactory;
+	private final Lexer lexer;
 	private float[] center;
 
-	private Interpreter(String text, float[] center) {
-		this(new Lexer(text), center);
+	private Interpreter(KeywordFactory kwFactory, String text, float[] center) {
+		this(kwFactory, new Lexer(text), center);
 	}
 
-	private Interpreter(Lexer lexer, float[] center) {
+	private Interpreter(KeywordFactory kwFactory, Lexer lexer, float[] center) {
+		this.kwFactory = kwFactory;
 		this.lexer = lexer;
 		this.center = center;
 	}
@@ -71,7 +72,7 @@ public class Interpreter {
 		return lexer.getNextToken(TokenType.COMMA, optional);
 	}
 
-	Token keyword(Keyword kw, boolean optional) {
+	Token keyword(Keyword2 kw, boolean optional) {
 		skipSpace();
 		return lexer.getNextToken(kw, optional);
 	}
@@ -221,7 +222,7 @@ public class Interpreter {
 
 		space(result, false);
 
-		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.DEGREES.text()));
+		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.DEGREES.getKeyword()));
 		keyword(GeneralKeyword.DEGREES, false);
 
 		space(result, false);
@@ -270,16 +271,16 @@ public class Interpreter {
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
 				lexer.getAutocompletionList(cursorpos,
-						GeneralKeyword.HORIZONTALLY.text(),
-						GeneralKeyword.VERTICALLY.text(),
-						GeneralKeyword.BY.text() + " (X, Y, Z)")));
+						GeneralKeyword.HORIZONTALLY.getKeyword(),
+						GeneralKeyword.VERTICALLY.getKeyword(),
+						GeneralKeyword.BY.getKeyword() + " (X, Y, Z)")));
 
 		NumberOrMacro[] dx = new NumberOrMacro[3];
 
 		if(keyword(GeneralKeyword.HORIZONTALLY, true) != null) {
 			space(result, false);
 
-			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.BY.text()));
+			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.BY.getKeyword()));
 			keyword(GeneralKeyword.BY, false);
 
 			space(result, false);
@@ -292,7 +293,7 @@ public class Interpreter {
 		else if(keyword(GeneralKeyword.VERTICALLY, true) != null) {
 			space(result, false);
 
-			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.BY.text()));
+			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.BY.getKeyword()));
 			keyword(GeneralKeyword.BY, false);
 
 			space(result, false);
@@ -328,12 +329,13 @@ public class Interpreter {
 	/**
 	 * channelproperty :: (color min | color max | color gamma | alpha min | alpha max | alpha gamma | weight | color | alpha)
 	 */
-	ChannelProperty channelproperty(int channel, ParsingResult result, int cursorpos) {
+	Keyword2 channelproperty(ParsingResult result, int cursorpos) {
+		Keyword2[] channelKeywords = kwFactory.getChannelKeywords();
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
-				lexer.getAutocompletionList(cursorpos, ChannelProperty.values())));
+				lexer.getAutocompletionList(cursorpos, kwFactory.getChannelKeywords())));
 
-		for(ChannelProperty cp : ChannelProperty.values()) {
+		for(Keyword2 cp : channelKeywords) {
 			if(keyword(cp, true) != null) {
 				return cp;
 			}
@@ -346,13 +348,14 @@ public class Interpreter {
 	 *                        bounding box min z | bounding box max z | front clipping | back clipping |
 	 *                        bounding box x | bounding box y | bounding box z)
 	 */
-	NonchannelProperty nonchannelproperty(ParsingResult result, int cursorpos) {
-		for(NonchannelProperty cp : NonchannelProperty.values()) {
+	Keyword2 nonchannelproperty(ParsingResult result, int cursorpos) {
+		Keyword2[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
+		for(Keyword2 cp : nonChannelKeywords) {
 			if(keyword(cp, true) != null) {
 				return cp;
 			}
 		}
-		throw new RuntimeException("Expected rendering property");
+		throw new RuntimeException("Expected non-channel property");
 	}
 
 	/**
@@ -367,10 +370,11 @@ public class Interpreter {
 
 		space(result, false);
 
-		Keyword[] choice = new Keyword[NonchannelProperty.values().length + 1];
+		Keyword2[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
+		Keyword2[] choice = new Keyword2[nonChannelKeywords.length + 1];
 		int i = 0;
 		choice[i++] = GeneralKeyword.CHANNEL;
-		for(NonchannelProperty rp : NonchannelProperty.values())
+		for(Keyword2 rp : nonChannelKeywords)
 			choice[i++] = rp;
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
@@ -378,23 +382,24 @@ public class Interpreter {
 
 		int[] timelineIdcs = null;
 		String[] autocompletionDescriptions = null;
+		int channel = -1;
 		if(keyword(GeneralKeyword.CHANNEL, true) != null) {
 			space(result, false);
 			result.setAutocompletion(new IntegerAutocompletion("<channel>"));
-			int channel = integer() - 1;
+			channel = integer() - 1;
 			space(result, false);
-			ChannelProperty cp = channelproperty(channel, result, cursorpos);
-			timelineIdcs = cp.getTimelineIndices(channel);
+			Keyword2 cp = channelproperty(result, cursorpos);
+			timelineIdcs = cp.getKeyframeProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 		else {
-			NonchannelProperty cp = nonchannelproperty(result, cursorpos);
-			timelineIdcs = cp.getTimelineIndices();
+			Keyword2 cp = nonchannelproperty(result, cursorpos);
+			timelineIdcs = cp.getKeyframeProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 
 		space(result, false);
-		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.TO.text()));
+		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.TO.getKeyword()));
 		keyword(GeneralKeyword.TO, false);
 
 		space(result, false);
@@ -420,7 +425,7 @@ public class Interpreter {
 			break;
 		}
 
-		ChangeAnimation ca = new ChangeAnimation(from, to, timelineIdcs, tgts);
+		ChangeAnimation ca = new ChangeAnimation(from, to, channel, timelineIdcs, tgts);
 		result.setResult(ca);
 
 		return ca;
@@ -501,7 +506,7 @@ public class Interpreter {
 			from = integer();
 
 			space(result, false);
-			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.TO_FRAME.text()));
+			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.TO_FRAME.getKeyword()));
 			lexer.getNextToken(GeneralKeyword.TO_FRAME, false);
 
 			space(result, false);
@@ -516,20 +521,20 @@ public class Interpreter {
 
 	}
 
-	public static void parse(String line, int length, float[] center, ParsingResult result) {
-		Interpreter i = new Interpreter(line, center);
+	public static void parse(KeywordFactory kwFactory, String line, int length, float[] center, ParsingResult result) {
+		Interpreter i = new Interpreter(kwFactory, line, center);
 		i.line(result, length);
 	}
 
-	public static void parse(String line, float[] center, ParsingResult result) {
-		parse(line, line.length(), center, result);
+	public static void parse(KeywordFactory kwFactory, String line, float[] center, ParsingResult result) {
+		parse(kwFactory, line, line.length(), center, result);
 	}
 
 	public static void main(String...args) {
 		String input = "From frame 0 to frame 10 rotate by 30 degrees around (1, 0, 0)";
 
 		ParsingResult res = new ParsingResult();
-		Interpreter.parse(input, new float[3], res);
+		Interpreter.parse(null, input, new float[3], res);
 		System.out.println(res);
 	}
 }

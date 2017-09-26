@@ -5,13 +5,14 @@ import java.awt.Color;
 import ij.ImagePlus;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import renderer3d.Keyframe;
 
 public interface Renderer3D {
 
-	public Keyframe getKeyframe();
+	public KeywordFactory getKeywordFactory();
 
-	public ImageProcessor render(Keyframe kf);
+	public Keyframe2 getKeyframe();
+
+	public ImageProcessor render(Keyframe2 kf);
 
 	public ImagePlus getImage();
 

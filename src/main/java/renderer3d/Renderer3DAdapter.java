@@ -7,16 +7,21 @@ import ij.measure.Calibration;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
+import textanim.CombinedTransform;
+import textanim.Keyframe2;
+import textanim.KeywordFactory;
 import textanim.Renderer3D;
 
 public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 
-	private final Keyframe keyframe;
+	private final ExtendedKeyframe keyframe;
 
 	private float near;
 	private float far;
 
 	private LUT[] luts;
+
+	private final KeywordFactory kwFactory = new ExtendedKeywordFactory();
 
 	public Renderer3DAdapter(ImagePlus image, int wOut, int hOut, float zStep) {
 		super(image, wOut, hOut, zStep);
@@ -51,23 +56,36 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
 
-		this.keyframe = new Keyframe(0, renderingSettings, near, far, transformation, 0, 0, 0, image.getWidth(), image.getHeight(), image.getNSlices());
+		this.keyframe = new ExtendedKeyframe(0, renderingSettings, near, far, transformation, 0, 0, 0, image.getWidth(), image.getHeight(), image.getNSlices());
 	}
 
 	public void resetRenderingSettings() {
-		RenderingSettings[] renderingSettings = keyframe.renderingSettings;
+//		RenderingSettings[] renderingSettings = keyframe.renderingSettings;
 		for(int c = 0; c < luts.length; c++) {
-			renderingSettings[c].alphaMin = (float)luts[c].min;
-			renderingSettings[c].alphaMax = (float)luts[c].max;
-			renderingSettings[c].alphaGamma = 2;
-			renderingSettings[c].colorMin = (float)luts[c].min;
-			renderingSettings[c].colorMax = (float)luts[c].max;
-			renderingSettings[c].colorGamma = 1;
-			renderingSettings[c].weight = 1;
+//			renderingSettings[c].alphaMin = (float)luts[c].min;
+//			renderingSettings[c].alphaMax = (float)luts[c].max;
+//			renderingSettings[c].alphaGamma = 2;
+//			renderingSettings[c].colorMin = (float)luts[c].min;
+//			renderingSettings[c].colorMax = (float)luts[c].max;
+//			renderingSettings[c].colorGamma = 1;
+//			renderingSettings[c].weight = 1;
+
+			keyframe.setChannelProperty(c, ExtendedKeyframe.COLOR_MIN,   luts[c].min);
+			keyframe.setChannelProperty(c, ExtendedKeyframe.COLOR_MAX,   luts[c].max);
+			keyframe.setChannelProperty(c, ExtendedKeyframe.COLOR_GAMMA, 1);
+			keyframe.setChannelProperty(c, ExtendedKeyframe.ALPHA_MIN,   luts[c].min);
+			keyframe.setChannelProperty(c, ExtendedKeyframe.ALPHA_MAX,   luts[c].max);
+			keyframe.setChannelProperty(c, ExtendedKeyframe.ALPHA_GAMMA, 2);
 		}
 	}
 
-	public Keyframe getKeyframe() {
+	@Override
+	public KeywordFactory getKeywordFactory() {
+		return kwFactory;
+	}
+
+	@Override
+	public ExtendedKeyframe getKeyframe() {
 		return keyframe;
 	}
 
@@ -95,24 +113,37 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	}
 
 	@Override
-	public ImageProcessor render(Keyframe kf) {
-		if(kf.bbx0 != keyframe.bbx0 || kf.bbx1 != keyframe.bbx1 ||
-				kf.bby0 != keyframe.bby0 || kf.bby1 != keyframe.bbz1 ||
-				kf.bbz0 != keyframe.bbz0 || kf.bbz1 != keyframe.bby1) {
-			super.setBBox(kf.bbx0, kf.bby0, kf.bbz0, kf.bbx1, kf.bby1, kf.bbz1);
-			keyframe.bbx0 = kf.bbx0;
-			keyframe.bbx1 = kf.bbx1;
-			keyframe.bby0 = kf.bby0;
-			keyframe.bby1 = kf.bby1;
-			keyframe.bbz0 = kf.bbz0;
-			keyframe.bbz1 = kf.bbz1;
+	public ImageProcessor render(Keyframe2 kf2) {
+		ExtendedKeyframe kf = (ExtendedKeyframe)kf2;
+		int kfbbx0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN);
+		int kfbby0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN);
+		int kfbbz0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN);
+		int kfbbx1 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX);
+		int kfbby1 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX);
+		int kfbbz1 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX);
+		if(kfbbx0 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN) ||
+				kfbby0 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN) ||
+				kfbbz0 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN) ||
+				kfbbx1 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX) ||
+				kfbby1 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX) ||
+				kfbbz1 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX)) {
+
+			super.setBBox(kfbbx0, kfbby0, kfbbz0, kfbbx1, kfbby1, kfbbz1);
+			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN, kfbbx0);
+			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN, kfbby0);
+			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN, kfbbz0);
+			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX, kfbbx1);
+			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX, kfbby1);
+			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX, kfbbz1);
 		}
 
 		CombinedTransform transform = kf.getFwdTransform();
 		float[] fwd = transform.calculateForwardTransform();
 		float[] inv = CombinedTransform.calculateInverseTransform(fwd);
 		keyframe.setFrom(kf);
-		return super.project(fwd, inv, kf.renderingSettings, kf.near, kf.far);
+		return super.project(fwd, inv, kf.getChannelProperties(),
+				(float)kf.getNonchannelProperty(ExtendedKeyframe.NEAR),
+				(float)kf.getNonchannelProperty(ExtendedKeyframe.FAR));
 	}
 
 	@Override
@@ -122,7 +153,8 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 		float pwOut = (float)(image.getWidth()  * cal.pixelWidth  / w);
 		float phOut = (float)(image.getHeight() * cal.pixelHeight / h);
 		float pdOut = (float)cal.pixelDepth;
-		float[] p = new float[] {pwOut, phOut, pdOut};
+//		float[] p = new float[] {pwOut, phOut, pdOut};
+		float[] p = new float[] {pwOut, pwOut, pwOut};
 
 		keyframe.getFwdTransform().setOutputSpacing(p);
 	}

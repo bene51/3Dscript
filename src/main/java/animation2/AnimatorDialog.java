@@ -14,10 +14,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
-import renderer3d.RenderingSettings;
 
 
 public class AnimatorDialog extends GenericDialog {
@@ -101,8 +99,8 @@ public class AnimatorDialog extends GenericDialog {
 			super.actionPerformed(e);
 	}
 
-	public ContrastPanel addContrastPanel(int[][] histo8, Color[] color, double min[], double max[], RenderingSettings[] r) {
-		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, r);
+	public ContrastPanel addContrastPanel(int[][] histo8, Color[] color, double min[], double max[], double[][] channelProperties) {
+		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, channelProperties);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
@@ -178,27 +176,4 @@ public class AnimatorDialog extends GenericDialog {
 		contents.add(sp, c);
 		return panel;
 	}
-
-	public static void main(String[] args) {
-		int[] histo = new int[256];
-		for (int i = 0; i < 256; i++)
-			histo[i] = i;
-
-		RenderingSettings rs = new RenderingSettings(0, 255, 1, 0, 255, 2);
-
-		final AnimatorDialog gd = new AnimatorDialog("Interactive Raycaster", null);
-		gd.addContrastPanel(new int[][] {histo}, new Color[] {Color.RED}, new double[] {0}, new double[] {255}, new RenderingSettings[] {rs});
-
-		gd.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
-
-		ImagePlus image = IJ.createImage("", 256, 256, 57, 8);
-		gd.addCroppingPanel(image);
-
-		gd.addOutputPanel(255, 255, 1);
-
-		gd.addAnimationPanel();
-
-		gd.setModal(false);
-		gd.showDialog();
-    }
 }

@@ -26,8 +26,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import renderer3d.Keyframe;
-import renderer3d.RenderingSettings;
+import renderer3d.ExtendedKeyframe;
 
 public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
 
@@ -72,17 +71,14 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private Color[] color;
 	private double[] min;
 	private double[] max;
-	private RenderingSettings[] renderingSettings;
+	private double[][] renderingSettings;
 
 	private int channel = 0;
-
-	@SuppressWarnings("unused")
-	private int timelineIdx = 0;
 
 	private ArrayList<Listener> listeners =
 			new ArrayList<Listener>();
 
-	public ContrastPanel(int[][] histogram, Color[] color, double[] min, double max[], final RenderingSettings[] r) {
+	public ContrastPanel(int[][] histogram, Color[] color, double[] min, double max[], final double[][] r) {
 		super();
 
 		this.histogram = histogram;
@@ -110,8 +106,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		gammaATF.addListener(this);
 		gammaATF.addNumberFieldFocusListener(this);
 
-		gammaCTF.setText(df.format(r[channel].colorGamma));
-		gammaATF.setText(df.format(r[channel].alphaGamma));
+		gammaCTF.setText(df.format(r[channel][ExtendedKeyframe.COLOR_GAMMA]));
+		gammaATF.setText(df.format(r[channel][ExtendedKeyframe.ALPHA_GAMMA]));
 
 		this.slider = new DoubleSliderCanvas(histogram[channel], color[channel], min[channel], max[channel], r[channel], this);
 		GridBagLayout gridbag = new GridBagLayout();
@@ -204,12 +200,11 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			wslider.addSliderChangeListener(new SingleSlider.Listener() {
 				@Override
 				public void sliderChanged() {
-					r[ch].weight = wslider.getMax() / 100f;
+					r[ch][ExtendedKeyframe.WEIGHT] = wslider.getMax() / 100f;
 					fireRenderingSettingsChanged();
 				}
 			});
 
-			timelineIdx = Keyframe.WEIGHT + Keyframe.getNumberOfNonChannelProperties() + i * Keyframe.getNumberOfChannelProperties();
 			weightSliders[i] = wslider;
 		}
 
@@ -246,8 +241,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 	public void setChannel(int c) {
 		this.channel = c;
-		gammaATF.setText(df.format(renderingSettings[c].alphaGamma));
-		gammaCTF.setText(df.format(renderingSettings[c].colorGamma));
+		gammaATF.setText(df.format(renderingSettings[c][ExtendedKeyframe.ALPHA_GAMMA]));
+		gammaCTF.setText(df.format(renderingSettings[c][ExtendedKeyframe.COLOR_GAMMA]));
 		slider.set(histogram[c], color[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		slider.repaint();
@@ -287,12 +282,12 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	@Override
 	public void valueChanged(double v) {
 		try {
-			slider.renderingSettings.colorMin = (float)Double.parseDouble(minCTF.getText());
-			slider.renderingSettings.colorMax = (float)Double.parseDouble(maxCTF.getText());
-			slider.renderingSettings.colorGamma = (float)Double.parseDouble(gammaCTF.getText());
-			slider.renderingSettings.alphaMin = (float)Double.parseDouble(minATF.getText());
-			slider.renderingSettings.alphaMax = (float)Double.parseDouble(maxATF.getText());
-			slider.renderingSettings.alphaGamma = (float)Double.parseDouble(gammaATF.getText());
+			slider.renderingSettings[ExtendedKeyframe.COLOR_MIN]   = (float)Double.parseDouble(minCTF.getText());
+			slider.renderingSettings[ExtendedKeyframe.COLOR_MAX]   = (float)Double.parseDouble(maxCTF.getText());
+			slider.renderingSettings[ExtendedKeyframe.COLOR_GAMMA] = (float)Double.parseDouble(gammaCTF.getText());
+			slider.renderingSettings[ExtendedKeyframe.ALPHA_MIN]   = (float)Double.parseDouble(minATF.getText());
+			slider.renderingSettings[ExtendedKeyframe.ALPHA_MAX]   = (float)Double.parseDouble(maxATF.getText());
+			slider.renderingSettings[ExtendedKeyframe.ALPHA_GAMMA] = (float)Double.parseDouble(gammaATF.getText());
 			slider.update();
 			fireRenderingSettingsChanged();
 		} catch(Exception ex) {
@@ -300,10 +295,10 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	private void updateTextfieldsFromSliders() {
-		minCTF.setText(df.format(slider.renderingSettings.colorMin));
-		maxCTF.setText(df.format(slider.renderingSettings.colorMax));
-		minATF.setText(df.format(slider.renderingSettings.alphaMin));
-		maxATF.setText(df.format(slider.renderingSettings.alphaMax));
+		minCTF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.COLOR_MIN]));
+		maxCTF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.COLOR_MAX]));
+		minATF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.ALPHA_MIN]));
+		maxATF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.ALPHA_MAX]));
 		fireRenderingSettingsChanged();
 	}
 
@@ -313,7 +308,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		private int[] histogram;
 		private double min, max;
 		private Color color;
-		private RenderingSettings renderingSettings;
+		private double[] renderingSettings;
 
 		private int drawnColorMin, drawnColorMax, drawnAlphaMin, drawnAlphaMax;
 
@@ -327,7 +322,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 		private ContrastPanel slider;
 
-		public DoubleSliderCanvas(int[] histogram, Color color, double min, double max, RenderingSettings r, ContrastPanel slider) {
+		public DoubleSliderCanvas(int[] histogram, Color color, double min, double max, double[] r, ContrastPanel slider) {
 			set(histogram, color, min, max, r);
 			this.slider = slider;
 			this.addMouseMotionListener(this);
@@ -345,7 +340,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			return new Dimension(0, 80);
 		}
 
-		public void set(int[] histogram, Color color, double min, double max, RenderingSettings r) {
+		public void set(int[] histogram, Color color, double min, double max, double[] r) {
 			this.histogram = histogram;
 			this.color = color;
 			this.min = min;
@@ -376,33 +371,33 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			int newx = (int)Math.round(e.getX() / inc + min);
 			switch(dragging) {
 				case DRAGGING_ALPHA_LEFT:
-					float tmp = Math.max((float)min, Math.min(renderingSettings.alphaMax, newx));
-					if(tmp != renderingSettings.alphaMin) {
-						renderingSettings.alphaMin = tmp;
+					float tmp = (float)Math.max((float)min, Math.min(renderingSettings[ExtendedKeyframe.ALPHA_MAX], newx));
+					if(tmp != renderingSettings[ExtendedKeyframe.ALPHA_MIN]) {
+						renderingSettings[ExtendedKeyframe.ALPHA_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
 					}
 					break;
 				case DRAGGING_ALPHA_RIGHT:
-					tmp = Math.min((float)max, Math.max(renderingSettings.alphaMin, newx - 1));
-					if(tmp != renderingSettings.alphaMax) {
-						renderingSettings.alphaMax = tmp;
+					tmp = (float)Math.min((float)max, Math.max(renderingSettings[ExtendedKeyframe.ALPHA_MIN], newx - 1));
+					if(tmp != renderingSettings[ExtendedKeyframe.ALPHA_MAX]) {
+						renderingSettings[ExtendedKeyframe.ALPHA_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
 					}
 					break;
 				case DRAGGING_COLOR_LEFT:
-					tmp = Math.max((float)min, Math.min(renderingSettings.colorMax, newx));
-					if(tmp != renderingSettings.colorMin) {
-						renderingSettings.colorMin = tmp;
+					tmp = (float)Math.max((float)min, Math.min(renderingSettings[ExtendedKeyframe.COLOR_MAX], newx));
+					if(tmp != renderingSettings[ExtendedKeyframe.COLOR_MIN]) {
+						renderingSettings[ExtendedKeyframe.COLOR_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
 					}
 					break;
 				case DRAGGING_COLOR_RIGHT:
-					tmp = Math.min((float)max, Math.max(renderingSettings.colorMin, newx - 1));
-					if(tmp != renderingSettings.colorMax) {
-						renderingSettings.colorMax = tmp;
+					tmp = (float)Math.min((float)max, Math.max(renderingSettings[ExtendedKeyframe.COLOR_MIN], newx - 1));
+					if(tmp != renderingSettings[ExtendedKeyframe.COLOR_MAX]) {
+						renderingSettings[ExtendedKeyframe.COLOR_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
 					}
@@ -471,23 +466,30 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 				g.drawLine(1 + bx, by, 1 + bx, by + bh);
 			}
 
+			int cmin   = (int)renderingSettings[ExtendedKeyframe.COLOR_MIN];
+			int cmax   = (int)renderingSettings[ExtendedKeyframe.COLOR_MAX];
+			int cgamma = (int)renderingSettings[ExtendedKeyframe.COLOR_GAMMA];
+			int amin   = (int)renderingSettings[ExtendedKeyframe.ALPHA_MIN];
+			int amax   = (int)renderingSettings[ExtendedKeyframe.ALPHA_MAX];
+			int agamma = (int)renderingSettings[ExtendedKeyframe.ALPHA_GAMMA];
+
 			// color transfer function
 			g.setColor(Color.BLACK);
 			int xprev = 0;
 			int yprev = 0;
 			for(int bx = 0; bx < w; bx++) {
 				int x = (int)Math.round(min + bx * (max - min) / w);
-				double ly = (x - renderingSettings.colorMin) / (renderingSettings.colorMax - renderingSettings.colorMin);
+				double ly = (x - cmin) / (cmax - cmin);
 				ly = Math.max(0, Math.min(1, ly));
-				double y = h * Math.pow(ly, renderingSettings.colorGamma);
+				double y = h * Math.pow(ly, cgamma);
 				// print(x + ": " + y);
 				if(bx != 0)
 					g.drawLine(xprev, yprev, bx + 1, h - 1 - (int)Math.round(y));
 				xprev = bx + 1;
 				yprev = h - 1 - (int)Math.round(y);
 			}
-			drawnColorMin = (int)Math.round((renderingSettings.colorMin - min) * w / (max - min));
-			drawnColorMax = (int)Math.round((renderingSettings.colorMax - min) * w / (max - min));
+			drawnColorMin = (int)Math.round((cmin - min) * w / (max - min));
+			drawnColorMax = (int)Math.round((cmin - min) * w / (max - min));
 
 			g.drawLine(drawnColorMin, 0, drawnColorMin, h);
 			g.drawLine(drawnColorMax, 0, drawnColorMax, h);
@@ -498,17 +500,17 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			yprev = 0;
 			for(int bx = 0; bx < w; bx++) {
 				int x = (int)Math.round(min + bx * (max - min) / w);
-				double ly = (x - renderingSettings.alphaMin) / (renderingSettings.alphaMax - renderingSettings.alphaMin);
+				double ly = (x - amin) / (amax - amin);
 				ly = Math.max(0, Math.min(1, ly));
-				double y = h * Math.pow(ly, renderingSettings.alphaGamma);
+				double y = h * Math.pow(ly, agamma);
 				// print(x + ": " + y);
 				if(bx != 0)
 					g.drawLine(xprev, yprev, bx + 1, h - 1 - (int)Math.round(y));
 				xprev = bx + 1;
 				yprev = h - 1 - (int)Math.round(y);
 			}
-			drawnAlphaMin = (int)Math.round((renderingSettings.alphaMin - min) * w / (max - min));
-			drawnAlphaMax = (int)Math.round((renderingSettings.alphaMax - min) * w / (max - min));
+			drawnAlphaMin = (int)Math.round((amin - min) * w / (max - min));
+			drawnAlphaMax = (int)Math.round((amax - min) * w / (max - min));
 
 			g.drawLine(drawnAlphaMin, 0, drawnAlphaMin, h);
 			g.drawLine(drawnAlphaMax, 0, drawnAlphaMax, h);

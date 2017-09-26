@@ -456,6 +456,13 @@ public class Transform {
 	 * parameters[0] - heading
 	 * parameters[1] - attitude
 	 * parameters[2] - bank
+	 *
+	 * note: if it's implemented as stated above,
+	 * - parameters[0] is the angle around y (applied 3rd)
+	 * - parameters[1] is the angle around z (applied 1st)
+	 * - parameters[2] is the angle around x (applied 2nd).
+	 *
+	 * So instead, we exchange the order (2->0, 0->1, 1->2)
 	 */
 	public static final void guessEulerAngles(float[]  m, double[] parameters) {
 	    // Assuming the angles are in radians.
@@ -463,17 +470,22 @@ public class Transform {
 			parameters[0] = Math.atan2(m[a02], m[a22]);
 			parameters[1] = Math.PI/2;
 			parameters[2] = 0;
-			return;
 		}
-		if (m[a10] < -0.998) { // singularity at south pole
+		else if (m[a10] < -0.998) { // singularity at south pole
 			parameters[0] = Math.atan2(m[a02], m[a22]);
 			parameters[1] = -Math.PI/2;
 			parameters[2] = 0;
-			return;
 		}
-		parameters[0] = Math.atan2(-m[a20], m[a00]);
-		parameters[2] = Math.atan2(-m[a12], m[a11]);
-		parameters[1] = Math.asin(m[a10]);
+		else {
+			parameters[0] = Math.atan2(-m[a20], m[a00]);
+			parameters[2] = Math.atan2(-m[a12], m[a11]);
+			parameters[1] = Math.asin(m[a10]);
+		}
+
+		double tmp = parameters[0];
+		parameters[0] = parameters[2];
+		parameters[2] = parameters[1];
+		parameters[1] = tmp;
 	}
 
 	public static final void guessEulerAngles(float[]  m, float[] parameters) {
@@ -482,17 +494,22 @@ public class Transform {
 			parameters[0] = (float)Math.atan2(m[a02], m[a22]);
 			parameters[1] = (float)(Math.PI/2);
 			parameters[2] = 0;
-			return;
 		}
-		if (m[a10] < -0.998) { // singularity at south pole
+		else if (m[a10] < -0.998) { // singularity at south pole
 			parameters[0] = (float)Math.atan2(m[a02], m[a22]);
 			parameters[1] = (float)(-Math.PI/2);
 			parameters[2] = 0;
-			return;
 		}
-		parameters[0] = (float)Math.atan2(-m[a20], m[a00]);
-		parameters[2] = (float)Math.atan2(-m[a12], m[a11]);
-		parameters[1] = (float)Math.asin(m[a10]);
+		else {
+			parameters[0] = (float)Math.atan2(-m[a20], m[a00]);
+			parameters[2] = (float)Math.atan2(-m[a12], m[a11]);
+			parameters[1] = (float)Math.asin(m[a10]);
+		}
+
+		float tmp = parameters[0];
+		parameters[0] = parameters[2];
+		parameters[2] = parameters[1];
+		parameters[1] = tmp;
 	}
 
 	/** this conversion uses NASA standard aeroplane conventions as described on page:
@@ -504,8 +521,20 @@ public class Transform {
 	 *   [m00 m01 m02]
 	 *   [m10 m11 m12]
 	 *   [m20 m21 m22]
+	 *
+	 * note: if it's implemented as stated above,
+	 * - parameters[0] is the angle around y (applied 3rd)
+	 * - parameters[1] is the angle around z (applied 1st)
+	 * - parameters[2] is the angle around x (applied 2nd).
+	 *
+	 * So instead, we exchange the order (2->0, 0->1, 1->2)
 	 */
 	public static final void fromEulerAngles(float[] m, double[] parameters) {
+		double tmp = parameters[0];
+		parameters[0] = parameters[1];
+		parameters[1] = parameters[2];
+		parameters[2] = tmp;
+
 	    // Assuming the angles are in radians.
 	    double ch = Math.cos(parameters[0]);
 	    double sh = Math.sin(parameters[0]);

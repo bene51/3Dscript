@@ -6,7 +6,6 @@ import java.util.Map;
 
 import parser.NoSuchMacroException;
 import parser.NumberOrMacro;
-import renderer3d.Keyframe;
 import util.Cubic;
 
 public abstract class Animation {
@@ -45,7 +44,7 @@ public abstract class Animation {
 		pickScripts(scripts, getNumberOrMacros());
 	}
 
-	public abstract void adjustKeyframe(Keyframe current, List<Keyframe> previous);
+	public abstract void adjustKeyframe(Keyframe2 current, List<Keyframe2> previous);
 
 	public double interpolate(int t, double vFrom, double vTo) {
 		if(t >= toFrame)
