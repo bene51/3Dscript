@@ -948,6 +948,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			});
 		} catch(Exception ex) {
 			handleException(ex);
+			tab.restore();
 			throw new RuntimeException("Error reading animations", ex);
 		}
 	}
