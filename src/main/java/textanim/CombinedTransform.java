@@ -195,7 +195,7 @@ public class CombinedTransform {
 	}
 
 	public float[] calculateForwardTransformWithoutCalibration() {
-		float[] scaleM = Transform.fromScale(scale, null);
+		float[] scaleM = Transform.fromScale(scale, scale, 1, null);
 		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
 
 		float[] x = Transform.mul(scaleM, Transform.mul(rotation, centerM));
@@ -216,7 +216,7 @@ public class CombinedTransform {
 	 * @return
 	 */
 	private static float[] calculateForwardTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
-		float[] scaleM = Transform.fromScale(scale, null);
+		float[] scaleM = Transform.fromScale(scale, scale, 1, null);
 		float[] centerM = Transform.fromTranslation(-center[0], -center[1], -center[2], null);
 
 		float[] x = Transform.mul(scaleM, Transform.mul(rotation, centerM));

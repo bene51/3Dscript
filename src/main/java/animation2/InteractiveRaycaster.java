@@ -82,7 +82,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		dialog = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
 		contrastPanel = dialog.addContrastPanel(
 				histo8,
-				renderer.getChannelColors(),
 				min, max,
 				renderer.getKeyframe().getChannelProperties());
 
@@ -92,7 +91,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		keyframe.setNonchannelProperty(ExtendedKeyframe.NEAR, croppingPanel.getNear());
 		keyframe.setNonchannelProperty(ExtendedKeyframe.FAR,  croppingPanel.getFar());
 
-		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep);
+		boolean boundingBox = false; // TODO save in Prefs
+		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep, renderer.getBoundingBox());
 
 		animationPanel = dialog.addAnimationPanel();
 
@@ -280,6 +280,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void outputSizeChanged(int tgtW, int tgtH, float zStep) {
 				setOutputSize(tgtW, tgtH);
 				setZStep(zStep);
+			}
+
+			@Override
+			public void boundingBoxChanged() {
+				worker.push(renderer.getKeyframe(), -1, -1, -1);
 			}
 		});
 

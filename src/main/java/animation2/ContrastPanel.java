@@ -18,6 +18,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -68,7 +69,6 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	}
 
 	private int[][] histogram;
-	private Color[] color;
 	private double[] min;
 	private double[] max;
 	private double[][] renderingSettings;
@@ -78,11 +78,10 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private ArrayList<Listener> listeners =
 			new ArrayList<Listener>();
 
-	public ContrastPanel(int[][] histogram, Color[] color, double[] min, double max[], final double[][] r) {
+	public ContrastPanel(int[][] histogram, double[] min, double max[], final double[][] r) {
 		super();
 
 		this.histogram = histogram;
-		this.color = color;
 		this.min = min;
 		this.max = max;
 		this.renderingSettings = r;
@@ -109,7 +108,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		gammaCTF.setText(df.format(r[channel][ExtendedKeyframe.COLOR_GAMMA]));
 		gammaATF.setText(df.format(r[channel][ExtendedKeyframe.ALPHA_GAMMA]));
 
-		this.slider = new DoubleSliderCanvas(histogram[channel], color[channel], min[channel], max[channel], r[channel], this);
+		this.slider = new DoubleSliderCanvas(histogram[channel], min[channel], max[channel], r[channel], this);
 		GridBagLayout gridbag = new GridBagLayout();
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
@@ -191,17 +190,36 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 		for(int i = 0; i < renderingSettings.length; i++) {
 			final int ch = i;
+			Color color = new Color(
+					(int)r[ch][ExtendedKeyframe.CHANNEL_COLOR_RED],
+					(int)r[ch][ExtendedKeyframe.CHANNEL_COLOR_GREEN],
+					(int)r[ch][ExtendedKeyframe.CHANNEL_COLOR_BLUE]);
+
 			final SingleSlider wslider = addSingleSlider(
 					"Channel " + (i + 1) + " weight",
 					100,
 					100,
-					color[ch],
+					color,
 					c);
 			wslider.addSliderChangeListener(new SingleSlider.Listener() {
 				@Override
 				public void sliderChanged() {
 					r[ch][ExtendedKeyframe.WEIGHT] = wslider.getMax() / 100f;
 					fireRenderingSettingsChanged();
+				}
+			});
+
+			wslider.getCanvas().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if(e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 2)
+						return;
+					Color c = ColorPicker.pick();
+					renderingSettings[ch][ExtendedKeyframe.CHANNEL_COLOR_RED]   = c.getRed();
+					renderingSettings[ch][ExtendedKeyframe.CHANNEL_COLOR_GREEN] = c.getGreen();
+					renderingSettings[ch][ExtendedKeyframe.CHANNEL_COLOR_BLUE]  = c.getBlue();
+					wslider.setColor(c);
+					setChannel(channel);
 				}
 			});
 
@@ -243,7 +261,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		this.channel = c;
 		gammaATF.setText(df.format(renderingSettings[c][ExtendedKeyframe.ALPHA_GAMMA]));
 		gammaCTF.setText(df.format(renderingSettings[c][ExtendedKeyframe.COLOR_GAMMA]));
-		slider.set(histogram[c], color[c], min[c], max[c], renderingSettings[c]);
+		slider.set(histogram[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		slider.repaint();
 		repaint();
@@ -322,8 +340,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 		private ContrastPanel slider;
 
-		public DoubleSliderCanvas(int[] histogram, Color color, double min, double max, double[] r, ContrastPanel slider) {
-			set(histogram, color, min, max, r);
+		public DoubleSliderCanvas(int[] histogram, double min, double max, double[] r, ContrastPanel slider) {
+			set(histogram, min, max, r);
 			this.slider = slider;
 			this.addMouseMotionListener(this);
 			this.addMouseListener(this);
@@ -340,12 +358,15 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 			return new Dimension(0, 80);
 		}
 
-		public void set(int[] histogram, Color color, double min, double max, double[] r) {
+		public void set(int[] histogram, double min, double max, double[] r) {
 			this.histogram = histogram;
-			this.color = color;
 			this.min = min;
 			this.max = max;
 			this.renderingSettings = r;
+			this.color = new Color(
+					(int)r[ExtendedKeyframe.CHANNEL_COLOR_RED],
+					(int)r[ExtendedKeyframe.CHANNEL_COLOR_GREEN],
+					(int)r[ExtendedKeyframe.CHANNEL_COLOR_BLUE]);
 		}
 
 		public void update() {

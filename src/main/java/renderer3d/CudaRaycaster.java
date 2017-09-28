@@ -6,16 +6,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Line;
 import ij.gui.Toolbar;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import ij.process.LUT;
 
 /*
  * TODOs
@@ -25,10 +22,6 @@ import ij.process.LUT;
  *   - CPU fallback
  */
 public class CudaRaycaster {
-
-	private final boolean boundingBox = true;
-
-	private final boolean scalebar3D = false;
 
 	static {
 		System.loadLibrary("CudaRaycaster");
@@ -103,6 +96,10 @@ public class CudaRaycaster {
 		setKernel(OpenCLProgram.makeSource(nChannels, false));
 	}
 
+	public BoundingBox getBoundingBox() {
+		return bbox;
+	}
+
 	private static float[] calculateForwardTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
 		float[] scaleM = Transform.fromScale(scale, null);
 		float[] transM = Transform.fromTranslation(translation[0], translation[1], translation[2], null);
@@ -132,7 +129,6 @@ public class CudaRaycaster {
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
 
-		getChannelLUTs();
 
 		if(imp.getType() == ImagePlus.GRAY8) {
 			for(int c = 0; c < nChannels; c++) {
@@ -184,7 +180,6 @@ public class CudaRaycaster {
 
 		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
-			System.out.println("channelColors[" + c + "] = " + channelColors[c]);
 			channelSettings[c] = new float[] {
 					(float)(channelProperties[c][ExtendedKeyframe.COLOR_MIN]),
 					(float)(channelProperties[c][ExtendedKeyframe.COLOR_MAX]),
@@ -193,23 +188,19 @@ public class CudaRaycaster {
 					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_MAX]),
 					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_GAMMA]),
 					(float)(channelProperties[c][ExtendedKeyframe.WEIGHT]),
-					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
+					(int)(channelProperties[c][ExtendedKeyframe.CHANNEL_COLOR_RED]),
+					(int)(channelProperties[c][ExtendedKeyframe.CHANNEL_COLOR_GREEN]),
+					(int)(channelProperties[c][ExtendedKeyframe.CHANNEL_COLOR_BLUE]),
+//					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}
 		// TODO remove this line and set from GUI
 		Color bg = Toolbar.getBackgroundColor();
 		int[] result = cast(invTransform, near, far, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
+
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
-		if(boundingBox) {
-			ret.setValue(Toolbar.getForegroundColor().getRGB());
-			ret.setLineWidth(Line.getWidth());
-			bbox.drawQuads(ret, fwdTransform, invTransform);
-		}
-		if(scalebar3D) {
-			ret.setValue(Toolbar.getForegroundColor().getRGB());
-			ret.setLineWidth(Line.getWidth());
-			bbox.drawScalebar(ret, fwdTransform, invTransform);
-		}
+		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
+		bbox.drawScalebar(ret, fwdTransform, invTransform);
 		return ret;
 	}
 
@@ -241,47 +232,6 @@ public class CudaRaycaster {
 
 	public void setProgram(String src) {
 		setKernel(src);
-	}
-
-	private LUT[] channelLUTs;
-	private Color[] channelColors;
-
-	private void getChannelLUTs() {
-		int nChannels = image.getNChannels();
-		channelLUTs = new LUT[nChannels];
-		channelColors = new Color[nChannels];
-		if(!image.isComposite()) {
-			LUT lut = image.getProcessor().getLut();
-			int t = image.getType();
-			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
-			if(lut != null && !grayscale) {
-				channelColors[0] = getLUTColor(lut);
-				channelLUTs[0] = LUT.createLutFromColor(channelColors[0]);
-			} else {
-				channelColors[0] = Color.WHITE;
-				channelLUTs[0] = null;
-			}
-			return;
-		}
-		for(int c = 0; c < image.getNChannels(); c++) {
-			image.setC(c + 1);
-			Color col = ((CompositeImage)image).getChannelColor();
-			if(col.equals(Color.BLACK))
-				col = Color.white;
-			channelColors[c] = col;
-			channelLUTs[c] = LUT.createLutFromColor(col);
-		}
-	}
-
-	private Color getLUTColor(LUT lut) {
-		int index = lut.getMapSize() - 1;
-		int r = lut.getRed(index);
-		int g = lut.getGreen(index);
-		int b = lut.getBlue(index);
-		if (r<100 || g<100 || b<100)
-			return new Color(r, g, b);
-		else
-			return Color.WHITE;
 	}
 
 	public void crop(

@@ -1,5 +1,7 @@
 package renderer3d;
 
+import java.awt.Color;
+
 import textanim.CombinedTransform;
 import textanim.Keyframe2;
 
@@ -21,16 +23,20 @@ public class ExtendedKeyframe extends Keyframe2 {
 	public static final int ALPHA_MAX   = 4;
 	public static final int ALPHA_GAMMA = 5;
 	public static final int WEIGHT      = 6;
+	public static final int CHANNEL_COLOR_RED   = 7;
+	public static final int CHANNEL_COLOR_GREEN = 8;
+	public static final int CHANNEL_COLOR_BLUE  = 9;
 
 	public ExtendedKeyframe(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[8];
-		channelProperties = new double[nChannels][7];
+		channelProperties = new double[nChannels][10];
 	}
 
 	public ExtendedKeyframe(
 			int frame,
 			RenderingSettings[] renderingSettings,
+			Color[] channelColors,
 			float near, float far,
 			CombinedTransform fwdTransform,
 			int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
@@ -46,6 +52,7 @@ public class ExtendedKeyframe extends Keyframe2 {
 		nonChannelProperties[FAR]              = far;
 
 		for(int c = 0; c < renderingSettings.length; c++) {
+			Color cC = channelColors[c];
 			channelProperties[c][COLOR_MIN]   = renderingSettings[c].colorMin;
 			channelProperties[c][COLOR_MAX]   = renderingSettings[c].colorMax;
 			channelProperties[c][COLOR_GAMMA] = renderingSettings[c].colorGamma;
@@ -53,6 +60,9 @@ public class ExtendedKeyframe extends Keyframe2 {
 			channelProperties[c][ALPHA_MAX]   = renderingSettings[c].alphaMax;
 			channelProperties[c][ALPHA_GAMMA] = renderingSettings[c].alphaGamma;
 			channelProperties[c][WEIGHT]      = renderingSettings[c].weight;
+			channelProperties[c][CHANNEL_COLOR_RED]   = cC.getRed();
+			channelProperties[c][CHANNEL_COLOR_GREEN] = cC.getGreen();
+			channelProperties[c][CHANNEL_COLOR_BLUE]  = cC.getBlue();
 		}
 	}
 
@@ -62,6 +72,17 @@ public class ExtendedKeyframe extends Keyframe2 {
 
 	public double[][] getChannelProperties() {
 		return channelProperties;
+	}
+
+	public Color[] getChannelColors() {
+		Color[] c  = new Color[channelProperties.length];
+		for(int i = 0; i < c.length; i++) {
+			c[i] = new Color(
+					(int)channelProperties[i][CHANNEL_COLOR_RED],
+					(int)channelProperties[i][CHANNEL_COLOR_GREEN],
+					(int)channelProperties[i][CHANNEL_COLOR_BLUE]);
+		}
+		return c;
 	}
 
 	@Override

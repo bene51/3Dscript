@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
+import renderer3d.BoundingBox;
 
 
 public class AnimatorDialog extends GenericDialog {
@@ -99,8 +100,8 @@ public class AnimatorDialog extends GenericDialog {
 			super.actionPerformed(e);
 	}
 
-	public ContrastPanel addContrastPanel(int[][] histo8, Color[] color, double min[], double max[], double[][] channelProperties) {
-		ContrastPanel slider = new ContrastPanel(histo8, color, min, max, channelProperties);
+	public ContrastPanel addContrastPanel(int[][] histo8, double min[], double max[], double[][] channelProperties) {
+		ContrastPanel slider = new ContrastPanel(histo8, min, max, channelProperties);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;
@@ -123,8 +124,8 @@ public class AnimatorDialog extends GenericDialog {
 		return slider;
 	}
 
-	public OutputPanel addOutputPanel(int width, int height, float zStep) {
-		OutputPanel outputPanel = new OutputPanel(width, height, zStep);
+	public OutputPanel addOutputPanel(int width, int height, float zStep, BoundingBox bb) {
+		OutputPanel outputPanel = new OutputPanel(width, height, zStep, bb);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;

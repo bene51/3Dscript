@@ -1,14 +1,41 @@
 package animation2;
 
+import java.awt.Button;
+import java.awt.Checkbox;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Label;
 import java.awt.Panel;
+import java.awt.Scrollbar;
 import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.TextEvent;
+import java.awt.event.TextListener;
 import java.util.ArrayList;
 
+import fiji.util.gui.GenericDialogPlus;
+import renderer3d.BoundingBox;
+
 public class OutputPanel extends Panel implements FocusListener, NumberField.Listener {
+
+	public static void main(String...strings) {
+		Frame f = new Frame();
+		f.add(new OutputPanel(200, 200, 1, new BoundingBox(100, 100, 100, 1, 1, 1)));
+		f.pack();
+		f.setVisible(true);
+	}
 
 	private static final long serialVersionUID = 1L;
 
@@ -17,13 +44,17 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 
 	public static interface Listener {
 		public void outputSizeChanged(int w, int h, float zStep);
+		public void boundingBoxChanged();
 	}
 
-	private ArrayList<Listener> listeners =	new ArrayList<Listener>();
+	private final ArrayList<Listener> listeners =	new ArrayList<Listener>();
 
-	public OutputPanel(int w, int h, float zStep) {
-		super();
-		setLayout(new FlowLayout(FlowLayout.CENTER, 0, 5));
+	private final BoundingBox boundingBox;
+
+	public OutputPanel(int w, int h, float zStep, final BoundingBox boundingBox) {
+		super(new GridLayout(2, 1));
+
+		this.boundingBox = boundingBox;
 
 		widthTF = new NumberField(4);
 		widthTF.setFocusable(true);
@@ -40,11 +71,15 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		zStepTF.setText(Float.toString(zStep));
 		zStepTF.setLimits(1, 5);
 
-		add(widthTF);
-		add(new Label("   x "));
-		add(heightTF);
-		add(new Label("     zStep:"));
-		add(zStepTF);
+		Panel sizePanel = new Panel(new FlowLayout(FlowLayout.CENTER, 0, 5));
+
+		sizePanel.add(widthTF);
+		sizePanel.add(new Label("   x "));
+		sizePanel.add(heightTF);
+		sizePanel.add(new Label("     zStep:"));
+		sizePanel.add(zStepTF);
+
+		add(sizePanel);
 
 		widthTF.addListener(this);
 		widthTF.addNumberFieldFocusListener(this);
@@ -52,6 +87,81 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		heightTF.addNumberFieldFocusListener(this);
 		zStepTF.addListener(this);
 		zStepTF.addNumberFieldFocusListener(this);
+
+		Panel propertiesPanel = new Panel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+
+		final Checkbox bbBox = new Checkbox("Bounding Box", boundingBox.isVisible());
+		final Button bbProperties = new Button("Properties");
+
+		c.gridx = c.gridy = 0;
+		c.insets = new Insets(0, 10, 0, 0);
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		propertiesPanel.add(bbBox, c);
+		c.gridx++;
+		c.weightx = 1;
+		propertiesPanel.add(bbProperties, c);
+
+		add(propertiesPanel);
+
+		bbBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				boundingBox.setVisible(bbBox.getState());
+				fireBoundingBoxChanged();
+			}
+		});
+
+		bbProperties.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Color color = boundingBox.getColor();
+				float width = boundingBox.getWidth();
+
+				final GenericDialogPlus gd = new GenericDialogPlus("");
+				gd.addNumericField("line width", width, 2);
+				final TextField lwTF = (TextField)gd.getNumericFields().lastElement();
+				gd.addSlider("red", 0, 255, color.getRed());
+				final Scrollbar redSlider = (Scrollbar)gd.getSliders().lastElement();
+				gd.addSlider("green", 0, 255, color.getGreen());
+				final Scrollbar greenSlider = (Scrollbar)gd.getSliders().lastElement();
+				gd.addSlider("blue", 0, 255, color.getBlue());
+				final Scrollbar blueSlider = (Scrollbar)gd.getSliders().lastElement();
+
+				lwTF.addTextListener(new TextListener() {
+					@Override
+					public void textValueChanged(TextEvent e) {
+						String s = lwTF.getText();
+						try {
+							float f = (float)Double.parseDouble(s);
+							boundingBox.setWidth(f);
+							fireBoundingBoxChanged();
+						} catch(Exception ex) {}
+					}
+				});
+				AdjustmentListener li = new AdjustmentListener() {
+					@Override
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						int r = redSlider.getValue();
+						int g = greenSlider.getValue();
+						int b = blueSlider.getValue();
+						Color c = new Color(r, g, b);
+						boundingBox.setColor(c);
+						fireBoundingBoxChanged();
+					}
+				};
+				redSlider.addAdjustmentListener(li);
+				greenSlider.addAdjustmentListener(li);
+				blueSlider.addAdjustmentListener(li);
+				gd.showDialog();
+				if(gd.wasCanceled()) {
+					boundingBox.setColor(color);
+					boundingBox.setWidth(width);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -96,5 +206,10 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 	private void fireOutputSizeChanged() {
 		for(Listener l : listeners)
 			l.outputSizeChanged(getOutputWidth(), getOutputHeight(), getZStep());
+	}
+
+	private void fireBoundingBoxChanged() {
+		for(Listener l : listeners)
+			l.boundingBoxChanged();
 	}
 }

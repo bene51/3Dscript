@@ -2,6 +2,7 @@ package renderer3d;
 
 import java.awt.Color;
 
+import ij.CompositeImage;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.ColorProcessor;
@@ -19,14 +20,12 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	private float near;
 	private float far;
 
-	private LUT[] luts;
-
 	private final KeywordFactory kwFactory = new ExtendedKeywordFactory();
 
 	public Renderer3DAdapter(ImagePlus image, int wOut, int hOut, float zStep) {
 		super(image, wOut, hOut, zStep);
 
-		luts = image.isComposite() ?
+		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
 
 		final int nC = image.getNChannels();
@@ -53,13 +52,21 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 					(float)luts[c].min, (float)luts[c].max, 1,
 					(float)luts[c].min, (float)luts[c].max, 2);
 		}
+		Color[] channelColors = calculateChannelColors();
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
 
-		this.keyframe = new ExtendedKeyframe(0, renderingSettings, near, far, transformation, 0, 0, 0, image.getWidth(), image.getHeight(), image.getNSlices());
+		this.keyframe = new ExtendedKeyframe(0,
+				renderingSettings,
+				channelColors,
+				near, far,
+				transformation,
+				0, 0, 0, image.getWidth(), image.getHeight(), image.getNSlices());
 	}
 
 	public void resetRenderingSettings() {
+		LUT[] luts = image.isComposite() ?
+				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
 //		RenderingSettings[] renderingSettings = keyframe.renderingSettings;
 		for(int c = 0; c < luts.length; c++) {
 //			renderingSettings[c].alphaMin = (float)luts[c].min;
@@ -87,29 +94,6 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	@Override
 	public ExtendedKeyframe getKeyframe() {
 		return keyframe;
-	}
-
-	public Color[] getChannelColors() {
-		return getLUTColors(luts);
-	}
-
-	private Color[] getLUTColors(LUT[] lut) {
-		Color[] colors = new Color[lut.length];
-		for(int i = 0; i < lut.length; i++)
-			colors[i] = getLUTColor(lut[i]);
-		return colors;
-	}
-
-	private Color getLUTColor(LUT lut) {
-		int index = lut.getMapSize() - 1;
-		int r = lut.getRed(index);
-		int g = lut.getGreen(index);
-		int b = lut.getBlue(index);
-		//IJ.log(index+" "+r+" "+g+" "+b);
-		if (r<100 || g<100 || b<100)
-			return new Color(r, g, b);
-		else
-			return Color.black;
 	}
 
 	@Override
@@ -186,6 +170,41 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	}
 
 	public int getNChannels() {
-		return luts.length;
+		return image.getNChannels();
+	}
+
+	private Color[] calculateChannelColors() {
+		int nChannels = image.getNChannels();
+		Color[] channelColors = new Color[nChannels];
+		if(!image.isComposite()) {
+			LUT lut = image.getProcessor().getLut();
+			int t = image.getType();
+			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
+			if(lut != null && !grayscale) {
+				channelColors[0] = getLUTColor(lut);
+			} else {
+				channelColors[0] = Color.WHITE;
+			}
+			return channelColors;
+		}
+		for(int c = 0; c < image.getNChannels(); c++) {
+			image.setC(c + 1);
+			Color col = ((CompositeImage)image).getChannelColor();
+			if(col.equals(Color.BLACK))
+				col = Color.white;
+			channelColors[c] = col;
+		}
+		return channelColors;
+	}
+
+	private Color getLUTColor(LUT lut) {
+		int index = lut.getMapSize() - 1;
+		int r = lut.getRed(index);
+		int g = lut.getGreen(index);
+		int b = lut.getBlue(index);
+		if (r<100 || g<100 || b<100)
+			return new Color(r, g, b);
+		else
+			return Color.WHITE;
 	}
 }

@@ -1,5 +1,6 @@
 package renderer3d;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -9,6 +10,12 @@ import ij.gui.Toolbar;
 import ij.process.ImageProcessor;
 
 public class BoundingBox {
+
+	private boolean boundingBoxVisible = true;
+	private float boundingBoxWidth = 1;
+	private Color boundingBoxColor = Color.GRAY;
+
+	private final boolean scalebar3D = false;
 
 	private static final int[][] QUADS = {
 			{0, 3, 2, 1},
@@ -47,7 +54,31 @@ public class BoundingBox {
 		this.pd = (float)pd;
 	}
 
-	public boolean isQuadVisible(int quad, float dirx, float diry, float dirz) {
+	public boolean isVisible() {
+		return boundingBoxVisible;
+	}
+
+	public void setVisible(boolean b) {
+		boundingBoxVisible = b;
+	}
+
+	public float getWidth() {
+		return boundingBoxWidth;
+	}
+
+	public void setWidth(float w) {
+		boundingBoxWidth = w;
+	}
+
+	public Color getColor() {
+		return boundingBoxColor;
+	}
+
+	public void setColor(Color c) {
+		boundingBoxColor = c;
+	}
+
+	private boolean isQuadVisible(int quad, float dirx, float diry, float dirz) {
 		// d1 = p3 - p0
 		// d2 = p1 - p0
 //		double d1x = positions[QUADS[quad][3]][0] - positions[QUADS[quad][0]][0];
@@ -70,6 +101,8 @@ public class BoundingBox {
 	}
 
 	public void drawScalebar(ImageProcessor ip, float[] fwd, float[] inv) {
+		if(!scalebar3D)
+			return;
 		float x0 = positions[5][0] + 10;
 		float y0 = positions[5][1] - 10;
 		float z0 = positions[5][2] + 10;
@@ -103,11 +136,13 @@ public class BoundingBox {
 		g.drawLine(Math.round(p0[0]), Math.round(p0[1]), Math.round(pz[0]), Math.round(pz[1]));
 	}
 
-	public void drawQuads(ImageProcessor ip, float[] fwd, float[] inv) {
+	public void drawBoundingBox(ImageProcessor ip, float[] fwd, float[] inv) {
+		if(!boundingBoxVisible)
+			return;
 		Graphics2D g = ((BufferedImage)ip.createImage()).createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setStroke(new java.awt.BasicStroke(Line.getWidth()));
-		g.setColor(Toolbar.getForegroundColor());
+		g.setStroke(new java.awt.BasicStroke(boundingBoxWidth));
+		g.setColor(boundingBoxColor);
 
 		float[] pos = new float[3];
 		for(int q = 0; q < QUADS.length; q++) {

@@ -77,6 +77,14 @@ public class SingleSlider extends Panel implements FocusListener, NumberField.Li
 		updateTextfieldsFromSliders();
 	}
 
+	public void setColor(Color c) {
+		slider.setColor(c);
+	}
+
+	public SingleSliderCanvas getCanvas() {
+		return slider;
+	}
+
 	public NumberField getMaxField() {
 		return maxTF;
 	}
@@ -134,7 +142,7 @@ public class SingleSlider extends Panel implements FocusListener, NumberField.Li
 			l.sliderChanged();
 	}
 
-	private static class SingleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
+	static class SingleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
 
 		private static final long serialVersionUID = 1L;
 		private Color color;
@@ -165,6 +173,11 @@ public class SingleSlider extends Panel implements FocusListener, NumberField.Li
 					diagram.setSizes(getWidth(), getHeight());
 				}
 			});
+		}
+
+		public void setColor(Color c) {
+			this.color = c;
+			repaint();
 		}
 
 		@Override
