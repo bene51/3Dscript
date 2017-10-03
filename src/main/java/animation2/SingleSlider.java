@@ -4,15 +4,12 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Panel;
 import java.awt.RenderingHints;
-import java.awt.TextField;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
@@ -22,12 +19,16 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
-public class SingleSlider extends Panel implements FocusListener, NumberField.Listener {
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class SingleSlider extends JPanel implements FocusListener, NumberField.Listener {
 
 	public static void main(String[] args) {
-		Frame frame = new Frame();
+		JFrame frame = new JFrame();
 		SingleSlider slider = new SingleSlider(100, 75, new Color(255, 0, 0, 100));
-		frame.add(slider);
+		frame.getContentPane().add(slider);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -101,7 +102,7 @@ public class SingleSlider extends Panel implements FocusListener, NumberField.Li
 
 	@Override
 	public void focusGained(FocusEvent e) {
-		TextField tf = (TextField)e.getSource();
+		JTextField tf = (JTextField)e.getSource();
 		tf.selectAll();
 	}
 

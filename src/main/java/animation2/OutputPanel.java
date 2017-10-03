@@ -1,16 +1,11 @@
 package animation2;
 
-import java.awt.Button;
-import java.awt.Checkbox;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Label;
-import java.awt.Panel;
 import java.awt.Scrollbar;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
@@ -25,14 +20,21 @@ import java.awt.event.TextEvent;
 import java.awt.event.TextListener;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import fiji.util.gui.GenericDialogPlus;
 import renderer3d.BoundingBox;
 
-public class OutputPanel extends Panel implements FocusListener, NumberField.Listener {
+public class OutputPanel extends JPanel implements FocusListener, NumberField.Listener {
 
 	public static void main(String...strings) {
-		Frame f = new Frame();
-		f.add(new OutputPanel(200, 200, 1, new BoundingBox(100, 100, 100, 1, 1, 1)));
+		JFrame f = new JFrame("");
+		f.getContentPane().add(new OutputPanel(200, 200, 1, new BoundingBox(100, 100, 100, 1, 1, 1)));
 		f.pack();
 		f.setVisible(true);
 	}
@@ -71,12 +73,12 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		zStepTF.setText(Float.toString(zStep));
 		zStepTF.setLimits(1, 5);
 
-		Panel sizePanel = new Panel(new FlowLayout(FlowLayout.CENTER, 0, 5));
+		JPanel sizePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
 
 		sizePanel.add(widthTF);
-		sizePanel.add(new Label("   x "));
+		sizePanel.add(new JLabel("   x "));
 		sizePanel.add(heightTF);
-		sizePanel.add(new Label("     zStep:"));
+		sizePanel.add(new JLabel("     zStep:"));
 		sizePanel.add(zStepTF);
 
 		add(sizePanel);
@@ -88,11 +90,11 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		zStepTF.addListener(this);
 		zStepTF.addNumberFieldFocusListener(this);
 
-		Panel propertiesPanel = new Panel(new GridBagLayout());
+		JPanel propertiesPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
-		final Checkbox bbBox = new Checkbox("Bounding Box", boundingBox.isVisible());
-		final Button bbProperties = new Button("Properties");
+		final JCheckBox bbBox = new JCheckBox("Bounding Box", boundingBox.isVisible());
+		final JButton bbProperties = new JButton("Properties");
 
 		c.gridx = c.gridy = 0;
 		c.insets = new Insets(0, 10, 0, 0);
@@ -109,7 +111,7 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 		bbBox.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				boundingBox.setVisible(bbBox.getState());
+				boundingBox.setVisible(bbBox.isSelected());
 				fireBoundingBoxChanged();
 			}
 		});
@@ -166,8 +168,7 @@ public class OutputPanel extends Panel implements FocusListener, NumberField.Lis
 
 	@Override
 	public void focusGained(FocusEvent e) {
-		System.out.println("focusGained");
-		TextField tf = (TextField)e.getSource();
+		JTextField tf = (JTextField)e.getSource();
 		tf.selectAll();
 	}
 

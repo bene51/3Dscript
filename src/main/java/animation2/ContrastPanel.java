@@ -1,7 +1,5 @@
 package animation2;
 
-import java.awt.Button;
-import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -9,9 +7,6 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -27,20 +22,30 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 import renderer3d.ExtendedKeyframe;
 
-public class ContrastPanel extends Panel implements NumberField.Listener, FocusListener {
+public class ContrastPanel extends JPanel implements NumberField.Listener, FocusListener {
 
 	public static void main(String[] args) {
-//		Frame frame = new Frame();
-//		int[] histo = new int[256];
-//		for(int i = 0; i < 256; i++)
-//			histo[i] = i;
-//		RenderingSettings r = new RenderingSettings(0, 255, 1, 0, 255, 1);
-//		ContrastPanel slider = new ContrastPanel(histo, Color.RED, 0, 255, r, 2);
-//		frame.add(slider);
-//		frame.pack();
-//		frame.setVisible(true);
+		JFrame frame = new JFrame("");
+		int[] histo = new int[256];
+		for(int i = 0; i < 256; i++)
+			histo[i] = i;
+		ContrastPanel slider = new ContrastPanel(
+				new int[][] { histo },
+				new double[] { 0 }, // min
+				new double[] { 255 }, // max
+				new double[][] { { 0, 255, 1, 0, 255, 2, 1, 255, 0, 0 } });
+		frame.getContentPane().add(slider);
+		frame.setSize(600, 400);
+		frame.setVisible(true);
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -54,7 +59,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 	private NumberField maxATF = new NumberField(4);
 	private NumberField gammaATF = new NumberField(4);
 
-	private Choice channelChoice;
+	private JComboBox<String> channelChoice;
 
 	private DoubleSliderCanvas slider;
 
@@ -115,9 +120,9 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 		c.gridx = c.gridy = 0;
 		c.insets = new Insets(5, 2, 10, 5);
-		channelChoice = new Choice();
+		channelChoice = new JComboBox<String>();
 		for(int i = 0; i < renderingSettings.length; i++)
-			channelChoice.add("Channel " + (i + 1));
+			channelChoice.addItem("Channel " + (i + 1));
 		add(channelChoice, c);
 		channelChoice.addItemListener(new ItemListener() {
 			@Override
@@ -130,7 +135,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		c.gridx = 2;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.EAST;
-		Button but = new Button("Reset rendering settings");
+		JButton but = new JButton("Reset rendering settings");
 		but.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -156,7 +161,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		c.anchor = GridBagConstraints.WEST;
 		c.weightx = 0;
 		c.insets = new Insets(3, 3, 0, 0);
-		add(new Label("color"), c);
+		add(new JLabel("color"), c);
 		c.insets = new Insets(3, 3, 0, 3);
 		c.weightx = 1;
 		c.gridx++;
@@ -174,7 +179,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 		c.anchor = GridBagConstraints.WEST;
 		c.weightx = 0;
 		c.insets = new Insets(3, 3, 0, 0);
-		add(new Label("alpha"), c);
+		add(new JLabel("alpha"), c);
 		c.insets = new Insets(3, 3, 0, 3);
 		c.weightx = 1;
 		c.gridx++;
@@ -237,7 +242,8 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 		c.gridx = 0;
 		if(label != null) {
-			Label theLabel = new Label(label);
+			JLabel theLabel = new JLabel(label);
+			c.fill = GridBagConstraints.NONE;
 			c.anchor = GridBagConstraints.EAST;
 			c.gridwidth = 1;
 			c.weightx = 0;
@@ -288,7 +294,7 @@ public class ContrastPanel extends Panel implements NumberField.Listener, FocusL
 
 	@Override
 	public void focusGained(FocusEvent e) {
-		TextField tf = (TextField)e.getSource();
+		JTextField tf = (JTextField)e.getSource();
 		tf.selectAll();
 	}
 

@@ -2,9 +2,10 @@ package animation2;
 
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Panel;
 
-public class DoubleBuffer extends Panel {
+import javax.swing.JPanel;
+
+public class DoubleBuffer extends JPanel {
 
 	private static final long serialVersionUID = 8434831121029967633L;
 
@@ -18,12 +19,7 @@ public class DoubleBuffer extends Panel {
 	}
 
 	@Override
-	public void update(Graphics g) {
-		paint(g);
-	}
-
-	@Override
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		// checks the buffersize with the current panelsize
 		// or initialises the image with the first paint
 		if (bufferWidth != getSize().width || bufferHeight != getSize().height || bufferImage == null

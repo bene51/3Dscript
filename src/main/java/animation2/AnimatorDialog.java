@@ -1,31 +1,31 @@
 package animation2;
 
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.ScrollPane;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
+import java.awt.Window;
 import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import ij.ImagePlus;
-import ij.gui.GenericDialog;
 import renderer3d.BoundingBox;
 
 
-public class AnimatorDialog extends GenericDialog {
+public class AnimatorDialog extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
 	private ActionListener listener;
-	private Button okButton;
-	private Panel contents;
+	private JButton okButton;
+	private JPanel contents;
 	private GridBagConstraints c;
 
 	public static interface Listener {
@@ -35,17 +35,12 @@ public class AnimatorDialog extends GenericDialog {
 	}
 
 	private void initContents() {
-		contents = new Panel(new GridBagLayout());
+		contents = new JPanel(new GridBagLayout());
 		c = new GridBagConstraints();
 	}
 
-	public AnimatorDialog(String title) {
-		super(title);
-		initContents();
-	}
-
-	public AnimatorDialog(String title, Frame parent) {
-		super(title, parent);
+	public AnimatorDialog(String title, Window parent) {
+		super(parent, title);
 		initContents();
 	}
 
@@ -53,17 +48,15 @@ public class AnimatorDialog extends GenericDialog {
 		this.listener = l;
 	}
 
-	@Override
 	public void showDialog() {
-		Panel dummy = new Panel();
+		JPanel dummy = new JPanel();
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.weighty = 1;
         c.gridy++;
         contents.add(dummy, c);
 
-        ScrollPane scroll = new ScrollPane();
-        scroll.add(contents);
+        JScrollPane scroll = new JScrollPane(contents);
         GridBagConstraints c = new GridBagConstraints();
         c.anchor = GridBagConstraints.CENTER;
         c.fill = GridBagConstraints.BOTH;
@@ -71,15 +64,10 @@ public class AnimatorDialog extends GenericDialog {
         c.weighty = 1;
         c.gridwidth = GridBagConstraints.REMAINDER;
 
-        add(scroll, c);
-        // workaround:
-        // need to change the y position of the next element, but
-        // GenericDialog.y is not accessible
-        Panel tmp = new Panel();
-        addPanel(tmp);
-        remove(tmp);
+        getContentPane().setLayout(new GridBagLayout());
+        getContentPane().add(scroll, c);
 
-        super.showDialog();
+        setVisible(true);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
@@ -88,16 +76,8 @@ public class AnimatorDialog extends GenericDialog {
 		setSize(400, avHeight);
 		setLocation(screenSize.width - scnMax.right - 400, scnMax.top);
 
-        Button[] buttons = getButtons();
-        okButton = buttons[0];
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == okButton && listener != null)
-			listener.actionPerformed(e);
-		else
-			super.actionPerformed(e);
+		// TODO exit button or window adapter
+		// call listener.actionPerformed()
 	}
 
 	public ContrastPanel addContrastPanel(int[][] histo8, double min[], double max[], double[][] channelProperties) {
@@ -152,7 +132,7 @@ public class AnimatorDialog extends GenericDialog {
 		DoubleSlider slider = new DoubleSlider(realMinMax, setMinMax, color);
 
 		if(label != null) {
-			Label theLabel = new Label(label);
+			JLabel theLabel = new JLabel(label);
 			c.gridx = 0;
 			c.anchor = GridBagConstraints.EAST;
 			c.gridwidth = 1;

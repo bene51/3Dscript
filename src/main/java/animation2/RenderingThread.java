@@ -63,8 +63,6 @@ public class RenderingThread {
 
 	public void push(ExtendedKeyframe keyframe, int w, int h, int imaget) {
 		synchronized(lock) {
-			System.out.println("push");
-
 			event.keyframe.setFrom(keyframe);
 			event.valid = true;
 			event.tgtW = w;

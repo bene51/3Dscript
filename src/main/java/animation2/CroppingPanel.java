@@ -1,28 +1,29 @@
 package animation2;
 
-import java.awt.Button;
 import java.awt.Color;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Label;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import ij.IJ;
 import ij.ImagePlus;
 
-public class CroppingPanel extends Panel {
+public class CroppingPanel extends JPanel {
 
 	public static void main(String[] args) {
-		ImagePlus imp = IJ.openImage("D:\\flybrain.tif");
-		Frame frame = new Frame();
+		ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
+		JFrame frame = new JFrame();
 
 		CroppingPanel slider = new CroppingPanel(imp);
-		frame.add(slider);
+		frame.getContentPane().add(slider);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -51,7 +52,8 @@ public class CroppingPanel extends Panel {
 
 		c.gridx = 0;
 		if(label != null) {
-			Label theLabel = new Label(label);
+			JLabel theLabel = new JLabel(label);
+			c.fill = GridBagConstraints.NONE;
 			c.anchor = GridBagConstraints.EAST;
 			c.gridwidth = 1;
 			c.weightx = 0;
@@ -109,7 +111,7 @@ public class CroppingPanel extends Panel {
 			}
 		});
 
-		Button b = new Button("Cut off ROI");
+		JButton b = new JButton("Cut off ROI");
 		c.gridx = 0;
 		c.gridy++;
 		c.insets = new Insets(7, 0, 0, 0);

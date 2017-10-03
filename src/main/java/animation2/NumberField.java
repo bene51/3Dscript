@@ -1,9 +1,6 @@
 package animation2;
 
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Panel;
-import java.awt.TextField;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -11,15 +8,19 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 @SuppressWarnings("serial")
-public class NumberField extends Panel {
+public class NumberField extends JPanel {
 
 	private double min = Double.NEGATIVE_INFINITY;
 	private double max = Double.POSITIVE_INFINITY;
 
 	private boolean integersOnly = false;
 
-	private TextField textfield;
+	private JTextField textfield;
 
 	private ArrayList<Listener> listener = new ArrayList<Listener>();
 
@@ -64,8 +65,9 @@ public class NumberField extends Panel {
 				System.out.println("value changed to " + v);
 			}
 		});
-		Frame frame = new Frame("");
-		frame.add(nf);
+		JFrame frame = new JFrame("");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().add(nf);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -217,7 +219,7 @@ public class NumberField extends Panel {
 
 	public NumberField(int n) {
 		super(new FlowLayout(0, 0, 0));
-		textfield = new TextField(n);
+		textfield = new JTextField(n);
 		add(textfield);
 //		InputMap im = getInputMap();
 //		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "bla");

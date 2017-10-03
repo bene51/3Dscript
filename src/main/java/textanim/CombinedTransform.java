@@ -223,10 +223,10 @@ public class CombinedTransform {
 		Transform.applyTranslation(center[0], center[1], center[2], x);
 		Transform.applyTranslation(translation[0], translation[1], translation[2], x);
 
-		System.out.println("row 1: " + Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]));
-		System.out.println("row 2: " + Math.sqrt(x[4] * x[4] + x[5] * x[5] + x[6] * x[6]));
-		System.out.println("row 3: " + Math.sqrt(x[8] * x[8] + x[9] * x[9] + x[10] * x[10]));
-		System.out.println("trans = " + rotation[3] + ", " + rotation[7] + ", " + rotation[11]);
+//		System.out.println("row 1: " + Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]));
+//		System.out.println("row 2: " + Math.sqrt(x[4] * x[4] + x[5] * x[5] + x[6] * x[6]));
+//		System.out.println("row 3: " + Math.sqrt(x[8] * x[8] + x[9] * x[9] + x[10] * x[10]));
+//		System.out.println("trans = " + rotation[3] + ", " + rotation[7] + ", " + rotation[11]);
 
 		x = Transform.mul(x, fromCalib);
 		x = Transform.mul(toTransform, x);

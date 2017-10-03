@@ -2,40 +2,47 @@ package animation2;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
+import java.util.HashMap;
+import java.util.Map;
 
-public class SwitchablePanel extends Panel {
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public class SwitchablePanel extends JPanel {
 
 	private static final long serialVersionUID = -6728763866288689347L;
 
-	private Label label;
-	private Label label2;
-	private Panel labels;
-	private Container panel;
+	private JLabel label;
+	private JLabel label2;
+	private JPanel labels;
+	private JPanel panel;
 
-	public SwitchablePanel(final String title, final Container panel) {
+	public SwitchablePanel(final String title, final JPanel panel) {
 		this.panel = panel;
-		labels = new Panel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-		this.label = new Label(title);
+		labels = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+		this.label = new JLabel(title);
 		label.setBackground(new Color(100, 140, 200));
 		label.setForeground(Color.WHITE);
 		label.setFont(new Font("Helvetica", Font.BOLD, 14));
 		labels.add(label);
 
-		label2 = new UnderlinedLabel("hide");
+		label2 = new JLabel("hide");
+
+
+		Font font = new Font("Helvetica", Font.ITALIC, 12);
+		Map<TextAttribute, Object>  attributes = new HashMap<TextAttribute, Object>();
+		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+
+		label2.setFont(font.deriveFont(attributes));
 		label2.setBackground(new Color(100, 140, 200));
 		label2.setForeground(Color.WHITE);
-		label2.setFont(new Font("Helvetica", Font.ITALIC, 12));
 
 		labels.add(label2);
 
@@ -50,9 +57,9 @@ public class SwitchablePanel extends Panel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				System.out.println(getParent());
-				boolean visible = panel.isVisible();
-				panel.setVisible(!visible);
-				String sign = visible ? "(hide)" : "(show)";
+				boolean visible = !panel.isVisible();
+				panel.setVisible(visible);
+				String sign = visible ? "hide" : "show";
 				label2.setText(sign);
 				invalidate();
 				revalidate();
@@ -62,50 +69,27 @@ public class SwitchablePanel extends Panel {
 
 	public void switchOn() {
 		panel.setVisible(true);
-		String sign = panel.isVisible() ? "(hide)" : "(show)";
-		label2.setText(sign);
+		label2.setText("hide");
 		invalidate();
 		revalidate();
 	}
 
 	public void switchOff() {
 		panel.setVisible(false);
-		String sign = panel.isVisible() ? "(hide)" : "(show)";
-		label2.setText(sign);
+		label2.setText("show");
 		invalidate();
 		revalidate();
 	}
 
-	private static class UnderlinedLabel extends Label {
-
-		private static final long serialVersionUID = 7777367978433059747L;
-
-		public UnderlinedLabel(String text) {
-			super(text);
-		}
-
-		@Override
-		public void paint(Graphics g) {
-			Rectangle r;
-			super.paint(g);
-			r = this.getBounds();
-			g.drawLine(
-					0,
-					r.height - this.getFontMetrics(this.getFont()).getDescent(),
-					this.getFontMetrics(this.getFont()).stringWidth(this.getText()),
-					r.height - this.getFontMetrics(this.getFont()).getDescent());
-		}
-	}
-
 	public static void main(String[] args) {
-		Frame f = new Frame();
+		JFrame f = new JFrame();
 		f.setLayout(new GridLayout(2, 1));
-		Panel panel = new Panel();
-		panel.add(new Label("lkj lkj"));
+		JPanel panel = new JPanel();
+		panel.add(new JLabel("lkj lkj"));
 		f.add(new SwitchablePanel("bla", panel));
-		panel = new Panel();
-		panel.add(new Label("lkj lkj"));
-		f.add(new SwitchablePanel("bla", panel));
+		panel = new JPanel();
+		panel.add(new JLabel("lkj lkj"));
+		f.getContentPane().add(new SwitchablePanel("bla", panel));
 		f.pack();
 		f.setVisible(true);
 	}

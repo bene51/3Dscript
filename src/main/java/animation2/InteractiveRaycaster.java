@@ -290,7 +290,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosed(WindowEvent e) {
+			public void windowClosing(WindowEvent e) {
 				System.out.println("closing");
 				worker.shutdown(); // TODO check that this works
 				canvas.removeMouseListener(mouseListener);

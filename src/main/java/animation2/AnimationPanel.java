@@ -1,15 +1,16 @@
 package animation2;
 
-import java.awt.Button;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-public class AnimationPanel extends Panel {
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+public class AnimationPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -24,7 +25,7 @@ public class AnimationPanel extends Panel {
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
 
-		Button textbased = new Button("Start text-based animation editor");
+		JButton textbased = new JButton("Start text-based animation editor");
 		textbased.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

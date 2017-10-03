@@ -146,7 +146,6 @@ public class BoundingBox {
 
 		float[] pos = new float[3];
 		for(int q = 0; q < QUADS.length; q++) {
-			System.out.println("dir = " + inv[2] + ", " + inv[6] + ", " + inv[10]);
 			if(!isQuadVisible(q, inv[2], inv[6], inv[10]))
 				continue;
 

@@ -1,25 +1,26 @@
 package animation2;
 
-import java.awt.Button;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Label;
-import java.awt.Panel;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
 
-public class TransformationPanel extends Panel implements FocusListener, NumberField.Listener {
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class TransformationPanel extends JPanel implements FocusListener, NumberField.Listener {
 
 	public static void main(String[] args) {
-		Frame f = new Frame();
+		JFrame f = new JFrame();
 		TransformationPanel tp = new TransformationPanel(0, 0, 0, 0, 0, 0, 0);
-		f.add(tp);
+		f.getContentPane().add(tp);
 		f.pack();
 		f.setVisible(true);
 	}
@@ -56,31 +57,31 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 		c.gridx = c.gridy = 0;
 		c.gridwidth = 2;
-		add(new Label("Rotation"), c);
+		add(new JLabel("Rotation"), c);
 		c.gridwidth = 1;
 		c.gridy++;
-		add(new Label("X"), c);
+		add(new JLabel("X"), c);
 		c.gridy++;
-		add(new Label("Y"), c);
+		add(new JLabel("Y"), c);
 		c.gridy++;
-		add(new Label("Z"), c);
+		add(new JLabel("Z"), c);
 
 		c.gridx = 2;
 		c.gridy = 0;
 		c.gridwidth = 2;
-		add(new Label("Translation"), c);
+		add(new JLabel("Translation"), c);
 		c.gridwidth = 1;
 		c.gridy++;
-		add(new Label("X"), c);
+		add(new JLabel("X"), c);
 		c.gridy++;
-		add(new Label("Y"), c);
+		add(new JLabel("Y"), c);
 		c.gridy++;
-		add(new Label("Z"), c);
+		add(new JLabel("Z"), c);
 
 		c.gridx = 4;
 		c.gridy = 0;
 		c.gridwidth = 2;
-		add(new Label("Scale"), c);
+		add(new JLabel("Scale"), c);
 		c.gridwidth = 1;
 
 		c.insets = new Insets(2, 0, 2, 30);
@@ -109,7 +110,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 		c.gridx = 4;
 		c.gridy = 2;
 		c.gridwidth = 2;
-		Button reset = new Button("Reset");
+		JButton reset = new JButton("Reset");
 		reset.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -130,7 +131,7 @@ public class TransformationPanel extends Panel implements FocusListener, NumberF
 
 	@Override
 	public void focusGained(FocusEvent e) {
-		TextField tf = (TextField)e.getSource();
+		JTextField tf = (JTextField)e.getSource();
 		tf.selectAll();
 	}
 

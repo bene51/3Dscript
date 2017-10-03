@@ -3,10 +3,8 @@ package animation2;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Panel;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
@@ -15,6 +13,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class BasicTextField implements MouseListener, KeyListener {
 
@@ -184,7 +185,7 @@ public class BasicTextField implements MouseListener, KeyListener {
 	public static void main(String... args) {
 		final int x = 50;
 		final int y = 50;
-		Frame f = new Frame();
+		JFrame f = new JFrame();
 
 		final BasicTextField tf1 = new BasicTextField();
 		tf1.setText("111");
@@ -205,11 +206,11 @@ public class BasicTextField implements MouseListener, KeyListener {
 		tf4.setText("444");
 		tf4.setPosition(x,  y);
 		tf4.setJustification(JUSTIFY_LEFT, JUSTIFY_TOP);
-		Panel p = new Panel() {
+		JPanel p = new JPanel() {
 			private static final long serialVersionUID = 1420261164629448825L;
 
 			@Override
-			public void paint(Graphics g) {
+			public void paintComponent(Graphics g) {
 				g.drawLine(0, y, getWidth(), y);
 				g.drawLine(x, 0, x, getHeight());
 				tf1.paint(g);
@@ -227,7 +228,7 @@ public class BasicTextField implements MouseListener, KeyListener {
 		p.addKeyListener(tf3);
 		p.addKeyListener(tf4);
 		p.setPreferredSize(new Dimension(300, 300));
-		f.add(p);
+		f.getContentPane().add(p);
 		f.pack();
 		f.setVisible(true);
 	}
