@@ -91,7 +91,6 @@ public class InteractiveRaycaster implements PlugInFilter {
 		keyframe.setNonchannelProperty(ExtendedKeyframe.NEAR, croppingPanel.getNear());
 		keyframe.setNonchannelProperty(ExtendedKeyframe.FAR,  croppingPanel.getFar());
 
-		boolean boundingBox = false; // TODO save in Prefs
 		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep, renderer.getBoundingBox());
 
 		animationPanel = dialog.addAnimationPanel();
@@ -292,7 +291,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				System.out.println("closing");
-				worker.shutdown(); // TODO check that this works
+				worker.shutdown();
 				canvas.removeMouseListener(mouseListener);
 				canvas.removeMouseMotionListener(mouseMotionListener);
 				canvas.removeMouseWheelListener(mouseWheelListener);

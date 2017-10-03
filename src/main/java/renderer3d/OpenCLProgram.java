@@ -3,7 +3,7 @@ package renderer3d;
 public class OpenCLProgram {
 
 	public static void main(String[] args) {
-		System.out.println(makeSourceForMIP(2, true));
+		System.out.println(makeSource(2, false));
 	}
 
 	public static String makeSourceForMIP(int channels, boolean backgroundTexture) {
@@ -284,6 +284,7 @@ public class OpenCLProgram {
 			"		float3 p0 = r0 + inear * dir;\n" +
 			"\n" +
 			"		int n = (int)floor(fdim(ifar, inear) / zStep);\n" +
+//			"		if(x == 0 && y == 0) printf(\"n = %d\\n\", n);\n" +
 			"		unsigned int maxv = (1 << bitsPerSample);\n" +
 			"";
 		for(int c = 0; c < channels; c++) {

@@ -7,9 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,16 +21,8 @@ public class AnimatorDialog extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	private ActionListener listener;
-	private JButton okButton;
 	private JPanel contents;
 	private GridBagConstraints c;
-
-	public static interface Listener {
-		public void renderingSettingsChanged();
-		public void nearfarChanged();
-		public void boundingBoxChanged();
-	}
 
 	private void initContents() {
 		contents = new JPanel(new GridBagLayout());
@@ -42,10 +32,6 @@ public class AnimatorDialog extends JDialog {
 	public AnimatorDialog(String title, Window parent) {
 		super(parent, title);
 		initContents();
-	}
-
-	public void setActionListener(ActionListener l) {
-		this.listener = l;
 	}
 
 	public void showDialog() {
@@ -75,9 +61,6 @@ public class AnimatorDialog extends JDialog {
 
 		setSize(400, avHeight);
 		setLocation(screenSize.width - scnMax.right - 400, scnMax.top);
-
-		// TODO exit button or window adapter
-		// call listener.actionPerformed()
 	}
 
 	public ContrastPanel addContrastPanel(int[][] histo8, double min[], double max[], double[][] channelProperties) {
