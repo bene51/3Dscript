@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import renderer3d.ExtendedKeyframe;
+import renderer3d.RenderingAlgorithm;
 import textanim.CustomDecimalFormat;
 
 public class ContrastPanel extends JPanel implements NumberField.Listener, FocusListener {
@@ -67,6 +68,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		public void renderingSettingsChanged();
 		public void channelChanged();
 		public void renderingSettingsReset();
+		public void renderingAlgorithmChanged(RenderingAlgorithm algorithm);
 	}
 
 	private int[][] histogram;
@@ -222,6 +224,34 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			weightSliders[i] = wslider;
 		}
 
+		c.insets.top = 20;
+		c.gridx = 0;
+		c.gridy++;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.EAST;
+		c.gridwidth = 1;
+		c.weightx = 0;
+		add(new JLabel("Rendering algorithm"), c);
+
+		final JComboBox<String> algo = new JComboBox<String>();
+		algo.addItem("Independent transparency");
+		algo.addItem("Combined transparency");
+		algo.addItem("Maximum intensity projection");
+		algo.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				switch(algo.getSelectedIndex()) {
+				case 0: fireRenderingAlgorithmChanged(RenderingAlgorithm.INDEPENDENT_TRANSPARENCY); break;
+				case 1: fireRenderingAlgorithmChanged(RenderingAlgorithm.COMBINED_TRANSPARENCY); break;
+				case 2: fireRenderingAlgorithmChanged(RenderingAlgorithm.MAXIMUM_INTENSITY); break;
+				}
+			}
+		});
+		c.gridx++;
+		c.weightx = 1.0;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		add(algo, c);
+
 		updateTextfieldsFromSliders();
 	}
 
@@ -281,6 +311,11 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	private void fireChannelChanged() {
 		for(Listener l : listeners)
 			l.channelChanged();
+	}
+
+	private void fireRenderingAlgorithmChanged(RenderingAlgorithm algorithm) {
+		for(Listener l : listeners)
+			l.renderingAlgorithmChanged(algorithm);
 	}
 
 	@Override

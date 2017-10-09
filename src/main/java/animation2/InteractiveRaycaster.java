@@ -26,8 +26,10 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import renderer3d.ExtendedKeyframe;
+import renderer3d.OpenCLProgram;
 import renderer3d.RecordingProvider;
 import renderer3d.Renderer3DAdapter;
+import renderer3d.RenderingAlgorithm;
 import renderer3d.Transform;
 import textanim.CombinedTransform;
 
@@ -213,6 +215,23 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void renderingSettingsReset() {
 				resetRenderingSettings();
+			}
+
+			@Override
+			public void renderingAlgorithmChanged(RenderingAlgorithm algorithm) {
+				int nChannels = renderer.getNChannels();
+				switch(algorithm) {
+				case INDEPENDENT_TRANSPARENCY:
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false));
+					break;
+				case COMBINED_TRANSPARENCY:
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true));
+					break;
+				case MAXIMUM_INTENSITY:
+					renderer.setProgram(OpenCLProgram.makeSourceForMIP(nChannels, false));
+					break;
+				}
+				worker.push(renderer.getKeyframe(), -1, -1, -1);
 			}
 		});
 

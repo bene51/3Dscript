@@ -93,7 +93,7 @@ public class CudaRaycaster {
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 		setImage(imp);
-		setKernel(OpenCLProgram.makeSource(nChannels, false));
+		setKernel(OpenCLProgram.makeSource(nChannels, false, false));
 	}
 
 	public BoundingBox getBoundingBox() {
@@ -157,13 +157,13 @@ public class CudaRaycaster {
 	public void setBackground(ColorProcessor cp) {
 		if(cp == null) {
 			clearBackground();
-			setKernel(OpenCLProgram.makeSource(nChannels, false));
+			setKernel(OpenCLProgram.makeSource(nChannels, false, false));
 			return;
 		}
 		int[] rgb = (int[])cp.getPixels();
 		setBackground(rgb, cp.getWidth(), cp.getHeight());
 		// setKernel(OpenCLProgram.makeSourceForMIP(nChannels, true));
-		setKernel(OpenCLProgram.makeSource(nChannels, true));
+		setKernel(OpenCLProgram.makeSource(nChannels, true, false));
 	}
 
 	public void setBackground(Color c) {

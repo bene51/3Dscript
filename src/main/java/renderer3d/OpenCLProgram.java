@@ -3,7 +3,7 @@ package renderer3d;
 public class OpenCLProgram {
 
 	public static void main(String[] args) {
-		System.out.println(makeSource(2, false));
+		System.out.println(makeSource(2, false, true));
 	}
 
 	public static String makeSourceForMIP(int channels, boolean backgroundTexture) {
@@ -175,7 +175,7 @@ public class OpenCLProgram {
 			return source;
 	}
 
-	public static String makeSource(int channels, boolean backgroundTexture) {
+	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha) {
 		String source =
 			"bool\n" +
 			"intersects(float3 bb0, float3 bb1, float3 r0, float3 rd, float *i0, float *i1) {\n" +
@@ -315,10 +315,15 @@ public class OpenCLProgram {
 			"				// color = color + (1 - alpha) * alphar * colorr;\n" +
 			"				// alpha = alpha + (1 - alpha) * alphar;\n";
 		for(int c = 0; c < channels; c++) {
+			source = source + "\n";
+			if(combinedAlpha) {
+				source = source +
+			"				float a" + c + " = (" + sum("alpha", channels) + ");\n";
+			} else {
+				source = source +
+			"				float a" + c + " = alpha" + c + ";\n";
+			}
 			source = source +
-					"\n" +
-			"				// float a" + c + " = (" + sum("alpha", channels) + ");\n" +
-			"				float a" + c + " = alpha" + c + ";\n" +
 			"				float tmp" + c + " = (1 - a" + c + ") * rAlphaColor" + c + ".x;\n" +
 			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n" +
 			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n";
