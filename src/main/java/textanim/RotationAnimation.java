@@ -25,7 +25,7 @@ public class RotationAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustKeyframe(Keyframe2 current, List<Keyframe2> previous) {}
+	public void adjustKeyframe(RenderingState current, List<RenderingState> previous) {}
 
 
 	@Override

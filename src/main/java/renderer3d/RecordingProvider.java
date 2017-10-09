@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import textanim.IRecordingProvider;
-import textanim.Keyframe2;
+import textanim.RenderingState;
 
 public class RecordingProvider implements IRecordingProvider {
 
@@ -21,7 +21,7 @@ public class RecordingProvider implements IRecordingProvider {
 			}
 
 			@Override
-			public String getRecording(Keyframe2 keyframe) {
+			public String getRecording(RenderingState keyframe) {
 				ExtendedKeyframe kf = (ExtendedKeyframe)keyframe;
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				for(int c = 0; c < kf.getNChannels(); c++) {
@@ -62,7 +62,7 @@ public class RecordingProvider implements IRecordingProvider {
 			}
 
 			@Override
-			public String getRecording(Keyframe2 keyframe) {
+			public String getRecording(RenderingState keyframe) {
 				ExtendedKeyframe kf = (ExtendedKeyframe)keyframe;
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				text.append("- change ")

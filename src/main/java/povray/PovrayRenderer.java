@@ -11,7 +11,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import parser.Keyword2;
 import textanim.CombinedTransform;
-import textanim.Keyframe2;
+import textanim.RenderingState;
 import textanim.KeywordFactory;
 import textanim.Renderer3D;
 
@@ -66,12 +66,12 @@ public class PovrayRenderer implements Renderer3D {
 	}
 
 	@Override
-	public Keyframe2 getKeyframe() {
+	public RenderingState getKeyframe() {
 		return keyframe;
 	}
 
 	@Override
-	public ImageProcessor render(Keyframe2 kf) {
+	public ImageProcessor render(RenderingState kf) {
 		try {
 			return doRender(kf);
 		} catch(Exception e) {
@@ -79,7 +79,7 @@ public class PovrayRenderer implements Renderer3D {
 		}
 	}
 
-	private ImageProcessor doRender(Keyframe2 kf) throws IOException, InterruptedException {
+	private ImageProcessor doRender(RenderingState kf) throws IOException, InterruptedException {
 		File iniFile = new File(outputDirectory, "scene.ini");
 		PrintStream out = new PrintStream(iniFile);
 		out.println("Antialias=On");

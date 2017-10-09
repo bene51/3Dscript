@@ -52,10 +52,10 @@ public class Animator {
 	private ImagePlus dorender(int from, int to, Listener listener) {
 		isExecuting = true;
 		stopRendering = false;
-		List<Keyframe2> frames = createKeyframes(from, to);
+		List<RenderingState> frames = createKeyframes(from, to);
 		ImageStack stack = null;
 		ImagePlus ret = null;
-		for(Keyframe2 kf : frames) {
+		for(RenderingState kf : frames) {
 			if(stopRendering)
 				break;
 //if(kf.getFrame() < 52)
@@ -90,11 +90,11 @@ public class Animator {
 		animations.add(a);
 	}
 
-	public List<Keyframe2> createKeyframes(int from, int to) {
-		List<Keyframe2> keyframes = new ArrayList<Keyframe2>();
-		Keyframe2 previous = renderer.getKeyframe();
+	public List<RenderingState> createKeyframes(int from, int to) {
+		List<RenderingState> keyframes = new ArrayList<RenderingState>();
+		RenderingState previous = renderer.getKeyframe();
 		for(int t = from; t <= to; t++) {
-			Keyframe2 kf = previous.clone();
+			RenderingState kf = previous.clone();
 			kf.setFrame(t);
 			float[] fwd = Transform.fromIdentity(null);
 			for(Animation a : animations) {

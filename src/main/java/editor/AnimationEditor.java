@@ -59,7 +59,7 @@ import textanim.Animator.Listener;
 import textanim.CustomDecimalFormat;
 import textanim.IRecordingProvider;
 import textanim.IRecordingProvider.RecordingItem;
-import textanim.Keyframe2;
+import textanim.RenderingState;
 import textanim.Renderer3D;
 
 
@@ -721,7 +721,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		return false;
 	}
 
-	private Keyframe2 keyframeRecordStart = null;
+	private RenderingState keyframeRecordStart = null;
 
 	public void recordTransitionStart() {
 		keyframeRecordStart = renderer.getKeyframe().clone();
@@ -735,7 +735,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		Keyframe2 keyframeRecordEnd = renderer.getKeyframe().clone();
+		RenderingState keyframeRecordEnd = renderer.getKeyframe().clone();
 
 		float[] t0 = keyframeRecordStart.getFwdTransform().calculateForwardTransformWithoutCalibration();
 		float[] t1 = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
@@ -859,7 +859,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		Keyframe2 keyframeRecordEnd = renderer.getKeyframe().clone();
+		RenderingState keyframeRecordEnd = renderer.getKeyframe().clone();
 
 		float[] m = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
 

@@ -3,9 +3,9 @@ package renderer3d;
 import java.awt.Color;
 
 import textanim.CombinedTransform;
-import textanim.Keyframe2;
+import textanim.RenderingState;
 
-public class ExtendedKeyframe extends Keyframe2 {
+public class ExtendedKeyframe extends RenderingState {
 
 	public static final int BOUNDINGBOX_XMIN  = 0;
 	public static final int BOUNDINGBOX_YMIN  = 1;

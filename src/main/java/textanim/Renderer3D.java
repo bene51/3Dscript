@@ -10,9 +10,9 @@ public interface Renderer3D {
 
 	public KeywordFactory getKeywordFactory();
 
-	public Keyframe2 getKeyframe();
+	public RenderingState getKeyframe();
 
-	public ImageProcessor render(Keyframe2 kf);
+	public ImageProcessor render(RenderingState kf);
 
 	public ImagePlus getImage();
 

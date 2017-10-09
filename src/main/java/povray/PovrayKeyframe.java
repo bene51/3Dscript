@@ -1,9 +1,9 @@
 package povray;
 
 import textanim.CombinedTransform;
-import textanim.Keyframe2;
+import textanim.RenderingState;
 
-public class PovrayKeyframe extends Keyframe2 {
+public class PovrayKeyframe extends RenderingState {
 
 	public static final int LENS_X  = 0;
 	public static final int LENS_Y  = 1;

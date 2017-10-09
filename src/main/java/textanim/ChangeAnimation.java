@@ -47,7 +47,7 @@ public class ChangeAnimation extends Animation {
 	 *              where vFrom is the value at fromFrame.
 	 */
 	@Override
-	public void adjustKeyframe(Keyframe2 current, List<Keyframe2> previous) {
+	public void adjustKeyframe(RenderingState current, List<RenderingState> previous) {
 		int t = current.getFrame();
 		if(t < fromFrame || t > toFrame)
 			return;
@@ -68,7 +68,7 @@ public class ChangeAnimation extends Animation {
 			if(t == fromFrame)
 				valFrom = getKeyframeProperty(current, timelineIdx, channel);
 			else {
-				Keyframe2 kfFrom = previous.get(fromFrame);
+				RenderingState kfFrom = previous.get(fromFrame);
 				valFrom = getKeyframeProperty(kfFrom, timelineIdx, channel);
 			}
 
@@ -77,13 +77,13 @@ public class ChangeAnimation extends Animation {
 		}
 	}
 
-	private double getKeyframeProperty(Keyframe2 keyframe, int property, int channel) {
+	private double getKeyframeProperty(RenderingState keyframe, int property, int channel) {
 		if(channel < 0)
 			return keyframe.getNonchannelProperty(property);
 		return keyframe.getChannelProperty(channel, property);
 	}
 
-	private void setKeyframeProperty(Keyframe2 keyframe, int property, int channel, double v) {
+	private void setKeyframeProperty(RenderingState keyframe, int property, int channel, double v) {
 		if(channel < 0)
 			keyframe.setNonchannelProperty(property, v);
 		else

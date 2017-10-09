@@ -1,6 +1,6 @@
 package textanim;
 
-public class Keyframe2 implements Comparable<Keyframe2> {
+public class RenderingState implements Comparable<RenderingState> {
 
 
 	public static int UNSET = Integer.MIN_VALUE;
@@ -12,11 +12,11 @@ public class Keyframe2 implements Comparable<Keyframe2> {
 	protected double[] nonChannelProperties;
 	protected double[][] channelProperties;
 
-	public Keyframe2(int frame) {
+	public RenderingState(int frame) {
 		this.frame = frame;
 	}
 
-	public Keyframe2(
+	public RenderingState(
 			int frame,
 			CombinedTransform fwdTransform) {
 		super();
@@ -44,13 +44,13 @@ public class Keyframe2 implements Comparable<Keyframe2> {
 	}
 
 	@Override
-	public Keyframe2 clone() {
-		Keyframe2 kf = new Keyframe2(0, null);
+	public RenderingState clone() {
+		RenderingState kf = new RenderingState(0, null);
 		kf.setFrom(this);
 		return kf;
 	}
 
-	public void setFrom(Keyframe2 o) {
+	public void setFrom(RenderingState o) {
 		this.frame = o.frame;
 		if(o.fwdTransform != null) {
 			this.fwdTransform = o.fwdTransform.clone();
@@ -90,7 +90,7 @@ public class Keyframe2 implements Comparable<Keyframe2> {
 	}
 
 	@Override
-	public int compareTo(Keyframe2 o) {
+	public int compareTo(RenderingState o) {
 		if(frame < o.frame) return -1;
 		if(frame > o.frame) return +1;
 		return 0;

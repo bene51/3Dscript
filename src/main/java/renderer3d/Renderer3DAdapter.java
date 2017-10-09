@@ -9,7 +9,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
 import textanim.CombinedTransform;
-import textanim.Keyframe2;
+import textanim.RenderingState;
 import textanim.KeywordFactory;
 import textanim.Renderer3D;
 
@@ -97,7 +97,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	}
 
 	@Override
-	public ImageProcessor render(Keyframe2 kf2) {
+	public ImageProcessor render(RenderingState kf2) {
 		ExtendedKeyframe kf = (ExtendedKeyframe)kf2;
 		int kfbbx0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN);
 		int kfbby0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN);

@@ -8,7 +8,7 @@ public interface IRecordingProvider extends Iterable<RecordingItem> {
 
 		public String getCommand();
 
-		public String getRecording(Keyframe2 keyframe);
+		public String getRecording(RenderingState keyframe);
 	}
 
 	public RecordingItem get(int i);

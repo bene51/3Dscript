@@ -44,7 +44,7 @@ public abstract class Animation {
 		pickScripts(scripts, getNumberOrMacros());
 	}
 
-	public abstract void adjustKeyframe(Keyframe2 current, List<Keyframe2> previous);
+	public abstract void adjustKeyframe(RenderingState current, List<RenderingState> previous);
 
 	public double interpolate(int t, double vFrom, double vTo) {
 		if(t >= toFrame)

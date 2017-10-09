@@ -24,7 +24,7 @@ public class TranslationAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustKeyframe(Keyframe2 current, List<Keyframe2> previous) {}
+	public void adjustKeyframe(RenderingState current, List<RenderingState> previous) {}
 
 	private float evalOrInterpolate(int frame, NumberOrMacro n) {
 		return n.isMacro() ? (float)n.evaluateMacro(frame, fromFrame, toFrame) : (float)interpolate(frame, 0, n.getValue());
