@@ -17,10 +17,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -30,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import renderer3d.ExtendedKeyframe;
+import textanim.CustomDecimalFormat;
 
 public class ContrastPanel extends JPanel implements NumberField.Listener, FocusListener {
 
@@ -65,8 +63,6 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 	private SingleSlider[] weightSliders;
 
-	private DecimalFormat df;
-
 	public static interface Listener {
 		public void renderingSettingsChanged();
 		public void channelChanged();
@@ -91,11 +87,6 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		this.max = max;
 		this.renderingSettings = r;
 
-		Locale locale  = new Locale("en", "US");
-		String pattern = "##0.0#";
-		df = (DecimalFormat)NumberFormat.getNumberInstance(locale);
-		df.applyPattern(pattern);
-
 		minCTF.addListener(this);
 		minCTF.addNumberFieldFocusListener(this);
 		maxCTF.addListener(this);
@@ -110,8 +101,8 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		gammaATF.addListener(this);
 		gammaATF.addNumberFieldFocusListener(this);
 
-		gammaCTF.setText(df.format(r[channel][ExtendedKeyframe.COLOR_GAMMA]));
-		gammaATF.setText(df.format(r[channel][ExtendedKeyframe.ALPHA_GAMMA]));
+		gammaCTF.setText(CustomDecimalFormat.format(r[channel][ExtendedKeyframe.COLOR_GAMMA], 1));
+		gammaATF.setText(CustomDecimalFormat.format(r[channel][ExtendedKeyframe.ALPHA_GAMMA], 1));
 
 		this.slider = new DoubleSliderCanvas(histogram[channel], min[channel], max[channel], r[channel], this);
 		GridBagLayout gridbag = new GridBagLayout();
@@ -265,8 +256,8 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 	public void setChannel(int c) {
 		this.channel = c;
-		gammaATF.setText(df.format(renderingSettings[c][ExtendedKeyframe.ALPHA_GAMMA]));
-		gammaCTF.setText(df.format(renderingSettings[c][ExtendedKeyframe.COLOR_GAMMA]));
+		gammaATF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedKeyframe.ALPHA_GAMMA], 1));
+		gammaCTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedKeyframe.COLOR_GAMMA], 1));
 		slider.set(histogram[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		slider.repaint();
@@ -319,10 +310,10 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	}
 
 	private void updateTextfieldsFromSliders() {
-		minCTF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.COLOR_MIN]));
-		maxCTF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.COLOR_MAX]));
-		minATF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.ALPHA_MIN]));
-		maxATF.setText(df.format(slider.renderingSettings[ExtendedKeyframe.ALPHA_MAX]));
+		minCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedKeyframe.COLOR_MIN], 1));
+		maxCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedKeyframe.COLOR_MAX], 1));
+		minATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedKeyframe.ALPHA_MIN], 1));
+		maxATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedKeyframe.ALPHA_MAX], 1));
 		fireRenderingSettingsChanged();
 	}
 
