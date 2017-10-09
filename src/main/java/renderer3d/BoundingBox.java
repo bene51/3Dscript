@@ -137,6 +137,8 @@ public class BoundingBox {
 	}
 
 	public void drawFrontClippingPlane(ImageProcessor ip, float[] fwd, float[] inv, float near) {
+		if(!boundingBoxVisible)
+			return;
 		PlaneBoxIntersection.Point[] poly = new PlaneBoxIntersection.Point[6];
 
 		// https://stackoverflow.com/questions/7685495/transforming-a-3d-plane-by-4x4-matrix
