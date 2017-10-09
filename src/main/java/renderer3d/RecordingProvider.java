@@ -22,7 +22,7 @@ public class RecordingProvider implements IRecordingProvider {
 
 			@Override
 			public String getRecording(RenderingState keyframe) {
-				ExtendedKeyframe kf = (ExtendedKeyframe)keyframe;
+				ExtendedRenderingState kf = (ExtendedRenderingState)keyframe;
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				for(int c = 0; c < kf.getNChannels(); c++) {
 					text.append("- change channel ")
@@ -30,25 +30,25 @@ public class RecordingProvider implements IRecordingProvider {
 						.append(" ")
 						.append(ExtendedKeywordFactory.ChannelKeyword.COLOR.getKeyword())
 						.append(" to (")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.COLOR_MIN)).append(", ")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.COLOR_MAX)).append(", ")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.COLOR_GAMMA))
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.COLOR_MIN)).append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.COLOR_MAX)).append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.COLOR_GAMMA))
 						.append(")\n");
 					text.append("- change channel ")
 						.append(c + 1)
 						.append(" ")
 						.append(ExtendedKeywordFactory.ChannelKeyword.ALPHA.getKeyword())
 						.append(" to (")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.ALPHA_MIN)).append(", ")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.ALPHA_MAX)).append(", ")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.ALPHA_GAMMA))
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.ALPHA_MIN)).append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.ALPHA_MAX)).append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.ALPHA_GAMMA))
 						.append(")\n");
 					text.append("- change channel ")
 						.append(c + 1)
 						.append(" ")
 						.append(ExtendedKeywordFactory.ChannelKeyword.WEIGHT.getKeyword())
 						.append(" to ")
-						.append(kf.getChannelProperty(c, ExtendedKeyframe.WEIGHT))
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.WEIGHT))
 						.append("\n");
 				}
 				return text.toString();
@@ -63,28 +63,28 @@ public class RecordingProvider implements IRecordingProvider {
 
 			@Override
 			public String getRecording(RenderingState keyframe) {
-				ExtendedKeyframe kf = (ExtendedKeyframe)keyframe;
+				ExtendedRenderingState kf = (ExtendedRenderingState)keyframe;
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				text.append("- change ")
 					.append(ExtendedKeywordFactory.NonChannelKeyword.BOUNDING_BOX_X.getKeyword())
 					.append(" to (")
-					.append(kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN))
+					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN))
 					.append(", ")
-					.append(kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX))
+					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX))
 					.append(")\n");
 				text.append("- change ")
 				.append(ExtendedKeywordFactory.NonChannelKeyword.BOUNDING_BOX_Y.getKeyword())
 					.append(" to (")
-					.append(kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN))
+					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN))
 					.append(", ")
-					.append(kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX))
+					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX))
 					.append(")\n");
 				text.append("- change ")
 				.append(ExtendedKeywordFactory.NonChannelKeyword.BOUNDING_BOX_Z.getKeyword())
 					.append(" to (")
-					.append(kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN))
+					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN))
 					.append(", ")
-					.append(kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX))
+					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX))
 					.append(")\n");
 				return text.toString();
 			}

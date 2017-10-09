@@ -25,7 +25,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
-import renderer3d.ExtendedKeyframe;
+import renderer3d.ExtendedRenderingState;
 import renderer3d.OpenCLProgram;
 import renderer3d.RecordingProvider;
 import renderer3d.Renderer3DAdapter;
@@ -78,7 +78,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		final float zStep = 1;
 		renderer = new Renderer3DAdapter(image, image.getWidth(), image.getHeight(), zStep);
-		ExtendedKeyframe keyframe = renderer.getKeyframe();
+		ExtendedRenderingState keyframe = renderer.getKeyframe();
 		worker = new RenderingThread(renderer);
 
 		dialog = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
@@ -90,15 +90,15 @@ public class InteractiveRaycaster implements PlugInFilter {
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 
 		croppingPanel = dialog.addCroppingPanel(image);
-		keyframe.setNonchannelProperty(ExtendedKeyframe.NEAR, croppingPanel.getNear());
-		keyframe.setNonchannelProperty(ExtendedKeyframe.FAR,  croppingPanel.getFar());
+		keyframe.setNonchannelProperty(ExtendedRenderingState.NEAR, croppingPanel.getNear());
+		keyframe.setNonchannelProperty(ExtendedRenderingState.FAR,  croppingPanel.getFar());
 
 		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep, renderer.getBoundingBox());
 
 		animationPanel = dialog.addAnimationPanel();
 
 		final Point mouseDown = new Point();
-		final ExtendedKeyframe mouseDownFrame = keyframe.clone();
+		final ExtendedRenderingState mouseDownFrame = keyframe.clone();
 		final boolean[] isRotation = new boolean[] {false};
 
 		final ImageCanvas canvas = worker.out.getCanvas();
@@ -119,7 +119,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int dx = e.getX() - mouseDown.x;
 				int dy = e.getY() - mouseDown.y;
 				if(!isRotation[0]) {
-					ExtendedKeyframe kf = mouseDownFrame.clone();
+					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.translateBy(dx, dy, 0, true);
 					worker.push(kf, -1, -1, -1);
@@ -134,7 +134,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					}
 					int ax = -Math.round(dx * speed);
 					int ay =  Math.round(dy * speed);
-					ExtendedKeyframe kf = mouseDownFrame.clone();
+					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.rotateBy(ax, ay);
 					worker.push(kf, -1, -1, -1);
@@ -153,7 +153,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int dy = e.getY() - mouseDown.y;
 				// translation
 				if(!isRotation[0]) {
-					ExtendedKeyframe kf = mouseDownFrame.clone();
+					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.translateBy(dx, dy, 0, true);
 					worker.push(kf, -1, -1, -1);
@@ -169,7 +169,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					}
 					int ax = -Math.round(dx * speed);
 					int ay =  Math.round(dy * speed);
-					ExtendedKeyframe kf = mouseDownFrame.clone();
+					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.rotateBy(ax, ay);
 					worker.push(kf, -1, -1, -1);
@@ -193,7 +193,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int ex = e.getX();
 				int ey = e.getY();
 
-				ExtendedKeyframe kf = renderer.getKeyframe().clone();
+				ExtendedRenderingState kf = renderer.getKeyframe().clone();
 				CombinedTransform t = kf.getFwdTransform();
 				t.zoomInto(ex, ey, factor);
 				worker.push(kf, -1, -1, -1);
@@ -250,21 +250,21 @@ public class InteractiveRaycaster implements PlugInFilter {
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
 			@Override
 			public void nearFarChanged(int near, int far) {
-				ExtendedKeyframe kf = renderer.getKeyframe().clone();
-				kf.setNonchannelProperty(ExtendedKeyframe.NEAR, near);
-				kf.setNonchannelProperty(ExtendedKeyframe.FAR,  far);
+				ExtendedRenderingState kf = renderer.getKeyframe().clone();
+				kf.setNonchannelProperty(ExtendedRenderingState.NEAR, near);
+				kf.setNonchannelProperty(ExtendedRenderingState.FAR,  far);
 				worker.push(kf, -1, -1, -1);
 			}
 
 			@Override
 			public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
-				ExtendedKeyframe kf = renderer.getKeyframe().clone();
-				kf.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN, bbx0);
-				kf.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN, bby0);
-				kf.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN, bbz0);
-				kf.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX, bbx1);
-				kf.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX, bby1);
-				kf.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX, bbz1);
+				ExtendedRenderingState kf = renderer.getKeyframe().clone();
+				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN, bbx0);
+				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN, bby0);
+				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN, bbz0);
+				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX, bbx1);
+				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX, bby1);
+				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX, bbz1);
 				worker.push(kf, -1, -1, -1);
 			}
 
@@ -281,7 +281,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					mask.resetRoi();
 					mask.invert();
 
-					ExtendedKeyframe kf = renderer.getKeyframe();
+					ExtendedRenderingState kf = renderer.getKeyframe();
 					float[] fwd = kf.getFwdTransform().calculateForwardTransform();
 					renderer.crop(image, mask, fwd);
 
@@ -369,7 +369,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
-		ExtendedKeyframe kf = renderer.getKeyframe().clone();
+		ExtendedRenderingState kf = renderer.getKeyframe().clone();
 		kf.getFwdTransform().setTransformation(ax, ay, az, dx, dy, dz, s);
 		worker.push(kf, -1, -1, -1);
 		transformationPanel.setTransformation(new float[] {ax, ay, az}, new float[] {dx, dy, dz}, s);

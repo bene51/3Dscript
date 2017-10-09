@@ -5,7 +5,7 @@ import java.awt.Color;
 import textanim.CombinedTransform;
 import textanim.RenderingState;
 
-public class ExtendedKeyframe extends RenderingState {
+public class ExtendedRenderingState extends RenderingState {
 
 	public static final int BOUNDINGBOX_XMIN  = 0;
 	public static final int BOUNDINGBOX_YMIN  = 1;
@@ -27,13 +27,13 @@ public class ExtendedKeyframe extends RenderingState {
 	public static final int CHANNEL_COLOR_GREEN = 8;
 	public static final int CHANNEL_COLOR_BLUE  = 9;
 
-	public ExtendedKeyframe(int frame, CombinedTransform fwdTransform, int nChannels) {
+	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[8];
 		channelProperties = new double[nChannels][10];
 	}
 
-	public ExtendedKeyframe(
+	public ExtendedRenderingState(
 			int frame,
 			RenderingSettings[] renderingSettings,
 			Color[] channelColors,
@@ -86,8 +86,8 @@ public class ExtendedKeyframe extends RenderingState {
 	}
 
 	@Override
-	public ExtendedKeyframe clone() {
-		ExtendedKeyframe kf = new ExtendedKeyframe(0, null, channelProperties.length);
+	public ExtendedRenderingState clone() {
+		ExtendedRenderingState kf = new ExtendedRenderingState(0, null, channelProperties.length);
 		kf.setFrom(this);
 		return kf;
 	}

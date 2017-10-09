@@ -180,16 +180,16 @@ public class CudaRaycaster {
 		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
 			channelSettings[c] = new float[] {
-					(float)(channelProperties[c][ExtendedKeyframe.COLOR_MIN]),
-					(float)(channelProperties[c][ExtendedKeyframe.COLOR_MAX]),
-					(float)(channelProperties[c][ExtendedKeyframe.COLOR_GAMMA]),
-					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_MIN]),
-					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_MAX]),
-					(float)(channelProperties[c][ExtendedKeyframe.ALPHA_GAMMA]),
-					(float)(channelProperties[c][ExtendedKeyframe.WEIGHT]),
-					(int)(channelProperties[c][ExtendedKeyframe.CHANNEL_COLOR_RED]),
-					(int)(channelProperties[c][ExtendedKeyframe.CHANNEL_COLOR_GREEN]),
-					(int)(channelProperties[c][ExtendedKeyframe.CHANNEL_COLOR_BLUE]),
+					(float)(channelProperties[c][ExtendedRenderingState.COLOR_MIN]),
+					(float)(channelProperties[c][ExtendedRenderingState.COLOR_MAX]),
+					(float)(channelProperties[c][ExtendedRenderingState.COLOR_GAMMA]),
+					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_MIN]),
+					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_MAX]),
+					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_GAMMA]),
+					(float)(channelProperties[c][ExtendedRenderingState.WEIGHT]),
+					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_RED]),
+					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_GREEN]),
+					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_BLUE]),
 //					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}

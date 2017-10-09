@@ -3,7 +3,7 @@ package animation2;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import renderer3d.CudaRaycaster;
-import renderer3d.ExtendedKeyframe;
+import renderer3d.ExtendedRenderingState;
 import renderer3d.Renderer3DAdapter;
 
 public class RenderingThread {
@@ -20,13 +20,13 @@ public class RenderingThread {
 
 	static class Event {
 
-		private ExtendedKeyframe keyframe;
+		private ExtendedRenderingState keyframe;
 		private int tgtW = -1;
 		private int tgtH = -1;
 		private int imaget = -1;
 		private boolean valid;
 
-		Event(ExtendedKeyframe keyframe) {
+		Event(ExtendedRenderingState keyframe) {
 			valid = true;
 			this.keyframe = keyframe.clone();
 		}
@@ -34,7 +34,7 @@ public class RenderingThread {
 
 	public RenderingThread(Renderer3DAdapter raycaster) {
 		this.raycaster = raycaster;
-		final ExtendedKeyframe keyframe = raycaster.getKeyframe();
+		final ExtendedRenderingState keyframe = raycaster.getKeyframe();
 		this.event = new Event(keyframe);
 		out = new ImagePlus("3D Animation", raycaster.render(keyframe));
 		// TODO
@@ -52,7 +52,7 @@ public class RenderingThread {
 		thread.start();
 	}
 
-	public void loop(ExtendedKeyframe keyframe) {
+	public void loop(ExtendedRenderingState keyframe) {
 		Event e = new Event(keyframe);
 		while(!shutdown) {
 			poll(e);
@@ -61,7 +61,7 @@ public class RenderingThread {
 		CudaRaycaster.close();
 	}
 
-	public void push(ExtendedKeyframe keyframe, int w, int h, int imaget) {
+	public void push(ExtendedRenderingState keyframe, int w, int h, int imaget) {
 		synchronized(lock) {
 			event.keyframe.setFrom(keyframe);
 			event.valid = true;

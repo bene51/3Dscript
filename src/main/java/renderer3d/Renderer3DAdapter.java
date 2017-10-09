@@ -15,7 +15,7 @@ import textanim.Renderer3D;
 
 public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 
-	private final ExtendedKeyframe keyframe;
+	private final ExtendedRenderingState keyframe;
 
 	private float near;
 	private float far;
@@ -56,7 +56,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
 
-		this.keyframe = new ExtendedKeyframe(0,
+		this.keyframe = new ExtendedRenderingState(0,
 				renderingSettings,
 				channelColors,
 				near, far,
@@ -77,12 +77,12 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 //			renderingSettings[c].colorGamma = 1;
 //			renderingSettings[c].weight = 1;
 
-			keyframe.setChannelProperty(c, ExtendedKeyframe.COLOR_MIN,   luts[c].min);
-			keyframe.setChannelProperty(c, ExtendedKeyframe.COLOR_MAX,   luts[c].max);
-			keyframe.setChannelProperty(c, ExtendedKeyframe.COLOR_GAMMA, 1);
-			keyframe.setChannelProperty(c, ExtendedKeyframe.ALPHA_MIN,   luts[c].min);
-			keyframe.setChannelProperty(c, ExtendedKeyframe.ALPHA_MAX,   luts[c].max);
-			keyframe.setChannelProperty(c, ExtendedKeyframe.ALPHA_GAMMA, 2);
+			keyframe.setChannelProperty(c, ExtendedRenderingState.COLOR_MIN,   luts[c].min);
+			keyframe.setChannelProperty(c, ExtendedRenderingState.COLOR_MAX,   luts[c].max);
+			keyframe.setChannelProperty(c, ExtendedRenderingState.COLOR_GAMMA, 1);
+			keyframe.setChannelProperty(c, ExtendedRenderingState.ALPHA_MIN,   luts[c].min);
+			keyframe.setChannelProperty(c, ExtendedRenderingState.ALPHA_MAX,   luts[c].max);
+			keyframe.setChannelProperty(c, ExtendedRenderingState.ALPHA_GAMMA, 2);
 		}
 	}
 
@@ -92,33 +92,33 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	}
 
 	@Override
-	public ExtendedKeyframe getKeyframe() {
+	public ExtendedRenderingState getKeyframe() {
 		return keyframe;
 	}
 
 	@Override
 	public ImageProcessor render(RenderingState kf2) {
-		ExtendedKeyframe kf = (ExtendedKeyframe)kf2;
-		int kfbbx0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN);
-		int kfbby0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN);
-		int kfbbz0 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN);
-		int kfbbx1 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX);
-		int kfbby1 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX);
-		int kfbbz1 = (int)kf.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX);
-		if(kfbbx0 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN) ||
-				kfbby0 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN) ||
-				kfbbz0 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN) ||
-				kfbbx1 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX) ||
-				kfbby1 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX) ||
-				kfbbz1 != (int)keyframe.getNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX)) {
+		ExtendedRenderingState kf = (ExtendedRenderingState)kf2;
+		int kfbbx0 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN);
+		int kfbby0 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN);
+		int kfbbz0 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN);
+		int kfbbx1 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX);
+		int kfbby1 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX);
+		int kfbbz1 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX);
+		if(kfbbx0 != (int)keyframe.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN) ||
+				kfbby0 != (int)keyframe.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN) ||
+				kfbbz0 != (int)keyframe.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN) ||
+				kfbbx1 != (int)keyframe.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX) ||
+				kfbby1 != (int)keyframe.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX) ||
+				kfbbz1 != (int)keyframe.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX)) {
 
 			super.setBBox(kfbbx0, kfbby0, kfbbz0, kfbbx1, kfbby1, kfbbz1);
-			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMIN, kfbbx0);
-			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMIN, kfbby0);
-			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMIN, kfbbz0);
-			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_XMAX, kfbbx1);
-			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_YMAX, kfbby1);
-			keyframe.setNonchannelProperty(ExtendedKeyframe.BOUNDINGBOX_ZMAX, kfbbz1);
+			keyframe.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN, kfbbx0);
+			keyframe.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN, kfbby0);
+			keyframe.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN, kfbbz0);
+			keyframe.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX, kfbbx1);
+			keyframe.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX, kfbby1);
+			keyframe.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX, kfbbz1);
 		}
 
 		CombinedTransform transform = kf.getFwdTransform();
@@ -126,8 +126,8 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 		float[] inv = CombinedTransform.calculateInverseTransform(fwd);
 		keyframe.setFrom(kf);
 		return super.project(fwd, inv, kf.getChannelProperties(),
-				(float)kf.getNonchannelProperty(ExtendedKeyframe.NEAR),
-				(float)kf.getNonchannelProperty(ExtendedKeyframe.FAR));
+				(float)kf.getNonchannelProperty(ExtendedRenderingState.NEAR),
+				(float)kf.getNonchannelProperty(ExtendedRenderingState.FAR));
 	}
 
 	@Override
