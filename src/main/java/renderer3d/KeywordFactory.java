@@ -3,7 +3,7 @@ package renderer3d;
 import parser.Keyword2;
 import textanim.IKeywordFactory;
 
-public class ExtendedKeywordFactory implements IKeywordFactory {
+public class KeywordFactory implements IKeywordFactory {
 
 	@Override
 	public Keyword2[] getNonChannelKeywords() {

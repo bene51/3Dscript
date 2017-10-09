@@ -20,7 +20,7 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 	private float near;
 	private float far;
 
-	private final IKeywordFactory kwFactory = new ExtendedKeywordFactory();
+	private final IKeywordFactory kwFactory = new KeywordFactory();
 
 	public Renderer3D(ImagePlus image, int wOut, int hOut, float zStep) {
 		super(image, wOut, hOut, zStep);
