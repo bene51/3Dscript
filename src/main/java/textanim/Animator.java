@@ -17,13 +17,13 @@ public class Animator {
 		public void animationFinished();
 	}
 
-	private final Renderer3D renderer;
+	private final IRenderer3D renderer;
 	private final List<Animation> animations;
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	private boolean stopRendering = false;
 	private boolean isExecuting = false;
 
-	public Animator(Renderer3D renderer) {
+	public Animator(IRenderer3D renderer) {
 		this.renderer = renderer;
 		animations = new ArrayList<Animation>();
 	}

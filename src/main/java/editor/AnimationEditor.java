@@ -60,7 +60,7 @@ import textanim.CustomDecimalFormat;
 import textanim.IRecordingProvider;
 import textanim.IRecordingProvider.RecordingItem;
 import textanim.RenderingState;
-import textanim.Renderer3D;
+import textanim.IRenderer3D;
 
 
 @SuppressWarnings("serial")
@@ -97,12 +97,12 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	private JCheckBoxMenuItem wrapLines, tabsEmulated;
 	private JTextArea errorScreen = new JTextArea();
 
-	private final Renderer3D renderer;
+	private final IRenderer3D renderer;
 	private final Animator animator;
 
 	private final IRecordingProvider recordingProvider;
 
-	public AnimationEditor(Renderer3D renderer, IRecordingProvider recordingProvider) {
+	public AnimationEditor(IRenderer3D renderer, IRecordingProvider recordingProvider) {
 		super("Script Editor");
 		this.renderer = renderer;
 		this.recordingProvider = recordingProvider;

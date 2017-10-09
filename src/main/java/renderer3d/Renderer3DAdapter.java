@@ -10,10 +10,10 @@ import ij.process.ImageProcessor;
 import ij.process.LUT;
 import textanim.CombinedTransform;
 import textanim.IKeywordFactory;
-import textanim.Renderer3D;
+import textanim.IRenderer3D;
 import textanim.RenderingState;
 
-public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
+public class Renderer3DAdapter extends CudaRaycaster implements IRenderer3D  {
 
 	private final ExtendedRenderingState rs;
 

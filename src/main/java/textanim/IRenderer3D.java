@@ -6,7 +6,7 @@ import ij.ImagePlus;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
-public interface Renderer3D {
+public interface IRenderer3D {
 
 	public IKeywordFactory getKeywordFactory();
 

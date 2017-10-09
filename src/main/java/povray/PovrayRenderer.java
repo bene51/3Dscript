@@ -12,10 +12,10 @@ import ij.process.ImageProcessor;
 import parser.Keyword2;
 import textanim.CombinedTransform;
 import textanim.IKeywordFactory;
-import textanim.Renderer3D;
+import textanim.IRenderer3D;
 import textanim.RenderingState;
 
-public class PovrayRenderer implements Renderer3D {
+public class PovrayRenderer implements IRenderer3D {
 
 	private PovrayRenderingState rs;
 	private ImagePlus input;
