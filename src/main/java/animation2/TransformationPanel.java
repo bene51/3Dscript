@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import textanim.CustomDecimalFormat;
+
 public class TransformationPanel extends JPanel implements FocusListener, NumberField.Listener {
 
 	public static void main(String[] args) {
@@ -181,13 +183,13 @@ public class TransformationPanel extends JPanel implements FocusListener, Number
 	}
 
 	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
-		angleX.setText(Double.toString(ax));
-		angleY.setText(Double.toString(ay));
-		angleZ.setText(Double.toString(az));
-		dX.setText(Double.toString(dx));
-		dY.setText(Double.toString(dy));
-		dZ.setText(Double.toString(dz));
-		scale.setText(Double.toString(s));
+		angleX.setText(CustomDecimalFormat.format(ax,  1));
+		angleY.setText(CustomDecimalFormat.format(ay,  1));
+		angleZ.setText(CustomDecimalFormat.format(az,  1));
+		dX.setText(CustomDecimalFormat.format(dx,  1));
+		dY.setText(CustomDecimalFormat.format(dy,  1));
+		dZ.setText(CustomDecimalFormat.format(dz,  1));
+		scale.setText(CustomDecimalFormat.format(s, 1));
 	}
 
 	public void addTransformationPanelListener(Listener l) {
