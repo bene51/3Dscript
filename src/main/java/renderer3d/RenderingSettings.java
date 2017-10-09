@@ -2,21 +2,14 @@ package renderer3d;
 
 public class RenderingSettings {
 
-	@RenderingProperty(label = "Color Min")
 	public float colorMin;
-	@RenderingProperty(label = "Color Max")
 	public float colorMax;
-	@RenderingProperty(label = "Color Gamma")
 	public float colorGamma;
 
-	@RenderingProperty(label = "Alpha Min")
 	public float alphaMin;
-	@RenderingProperty(label = "Alpha Max")
 	public float alphaMax;
-	@RenderingProperty(label = "Alpha Gamma")
 	public float alphaGamma;
 
-	@RenderingProperty(label = "Weight")
 	public float weight = 1;
 
 	public RenderingSettings(
