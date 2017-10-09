@@ -56,6 +56,7 @@ import renderer3d.Transform;
 import textanim.Animation;
 import textanim.Animator;
 import textanim.Animator.Listener;
+import textanim.CustomDecimalFormat;
 import textanim.IRecordingProvider;
 import textanim.IRecordingProvider.RecordingItem;
 import textanim.Keyframe2;
@@ -766,33 +767,48 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			m[i] *= 1f / scale;
 
 		// extract rotation
-		float[] axisAngle = Transform.toAxisAngle(m);
-		float angle = (float)(180 * axisAngle[3] / Math.PI);
+		float[] euler = new float[3];
+		Transform.guessEulerAngles(m, euler);
 
 
 		final TextEditorTab tab = getTab();
 		StringBuffer text = new StringBuffer("From frame X to frame Y:\n");
+		// rotate around x-axis (vertically)
 		text.append("- ")
 			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(angle).append(" ")
+			.append(CustomDecimalFormat.format(euler[0] * 180 / (float)Math.PI, 1)).append(" ")
+			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+			.append("vertically\n");
+
+		// rotate around z-axis
+		text.append("- ")
+			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+			.append(CustomDecimalFormat.format(euler[2] * 180 / (float)Math.PI, 1)).append(" ")
 			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
 			.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
 			.append("(")
-			.append(axisAngle[0]).append(", ")
-			.append(axisAngle[1]).append(", ")
-			.append(axisAngle[2])
+			.append(0).append(", ")
+			.append(0).append(", ")
+			.append(1)
 			.append(")\n");
+
+		// rotate around y-axis
+		text.append("- ")
+			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+			.append(CustomDecimalFormat.format(euler[1] * 180 / (float)Math.PI, 1)).append(" ")
+			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+			.append("horizontally\n");
 		text.append("- ")
 			.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
-			.append(scale)
+			.append(CustomDecimalFormat.format(scale, 1))
 			.append("\n");
 		text.append("- ")
 			.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
 			.append(GeneralKeyword.BY.getKeyword()).append(" ")
 			.append("(")
-			.append(dx).append(", ")
-			.append(dy).append(", ")
-			.append(dz)
+			.append(CustomDecimalFormat.format(dx, 1)).append(", ")
+			.append(CustomDecimalFormat.format(dy, 1)).append(", ")
+			.append(CustomDecimalFormat.format(dz, 1))
 			.append(")\n");
 
 		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
@@ -865,33 +881,49 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			m[i] *= 1f / scale;
 
 		// extract rotation
-		float[] axisAngle = Transform.toAxisAngle(m);
-		float angle = (float)(180 * axisAngle[3] / Math.PI);
-
+		float[] euler = new float[3];
+		Transform.guessEulerAngles(m, euler);
 
 		final TextEditorTab tab = getTab();
 		StringBuffer text = new StringBuffer("At frame X:\n");
+		// rotate around x-axis (vertically)
 		text.append("- ")
 			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(angle).append(" ")
+			.append(CustomDecimalFormat.format(euler[0] * 180 / (float)Math.PI, 1)).append(" ")
+			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+			.append("vertically\n");
+
+		// rotate around z-axis
+		text.append("- ")
+			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+			.append(CustomDecimalFormat.format(euler[2] * 180 / (float)Math.PI, 1)).append(" ")
 			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
 			.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
 			.append("(")
-			.append(axisAngle[0]).append(", ")
-			.append(axisAngle[1]).append(", ")
-			.append(axisAngle[2])
+			.append(0).append(", ")
+			.append(0).append(", ")
+			.append(1)
 			.append(")\n");
+
+		// rotate around y-axis
+		text.append("- ")
+			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+			.append(CustomDecimalFormat.format(euler[1] * 180 / (float)Math.PI, 1)).append(" ")
+			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+			.append("horizontally\n");
+
+
 		text.append("- ")
 			.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
-			.append(scale)
+			.append(CustomDecimalFormat.format(scale, 1))
 			.append("\n");
 		text.append("- ")
 			.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
 			.append(GeneralKeyword.BY.getKeyword()).append(" ")
 			.append("(")
-			.append(dx).append(", ")
-			.append(dy).append(", ")
-			.append(dz)
+			.append(CustomDecimalFormat.format(dx, 1)).append(", ")
+			.append(CustomDecimalFormat.format(dy, 1)).append(", ")
+			.append(CustomDecimalFormat.format(dz, 1))
 			.append(")\n");
 
 		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
