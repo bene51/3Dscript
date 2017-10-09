@@ -36,7 +36,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 				(float)image.getCalibration().pixelDepth
 		};
 
-		float[] pdOut = new float[] {pdIn[0], pdIn[0], pdIn[0]}; // TODO phOut
+		float[] pdOut = new float[] {pdIn[0], pdIn[1], pdIn[2]};
 
 
 		near = 0;
@@ -137,8 +137,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 		float pwOut = (float)(image.getWidth()  * cal.pixelWidth  / w);
 		float phOut = (float)(image.getHeight() * cal.pixelHeight / h);
 		float pdOut = (float)cal.pixelDepth;
-//		float[] p = new float[] {pwOut, phOut, pdOut};
-		float[] p = new float[] {pwOut, pwOut, pwOut};
+		float[] p = new float[] {pwOut, phOut, pdOut};
 
 		keyframe.getFwdTransform().setOutputSpacing(p);
 	}

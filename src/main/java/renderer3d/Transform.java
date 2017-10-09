@@ -410,6 +410,14 @@ public class Transform {
 		mat[11] = mat[8] * dx + mat[9] * dy + mat[10] * dz;
 	}
 
+	public static float[] transpose3x3(float[] mat) {
+		return new float[] {
+				mat[0], mat[4], mat[8],  0,
+				mat[1], mat[5], mat[9],  0,
+				mat[2], mat[6], mat[10], 0,
+		};
+	}
+
 	public static float[] apply(float[] mat, float x, float y, float z,
 			float[] result) {
 		if(result == null)

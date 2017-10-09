@@ -201,6 +201,8 @@ public class CudaRaycaster {
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
 		bbox.drawScalebar(ret, fwdTransform, invTransform);
+
+		bbox.drawFrontClippingPlane(ret, fwdTransform, invTransform, near);
 		return ret;
 	}
 

@@ -73,7 +73,6 @@ public class OpenCLProgram {
 			}
 			source = source +
 				"		float alphastop,\n" +
-				"		float3 dir,\n" +
 				"		float3 inc,\n";
 			if(backgroundTexture)
 				source = source +
@@ -102,7 +101,7 @@ public class OpenCLProgram {
 				source = source +
 				"		int3 bb0 = data_origin;\n" +
 				"		int3 bb1 = data_origin + data_size;\n" +
-				"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, dir, &inear, &ifar);\n" +
+				"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, inc, &inear, &ifar);\n" +
 				"		int idx_out = y * target_size.x + x;\n" +
 				"		if(!hits) {\n" +
 				"			d_result[idx_out] = (unsigned int)((background.x << 16) | (background.y << 8) | background.z); \n" +
@@ -112,7 +111,7 @@ public class OpenCLProgram {
 				"		ifar  = fmin(ifar, zend);\n" +
 				"\n" +
 				"\n" +
-				"		float3 p0 = r0 + inear * dir;\n" +
+				"		float3 p0 = r0 + inear * inc;\n" +
 				"\n" +
 				"		int n = (int)floor(fdim(ifar, inear) / zStep);\n" +
 				"		unsigned int maxv = (1 << bitsPerSample);\n" +
@@ -242,7 +241,6 @@ public class OpenCLProgram {
 		}
 		source = source +
 			"		float alphastop,\n" +
-			"		float3 dir,\n" +
 			"		float3 inc,\n";
 		if(backgroundTexture)
 			source = source +
@@ -271,7 +269,7 @@ public class OpenCLProgram {
 			source = source +
 			"		int3 bb0 = data_origin;\n" +
 			"		int3 bb1 = data_origin + data_size;\n" +
-			"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, dir, &inear, &ifar);\n" +
+			"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, inc, &inear, &ifar);\n" +
 			"		int idx_out = y * target_size.x + x;\n" +
 			"		if(!hits) {\n" +
 			"			d_result[idx_out] = (unsigned int)((background.x << 16) | (background.y << 8) | background.z); \n" +
@@ -281,7 +279,7 @@ public class OpenCLProgram {
 			"		ifar  = fmin(ifar, zend);\n" +
 			"\n" +
 			"\n" +
-			"		float3 p0 = r0 + inear * dir;\n" +
+			"		float3 p0 = r0 + inear * inc;\n" +
 			"\n" +
 			"		int n = (int)floor(fdim(ifar, inear) / zStep);\n" +
 //			"		if(x == 0 && y == 0) printf(\"n = %d\\n\", n);\n" +
