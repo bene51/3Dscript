@@ -6,7 +6,7 @@ public interface Keyword2 {
 
 	public String[] getAutocompletionDescriptions();
 
-	public int[] getKeyframeProperties();
+	public int[] getRenderingStateProperties();
 
 	public int length();
 
@@ -51,7 +51,7 @@ public interface Keyword2 {
 		}
 
 		@Override
-		public int[] getKeyframeProperties() {
+		public int[] getRenderingStateProperties() {
 			return null;
 		}
 	}
@@ -94,7 +94,7 @@ public interface Keyword2 {
 		}
 
 		@Override
-		public int[] getKeyframeProperties() {
+		public int[] getRenderingStateProperties() {
 			return null;
 		}
 	}

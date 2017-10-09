@@ -20,40 +20,40 @@ public class RenderingThread {
 
 	static class Event {
 
-		private ExtendedRenderingState keyframe;
+		private ExtendedRenderingState rs;
 		private int tgtW = -1;
 		private int tgtH = -1;
 		private int imaget = -1;
 		private boolean valid;
 
-		Event(ExtendedRenderingState keyframe) {
+		Event(ExtendedRenderingState rs) {
 			valid = true;
-			this.keyframe = keyframe.clone();
+			this.rs = rs.clone();
 		}
 	}
 
 	public RenderingThread(Renderer3DAdapter raycaster) {
 		this.raycaster = raycaster;
-		final ExtendedRenderingState keyframe = raycaster.getKeyframe();
-		this.event = new Event(keyframe);
-		out = new ImagePlus("3D Animation", raycaster.render(keyframe));
+		final ExtendedRenderingState rs = raycaster.getRenderingState();
+		this.event = new Event(rs);
+		out = new ImagePlus("3D Animation", raycaster.render(rs));
 		// TODO
 		Calibration cal = out.getCalibration();
 		cal.setUnit(raycaster.getImage().getCalibration().getUnit());
-		keyframe.getFwdTransform().adjustOutputCalibration(cal);
+		rs.getFwdTransform().adjustOutputCalibration(cal);
 		out.show();
 
 		thread = new Thread() {
 			@Override
 			public void run() {
-				loop(keyframe);
+				loop(rs);
 			}
 		};
 		thread.start();
 	}
 
-	public void loop(ExtendedRenderingState keyframe) {
-		Event e = new Event(keyframe);
+	public void loop(ExtendedRenderingState rs) {
+		Event e = new Event(rs);
 		while(!shutdown) {
 			poll(e);
 			render(e);
@@ -61,9 +61,9 @@ public class RenderingThread {
 		CudaRaycaster.close();
 	}
 
-	public void push(ExtendedRenderingState keyframe, int w, int h, int imaget) {
+	public void push(ExtendedRenderingState rs, int w, int h, int imaget) {
 		synchronized(lock) {
-			event.keyframe.setFrom(keyframe);
+			event.rs.setFrom(rs);
 			event.valid = true;
 			event.tgtW = w;
 			event.tgtH = h;
@@ -85,7 +85,7 @@ public class RenderingThread {
 			}
 		}
 		synchronized(lock) {
-			ret.keyframe.setFrom(event.keyframe);
+			ret.rs.setFrom(event.rs);
 			ret.tgtW = event.tgtW;
 			ret.tgtH = event.tgtH;
 			ret.imaget = event.imaget;
@@ -119,6 +119,6 @@ public class RenderingThread {
 			if(input.getT() != before)
 				raycaster.setImage(input);
 		}
-		out.setProcessor(raycaster.render(e.keyframe));
+		out.setProcessor(raycaster.render(e.rs));
 	}
 }

@@ -32,17 +32,17 @@ public class ExtendedKeywordFactory implements KeywordFactory {
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
-		private final int[] keyframeProperties;
+		private final int[] rsProperties;
 
-		private ChannelKeyword(String text, String[] autocompletionDesc, int... keyframeProperties) {
+		private ChannelKeyword(String text, String[] autocompletionDesc, int... rsProperties) {
 			this.keyword = text;
 			this.autocompletionDesc = autocompletionDesc;
-			this.keyframeProperties = keyframeProperties;
+			this.rsProperties = rsProperties;
 		}
 
 		@Override
-		public int[] getKeyframeProperties() {
-			return keyframeProperties;
+		public int[] getRenderingStateProperties() {
+			return rsProperties;
 		}
 
 		@Override
@@ -81,17 +81,17 @@ public class ExtendedKeywordFactory implements KeywordFactory {
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
-		private final int[] keyframeProperties;
+		private final int[] rsProperties;
 
-		private NonChannelKeyword(String text, String[] autocompletionDesc, int... keyframeProperties) {
+		private NonChannelKeyword(String text, String[] autocompletionDesc, int... rsProperties) {
 			this.keyword = text;
 			this.autocompletionDesc = autocompletionDesc;
-			this.keyframeProperties = keyframeProperties;
+			this.rsProperties = rsProperties;
 		}
 
 		@Override
-		public int[] getKeyframeProperties() {
-			return keyframeProperties;
+		public int[] getRenderingStateProperties() {
+			return rsProperties;
 		}
 
 		@Override

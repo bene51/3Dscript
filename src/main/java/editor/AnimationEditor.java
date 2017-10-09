@@ -721,10 +721,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		return false;
 	}
 
-	private RenderingState keyframeRecordStart = null;
+	private RenderingState rsRecordStart = null;
 
 	public void recordTransitionStart() {
-		keyframeRecordStart = renderer.getKeyframe().clone();
+		rsRecordStart = renderer.getRenderingState().clone();
 	}
 
 	public void recordTransitionEnd() {
@@ -735,10 +735,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		RenderingState keyframeRecordEnd = renderer.getKeyframe().clone();
+		RenderingState rsRecordEnd = renderer.getRenderingState().clone();
 
-		float[] t0 = keyframeRecordStart.getFwdTransform().calculateForwardTransformWithoutCalibration();
-		float[] t1 = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
+		float[] t0 = rsRecordStart.getFwdTransform().calculateForwardTransformWithoutCalibration();
+		float[] t1 = rsRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
 
 		System.out.println("t0 = \n" + Transform.toString(t0));
 
@@ -824,13 +824,13 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		tab.editorPane.setSelectionStart(xStart);
 		tab.editorPane.setSelectionEnd(xStart + 1);
 
-		keyframeRecordStart = null;
-		keyframeRecordEnd = null;
+		rsRecordStart = null;
+		rsRecordEnd = null;
 	}
 
 	public void handleCustomRecording(int i) {
 		RecordingItem ri = recordingProvider.get(i);
-		String text = ri.getRecording(renderer.getKeyframe());
+		String text = ri.getRecording(renderer.getRenderingState());
 		addRecording(text);
 	}
 
@@ -859,9 +859,9 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		RenderingState keyframeRecordEnd = renderer.getKeyframe().clone();
+		RenderingState rsRecordEnd = renderer.getRenderingState().clone();
 
-		float[] m = keyframeRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
+		float[] m = rsRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
 
 		// M = T * C^{-1} * S * R * C
 		// T * S * R = C * M * C^{-1}

@@ -23,7 +23,7 @@ public class ScaleAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustKeyframe(RenderingState current, List<RenderingState> previous) {}
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous) {}
 
 
 	private float evalOrInterpolate(int frame, NumberOrMacro n) {

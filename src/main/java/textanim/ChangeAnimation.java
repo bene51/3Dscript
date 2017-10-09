@@ -47,7 +47,7 @@ public class ChangeAnimation extends Animation {
 	 *              where vFrom is the value at fromFrame.
 	 */
 	@Override
-	public void adjustKeyframe(RenderingState current, List<RenderingState> previous) {
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous) {
 		int t = current.getFrame();
 		if(t < fromFrame || t > toFrame)
 			return;
@@ -57,7 +57,7 @@ public class ChangeAnimation extends Animation {
 
 			// if it's a macro, just set the value to the macro evaluation
 			if(vTo.isMacro()) {
-				setKeyframeProperty(current, timelineIdx, channel, vTo.evaluateMacro(t, fromFrame, toFrame));
+				setRenderingStateProperty(current, timelineIdx, channel, vTo.evaluateMacro(t, fromFrame, toFrame));
 				return;
 			}
 
@@ -66,27 +66,27 @@ public class ChangeAnimation extends Animation {
 			// otherwise, let's see if there exists a value at fromFrame; if not
 			// just use the same value as the target value, unless it's t = fromFrame
 			if(t == fromFrame)
-				valFrom = getKeyframeProperty(current, timelineIdx, channel);
+				valFrom = getRenderingStateProperty(current, timelineIdx, channel);
 			else {
 				RenderingState kfFrom = previous.get(fromFrame);
-				valFrom = getKeyframeProperty(kfFrom, timelineIdx, channel);
+				valFrom = getRenderingStateProperty(kfFrom, timelineIdx, channel);
 			}
 
 			// gives precedence to valTo
-			setKeyframeProperty(current, timelineIdx, channel, super.interpolate(current.getFrame(), valFrom, valTo));
+			setRenderingStateProperty(current, timelineIdx, channel, super.interpolate(current.getFrame(), valFrom, valTo));
 		}
 	}
 
-	private double getKeyframeProperty(RenderingState keyframe, int property, int channel) {
+	private double getRenderingStateProperty(RenderingState rs, int property, int channel) {
 		if(channel < 0)
-			return keyframe.getNonchannelProperty(property);
-		return keyframe.getChannelProperty(channel, property);
+			return rs.getNonchannelProperty(property);
+		return rs.getChannelProperty(channel, property);
 	}
 
-	private void setKeyframeProperty(RenderingState keyframe, int property, int channel, double v) {
+	private void setRenderingStateProperty(RenderingState rs, int property, int channel, double v) {
 		if(channel < 0)
-			keyframe.setNonchannelProperty(property, v);
+			rs.setNonchannelProperty(property, v);
 		else
-			keyframe.setChannelProperty(channel, property, v);
+			rs.setChannelProperty(channel, property, v);
 	}
 }

@@ -389,12 +389,12 @@ public class Interpreter {
 			channel = integer() - 1;
 			space(result, false);
 			Keyword2 cp = channelproperty(result, cursorpos);
-			timelineIdcs = cp.getKeyframeProperties();
+			timelineIdcs = cp.getRenderingStateProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 		else {
 			Keyword2 cp = nonchannelproperty(result, cursorpos);
-			timelineIdcs = cp.getKeyframeProperties();
+			timelineIdcs = cp.getRenderingStateProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 

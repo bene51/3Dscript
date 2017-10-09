@@ -3,19 +3,19 @@ package povray;
 import textanim.CombinedTransform;
 import textanim.RenderingState;
 
-public class PovrayKeyframe extends RenderingState {
+public class PovrayRenderingState extends RenderingState {
 
 	public static final int LENS_X  = 0;
 	public static final int LENS_Y  = 1;
 	public static final int LENS_Z  = 2;
 
-	public PovrayKeyframe(int frame, CombinedTransform fwdTransform) {
+	public PovrayRenderingState(int frame, CombinedTransform fwdTransform) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[3];
 		channelProperties = null;
 	}
 
-	public PovrayKeyframe(
+	public PovrayRenderingState(
 			int frame,
 			CombinedTransform fwdTransform,
 			float lensx, float lensy, float lensz) {
@@ -27,8 +27,8 @@ public class PovrayKeyframe extends RenderingState {
 	}
 
 	@Override
-	public PovrayKeyframe clone() {
-		PovrayKeyframe kf = new PovrayKeyframe(0, null);
+	public PovrayRenderingState clone() {
+		PovrayRenderingState kf = new PovrayRenderingState(0, null);
 		kf.setFrom(this);
 		return kf;
 	}

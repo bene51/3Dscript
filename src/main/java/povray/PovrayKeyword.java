@@ -4,24 +4,24 @@ import parser.Keyword2;
 
 public enum PovrayKeyword implements Keyword2 {
 
-	LENS_X("lens x", new String[] {"<x>"},               PovrayKeyframe.LENS_X),
-	LENS_Y("lens y", new String[] {"<y>"},               PovrayKeyframe.LENS_Y),
-	LENS_Z("lens z", new String[] {"<z>"},               PovrayKeyframe.LENS_Z),
-	LENS  ("lens",   new String[] {"<x>", "<y>", "<z>"}, PovrayKeyframe.LENS_X, PovrayKeyframe.LENS_Y, PovrayKeyframe.LENS_Z);
+	LENS_X("lens x", new String[] {"<x>"},               PovrayRenderingState.LENS_X),
+	LENS_Y("lens y", new String[] {"<y>"},               PovrayRenderingState.LENS_Y),
+	LENS_Z("lens z", new String[] {"<z>"},               PovrayRenderingState.LENS_Z),
+	LENS  ("lens",   new String[] {"<x>", "<y>", "<z>"}, PovrayRenderingState.LENS_X, PovrayRenderingState.LENS_Y, PovrayRenderingState.LENS_Z);
 
 	private final String keyword;
 	private final String[] autocompletionDesc;
-	private final int[] keyframeProperties;
+	private final int[] rsProperties;
 
-	private PovrayKeyword(String text, String[] autocompletionDesc, int... keyframeProperties) {
+	private PovrayKeyword(String text, String[] autocompletionDesc, int... rsProperties) {
 		this.keyword = text;
 		this.autocompletionDesc = autocompletionDesc;
-		this.keyframeProperties = keyframeProperties;
+		this.rsProperties = rsProperties;
 	}
 
 	@Override
-	public int[] getKeyframeProperties() {
-		return keyframeProperties;
+	public int[] getRenderingStateProperties() {
+		return rsProperties;
 	}
 
 	@Override

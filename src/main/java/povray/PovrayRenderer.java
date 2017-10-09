@@ -11,15 +11,13 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import parser.Keyword2;
 import textanim.CombinedTransform;
-import textanim.RenderingState;
 import textanim.KeywordFactory;
 import textanim.Renderer3D;
+import textanim.RenderingState;
 
 public class PovrayRenderer implements Renderer3D {
 
-
-
-	private PovrayKeyframe keyframe;
+	private PovrayRenderingState rs;
 	private ImagePlus input;
 	private int tgtW;
 	private int tgtH;
@@ -47,7 +45,7 @@ public class PovrayRenderer implements Renderer3D {
 				input.getNSlices() * pdIn[2] / 2};
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
-		this.keyframe = new PovrayKeyframe(0, transformation);
+		this.rs = new PovrayRenderingState(0, transformation);
 	}
 
 	@Override
@@ -66,8 +64,8 @@ public class PovrayRenderer implements Renderer3D {
 	}
 
 	@Override
-	public RenderingState getKeyframe() {
-		return keyframe;
+	public RenderingState getRenderingState() {
+		return rs;
 	}
 
 	@Override
@@ -95,9 +93,9 @@ public class PovrayRenderer implements Renderer3D {
 		out = new PrintStream(povrayFile);
 		out.println(PovrayTemplate.text);
 		out.println(PovrayTemplate.getMagnifierAt(
-				(float)kf.getNonchannelProperty(PovrayKeyframe.LENS_X),
-				(float)kf.getNonchannelProperty(PovrayKeyframe.LENS_Y),
-				(float)kf.getNonchannelProperty(PovrayKeyframe.LENS_Z)));
+				(float)kf.getNonchannelProperty(PovrayRenderingState.LENS_X),
+				(float)kf.getNonchannelProperty(PovrayRenderingState.LENS_Y),
+				(float)kf.getNonchannelProperty(PovrayRenderingState.LENS_Z)));
 		out.println(createPovrayVolume(kf.getFwdTransform()));
 		out.close();
 
@@ -265,7 +263,7 @@ public class PovrayRenderer implements Renderer3D {
 	public static void main(String[] args) throws Exception {
 		ImagePlus imp = IJ.openImage("D:\\povray\\transparencytest\\original\\DD_lyse_1.subtracted.small.rgb.tif");
 		PovrayRenderer pr = new PovrayRenderer(imp, new File("D:\\povray\\transparencytest\\original"), 640, 480);
-		pr.doRender(pr.getKeyframe());
+		pr.doRender(pr.getRenderingState());
 	}
 
 }

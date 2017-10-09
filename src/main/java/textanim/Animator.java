@@ -52,7 +52,7 @@ public class Animator {
 	private ImagePlus dorender(int from, int to, Listener listener) {
 		isExecuting = true;
 		stopRendering = false;
-		List<RenderingState> frames = createKeyframes(from, to);
+		List<RenderingState> frames = createRenderingStates(from, to);
 		ImageStack stack = null;
 		ImagePlus ret = null;
 		for(RenderingState kf : frames) {
@@ -90,15 +90,15 @@ public class Animator {
 		animations.add(a);
 	}
 
-	public List<RenderingState> createKeyframes(int from, int to) {
-		List<RenderingState> keyframes = new ArrayList<RenderingState>();
-		RenderingState previous = renderer.getKeyframe();
+	public List<RenderingState> createRenderingStates(int from, int to) {
+		List<RenderingState> renderingStates = new ArrayList<RenderingState>();
+		RenderingState previous = renderer.getRenderingState();
 		for(int t = from; t <= to; t++) {
 			RenderingState kf = previous.clone();
 			kf.setFrame(t);
 			float[] fwd = Transform.fromIdentity(null);
 			for(Animation a : animations) {
-				a.adjustKeyframe(kf, keyframes);
+				a.adjustRenderingState(kf, renderingStates);
 
 				if(a instanceof TransformationAnimation) {
 					float[] x = new float[12];
@@ -107,9 +107,9 @@ public class Animator {
 				}
 			}
 			kf.getFwdTransform().setTransformation(fwd);
-			keyframes.add(kf);
+			renderingStates.add(kf);
 			previous = kf;
 		}
-		return keyframes;
+		return renderingStates;
 	}
 }

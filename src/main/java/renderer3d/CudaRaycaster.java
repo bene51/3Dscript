@@ -169,7 +169,7 @@ public class CudaRaycaster {
 		this.bg = c;
 	}
 
-	// TODO take an ExtendedKeyframe as an argument
+	// TODO take a RenderingState object as an argument
 	public ImageProcessor project(
 			float[] fwdTransform,
 			float[] invTransform,

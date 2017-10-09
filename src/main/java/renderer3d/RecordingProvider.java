@@ -21,8 +21,8 @@ public class RecordingProvider implements IRecordingProvider {
 			}
 
 			@Override
-			public String getRecording(RenderingState keyframe) {
-				ExtendedRenderingState kf = (ExtendedRenderingState)keyframe;
+			public String getRecording(RenderingState rs) {
+				ExtendedRenderingState kf = (ExtendedRenderingState)rs;
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				for(int c = 0; c < kf.getNChannels(); c++) {
 					text.append("- change channel ")
@@ -62,8 +62,8 @@ public class RecordingProvider implements IRecordingProvider {
 			}
 
 			@Override
-			public String getRecording(RenderingState keyframe) {
-				ExtendedRenderingState kf = (ExtendedRenderingState)keyframe;
+			public String getRecording(RenderingState rs) {
+				ExtendedRenderingState kf = (ExtendedRenderingState)rs;
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				text.append("- change ")
 					.append(ExtendedKeywordFactory.NonChannelKeyword.BOUNDING_BOX_X.getKeyword())
