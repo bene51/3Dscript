@@ -13,7 +13,7 @@ import textanim.IKeywordFactory;
 import textanim.IRenderer3D;
 import textanim.RenderingState;
 
-public class Renderer3DAdapter extends CudaRaycaster implements IRenderer3D  {
+public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 
 	private final ExtendedRenderingState rs;
 
@@ -22,7 +22,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements IRenderer3D  {
 
 	private final IKeywordFactory kwFactory = new ExtendedKeywordFactory();
 
-	public Renderer3DAdapter(ImagePlus image, int wOut, int hOut, float zStep) {
+	public Renderer3D(ImagePlus image, int wOut, int hOut, float zStep) {
 		super(image, wOut, hOut, zStep);
 
 		LUT[] luts = image.isComposite() ?

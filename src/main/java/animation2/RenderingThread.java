@@ -4,7 +4,7 @@ import ij.ImagePlus;
 import ij.measure.Calibration;
 import renderer3d.CudaRaycaster;
 import renderer3d.ExtendedRenderingState;
-import renderer3d.Renderer3DAdapter;
+import renderer3d.Renderer3D;
 
 public class RenderingThread {
 
@@ -12,7 +12,7 @@ public class RenderingThread {
 	private final Object lock = new Object();
 	private boolean shutdown = false;
 
-	private Renderer3DAdapter raycaster;
+	private Renderer3D raycaster;
 
 	final ImagePlus out;
 
@@ -32,7 +32,7 @@ public class RenderingThread {
 		}
 	}
 
-	public RenderingThread(Renderer3DAdapter raycaster) {
+	public RenderingThread(Renderer3D raycaster) {
 		this.raycaster = raycaster;
 		final ExtendedRenderingState rs = raycaster.getRenderingState();
 		this.event = new Event(rs);

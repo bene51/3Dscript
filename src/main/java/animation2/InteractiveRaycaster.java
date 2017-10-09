@@ -28,7 +28,7 @@ import ij.process.ImageStatistics;
 import renderer3d.ExtendedRenderingState;
 import renderer3d.OpenCLProgram;
 import renderer3d.RecordingProvider;
-import renderer3d.Renderer3DAdapter;
+import renderer3d.Renderer3D;
 import renderer3d.RenderingAlgorithm;
 import renderer3d.Transform;
 import textanim.CombinedTransform;
@@ -59,7 +59,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private OutputPanel outputPanel;
 	private AnimationPanel animationPanel;
 
-	private Renderer3DAdapter renderer;
+	private Renderer3D renderer;
 	private RenderingThread worker;
 
 	public InteractiveRaycaster() {
@@ -77,7 +77,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		calculateChannelMinAndMax();
 
 		final float zStep = 1;
-		renderer = new Renderer3DAdapter(image, image.getWidth(), image.getHeight(), zStep);
+		renderer = new Renderer3D(image, image.getWidth(), image.getHeight(), zStep);
 		ExtendedRenderingState rs = renderer.getRenderingState();
 		worker = new RenderingThread(renderer);
 
