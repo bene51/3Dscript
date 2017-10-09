@@ -36,6 +36,10 @@ public class CombinedTransform {
 		Transform.invert(toTransform);
 	}
 
+	public float[] getOutputSpacing() {
+		return pdOut;
+	}
+
 	@Override
 	public CombinedTransform clone() {
 		float[] pdIn   = new float[3];

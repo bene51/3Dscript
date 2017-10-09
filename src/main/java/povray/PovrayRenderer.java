@@ -147,10 +147,6 @@ public class PovrayRenderer implements Renderer3D {
 	public void setBackground(ColorProcessor bg) {
 	}
 
-	@Override
-	public void setZStep(double zStep) {
-	}
-
 	private String createPovrayVolume(CombinedTransform transform) {
 		int w = input.getWidth();
 		int h = input.getHeight();

@@ -163,11 +163,6 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 
 	}
 
-	@Override
-	public void setZStep(double zStep) {
-		super.setTargetZStep((float)zStep);
-	}
-
 	public int getNChannels() {
 		return image.getNChannels();
 	}

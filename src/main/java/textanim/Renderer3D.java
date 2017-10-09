@@ -27,6 +27,4 @@ public interface Renderer3D {
 	public void setBackground(Color bg);
 
 	public void setBackground(ColorProcessor bg);
-
-	public void setZStep(double zStep);
 }

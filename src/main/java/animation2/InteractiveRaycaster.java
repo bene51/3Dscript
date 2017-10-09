@@ -76,7 +76,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		calculateChannelMinAndMax();
 
-		final float zStep = 2;
+		final float zStep = 1;
 		renderer = new Renderer3DAdapter(image, image.getWidth(), image.getHeight(), zStep);
 		ExtendedKeyframe keyframe = renderer.getKeyframe();
 		worker = new RenderingThread(renderer);
@@ -348,14 +348,17 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 	public void setOutputSize(int tgtW, int tgtH) {
 		renderer.setTargetSize(tgtW, tgtH);
-
 		Calibration cal = worker.out.getCalibration();
 		renderer.getKeyframe().getFwdTransform().adjustOutputCalibration(cal);
 		worker.push(renderer.getKeyframe(), tgtW, tgtH, -1);
 	}
 
 	public void setZStep(float zStep) {
-		renderer.setTargetZStep(zStep);
+		float pdOut = (float)image.getCalibration().pixelDepth * zStep;
+		CombinedTransform t = renderer.getKeyframe().getFwdTransform();
+		float[] pd = t.getOutputSpacing();
+		pd[2] = pdOut;
+		t.setOutputSpacing(pd);
 		worker.push(renderer.getKeyframe(), -1, -1, -1);
 	}
 
