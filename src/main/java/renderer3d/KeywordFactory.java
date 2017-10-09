@@ -1,21 +1,21 @@
 package renderer3d;
 
-import parser.Keyword2;
+import parser.Keyword;
 import textanim.IKeywordFactory;
 
 public class KeywordFactory implements IKeywordFactory {
 
 	@Override
-	public Keyword2[] getNonChannelKeywords() {
+	public Keyword[] getNonChannelKeywords() {
 		return NonChannelKeyword.values();
 	}
 
 	@Override
-	public Keyword2[] getChannelKeywords() {
+	public Keyword[] getChannelKeywords() {
 		return ChannelKeyword.values();
 	}
 
-	public static enum ChannelKeyword implements Keyword2 {
+	public static enum ChannelKeyword implements Keyword {
 
 		COLOR_MIN("min color",     new String[] {"<min>"},    ExtendedRenderingState.COLOR_MIN),
 		COLOR_MAX("max color",     new String[] {"<max>"},    ExtendedRenderingState.COLOR_MAX),
@@ -61,7 +61,7 @@ public class KeywordFactory implements IKeywordFactory {
 		}
 	}
 
-	public static enum NonChannelKeyword implements Keyword2 {
+	public static enum NonChannelKeyword implements Keyword {
 
 		BOUNDING_BOX_X_MIN("bounding box min x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN),
 		BOUNDING_BOX_Y_MIN("bounding box min y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN),

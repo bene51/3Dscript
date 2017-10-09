@@ -49,7 +49,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.io.OpenDialog;
-import parser.Keyword2.GeneralKeyword;
+import parser.Keyword.GeneralKeyword;
 import parser.ParsingResult;
 import parser.Preprocessor;
 import renderer3d.Transform;

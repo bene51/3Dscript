@@ -6,8 +6,8 @@ import parser.Autocompletion.RealAutocompletion;
 import parser.Autocompletion.StringAutocompletion;
 import parser.Autocompletion.TripleAutocompletion;
 import parser.Autocompletion.TupleAutocompletion;
-import parser.Keyword2.GeneralKeyword;
-import parser.Keyword2.Transition;
+import parser.Keyword.GeneralKeyword;
+import parser.Keyword.Transition;
 import textanim.Animation;
 import textanim.ChangeAnimation;
 import textanim.IKeywordFactory;
@@ -72,7 +72,7 @@ public class Interpreter {
 		return lexer.getNextToken(TokenType.COMMA, optional);
 	}
 
-	Token keyword(Keyword2 kw, boolean optional) {
+	Token keyword(Keyword kw, boolean optional) {
 		skipSpace();
 		return lexer.getNextToken(kw, optional);
 	}
@@ -329,13 +329,13 @@ public class Interpreter {
 	/**
 	 * channelproperty :: (color min | color max | color gamma | alpha min | alpha max | alpha gamma | weight | color | alpha)
 	 */
-	Keyword2 channelproperty(ParsingResult result, int cursorpos) {
-		Keyword2[] channelKeywords = kwFactory.getChannelKeywords();
+	Keyword channelproperty(ParsingResult result, int cursorpos) {
+		Keyword[] channelKeywords = kwFactory.getChannelKeywords();
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
 				lexer.getAutocompletionList(cursorpos, kwFactory.getChannelKeywords())));
 
-		for(Keyword2 cp : channelKeywords) {
+		for(Keyword cp : channelKeywords) {
 			if(keyword(cp, true) != null) {
 				return cp;
 			}
@@ -348,9 +348,9 @@ public class Interpreter {
 	 *                        bounding box min z | bounding box max z | front clipping | back clipping |
 	 *                        bounding box x | bounding box y | bounding box z)
 	 */
-	Keyword2 nonchannelproperty(ParsingResult result, int cursorpos) {
-		Keyword2[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
-		for(Keyword2 cp : nonChannelKeywords) {
+	Keyword nonchannelproperty(ParsingResult result, int cursorpos) {
+		Keyword[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
+		for(Keyword cp : nonChannelKeywords) {
 			if(keyword(cp, true) != null) {
 				return cp;
 			}
@@ -370,11 +370,11 @@ public class Interpreter {
 
 		space(result, false);
 
-		Keyword2[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
-		Keyword2[] choice = new Keyword2[nonChannelKeywords.length + 1];
+		Keyword[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
+		Keyword[] choice = new Keyword[nonChannelKeywords.length + 1];
 		int i = 0;
 		choice[i++] = GeneralKeyword.CHANNEL;
-		for(Keyword2 rp : nonChannelKeywords)
+		for(Keyword rp : nonChannelKeywords)
 			choice[i++] = rp;
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
@@ -388,12 +388,12 @@ public class Interpreter {
 			result.setAutocompletion(new IntegerAutocompletion("<channel>"));
 			channel = integer() - 1;
 			space(result, false);
-			Keyword2 cp = channelproperty(result, cursorpos);
+			Keyword cp = channelproperty(result, cursorpos);
 			timelineIdcs = cp.getRenderingStateProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}
 		else {
-			Keyword2 cp = nonchannelproperty(result, cursorpos);
+			Keyword cp = nonchannelproperty(result, cursorpos);
 			timelineIdcs = cp.getRenderingStateProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 		}

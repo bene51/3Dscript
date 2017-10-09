@@ -1,6 +1,6 @@
 package parser;
 
-public interface Keyword2 {
+public interface Keyword {
 
 	public String getKeyword();
 
@@ -11,7 +11,7 @@ public interface Keyword2 {
 	public int length();
 
 
-	public enum GeneralKeyword implements Keyword2 {
+	public enum GeneralKeyword implements Keyword {
 		FROM_FRAME("From frame"),
 		TO_FRAME("to frame"),
 		AT_FRAME("At frame"),
@@ -56,7 +56,7 @@ public interface Keyword2 {
 		}
 	}
 
-	public static enum Transition implements Keyword2 {
+	public static enum Transition implements Keyword {
 
 		NONE("(none)",             new float[] {0, 0, 1, 1}),
 		LINEAR("linear",           new float[] {0, 0, 1, 1}),

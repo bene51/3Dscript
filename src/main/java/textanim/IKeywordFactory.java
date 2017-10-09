@@ -1,10 +1,10 @@
 package textanim;
 
-import parser.Keyword2;
+import parser.Keyword;
 
 public interface IKeywordFactory {
 
-	public Keyword2[] getChannelKeywords();
+	public Keyword[] getChannelKeywords();
 
-	public Keyword2[] getNonChannelKeywords();
+	public Keyword[] getNonChannelKeywords();
 }

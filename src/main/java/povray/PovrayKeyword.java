@@ -1,8 +1,8 @@
 package povray;
 
-import parser.Keyword2;
+import parser.Keyword;
 
-public enum PovrayKeyword implements Keyword2 {
+public enum PovrayKeyword implements Keyword {
 
 	LENS_X("lens x", new String[] {"<x>"},               PovrayRenderingState.LENS_X),
 	LENS_Y("lens y", new String[] {"<y>"},               PovrayRenderingState.LENS_Y),

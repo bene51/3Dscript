@@ -12,7 +12,7 @@ public class Lexer {
 		this.index = 0;
 	}
 
-	public Token getNextToken(Keyword2 keyword, boolean optional) {
+	public Token getNextToken(Keyword keyword, boolean optional) {
 		if(input.regionMatches(true, index, keyword.getKeyword(), 0, keyword.length())) {
 			int pos = index;
 			index += keyword.length();
@@ -124,11 +124,11 @@ public class Lexer {
 	 * @param cursorpos
 	 * @return
 	 */
-	public String[] getAutocompletionList(int cursorpos, Keyword2...keywords) {
+	public String[] getAutocompletionList(int cursorpos, Keyword...keywords) {
 		String prefix = input.substring(index, cursorpos);
 		ArrayList<String> list = new ArrayList<String>();
 		System.out.println("*" + prefix + "*");
-		for(Keyword2 kw : keywords)
+		for(Keyword kw : keywords)
 			if(kw.getKeyword().regionMatches(true, 0, prefix, 0, prefix.length()))
 				list.add(kw.getKeyword());
 
@@ -150,7 +150,7 @@ public class Lexer {
 		return ret;
 	}
 
-	public String getAutocompletionString(int cursorpos, Keyword2 kw) {
+	public String getAutocompletionString(int cursorpos, Keyword kw) {
 		String prefix = input.substring(index, cursorpos);
 		if(kw.getKeyword().regionMatches(true, 0, prefix, 0, prefix.length()))
 			return kw.getKeyword();

@@ -9,7 +9,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import parser.Keyword2;
+import parser.Keyword;
 import textanim.CombinedTransform;
 import textanim.IKeywordFactory;
 import textanim.IRenderer3D;
@@ -52,12 +52,12 @@ public class PovrayRenderer implements IRenderer3D {
 	public IKeywordFactory getKeywordFactory() {
 		return new IKeywordFactory() {
 			@Override
-			public Keyword2[] getChannelKeywords() {
-				return new Keyword2[] {};
+			public Keyword[] getChannelKeywords() {
+				return new Keyword[] {};
 			}
 
 			@Override
-			public Keyword2[] getNonChannelKeywords() {
+			public Keyword[] getNonChannelKeywords() {
 				return PovrayKeyword.values();
 			}
 		};
