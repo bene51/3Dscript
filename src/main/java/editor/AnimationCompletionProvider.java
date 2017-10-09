@@ -23,13 +23,13 @@ import parser.Autocompletion.TupleAutocompletion;
 import parser.Interpreter;
 import parser.ParsingResult;
 import parser.Preprocessor;
-import textanim.KeywordFactory;
+import textanim.IKeywordFactory;
 
 public class AnimationCompletionProvider extends CompletionProviderBase {
 
-	private final KeywordFactory kwFactory;
+	private final IKeywordFactory kwFactory;
 
-	public AnimationCompletionProvider(KeywordFactory kwFactory) {
+	public AnimationCompletionProvider(IKeywordFactory kwFactory) {
 		this.kwFactory = kwFactory;
 	}
 

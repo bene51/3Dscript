@@ -8,7 +8,7 @@ import ij.process.ImageProcessor;
 
 public interface Renderer3D {
 
-	public KeywordFactory getKeywordFactory();
+	public IKeywordFactory getKeywordFactory();
 
 	public RenderingState getRenderingState();
 

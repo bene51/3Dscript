@@ -15,7 +15,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
-import textanim.KeywordFactory;
+import textanim.IKeywordFactory;
 
 public class TextEditorTab extends JSplitPane {
 
@@ -27,7 +27,7 @@ public class TextEditorTab extends JSplitPane {
 
 	private final AnimationEditor textEditor;
 
-	public TextEditorTab(final AnimationEditor textEditor, final KeywordFactory kwFactory) {
+	public TextEditorTab(final AnimationEditor textEditor, final IKeywordFactory kwFactory) {
 		super(JSplitPane.VERTICAL_SPLIT);
 		super.setResizeWeight(350.0 / 430.0);
 

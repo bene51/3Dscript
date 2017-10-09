@@ -49,7 +49,7 @@ import parser.Interpreter;
 import parser.ParsingResult;
 import parser.Preprocessor;
 import textanim.Animation;
-import textanim.KeywordFactory;
+import textanim.IKeywordFactory;
 
 
 public class EditorPane extends RSyntaxTextArea implements DocumentListener {
@@ -64,12 +64,12 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 	private boolean undoInProgress;
 	private boolean redoInProgress;
 
-	private final KeywordFactory kwFactory;
+	private final IKeywordFactory kwFactory;
 
 	/**
 	 * Constructor.
 	 */
-	public EditorPane(final KeywordFactory kwFactory) {
+	public EditorPane(final IKeywordFactory kwFactory) {
 		this.kwFactory = kwFactory;
 		setLineWrap(false);
 		setTabSize(8);

@@ -9,7 +9,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
 import textanim.CombinedTransform;
-import textanim.KeywordFactory;
+import textanim.IKeywordFactory;
 import textanim.Renderer3D;
 import textanim.RenderingState;
 
@@ -20,7 +20,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	private float near;
 	private float far;
 
-	private final KeywordFactory kwFactory = new ExtendedKeywordFactory();
+	private final IKeywordFactory kwFactory = new ExtendedKeywordFactory();
 
 	public Renderer3DAdapter(ImagePlus image, int wOut, int hOut, float zStep) {
 		super(image, wOut, hOut, zStep);
@@ -87,7 +87,7 @@ public class Renderer3DAdapter extends CudaRaycaster implements Renderer3D  {
 	}
 
 	@Override
-	public KeywordFactory getKeywordFactory() {
+	public IKeywordFactory getKeywordFactory() {
 		return kwFactory;
 	}
 

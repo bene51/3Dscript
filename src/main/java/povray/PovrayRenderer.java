@@ -11,7 +11,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import parser.Keyword2;
 import textanim.CombinedTransform;
-import textanim.KeywordFactory;
+import textanim.IKeywordFactory;
 import textanim.Renderer3D;
 import textanim.RenderingState;
 
@@ -49,8 +49,8 @@ public class PovrayRenderer implements Renderer3D {
 	}
 
 	@Override
-	public KeywordFactory getKeywordFactory() {
-		return new KeywordFactory() {
+	public IKeywordFactory getKeywordFactory() {
+		return new IKeywordFactory() {
 			@Override
 			public Keyword2[] getChannelKeywords() {
 				return new Keyword2[] {};

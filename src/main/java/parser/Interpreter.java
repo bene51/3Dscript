@@ -10,22 +10,22 @@ import parser.Keyword2.GeneralKeyword;
 import parser.Keyword2.Transition;
 import textanim.Animation;
 import textanim.ChangeAnimation;
-import textanim.KeywordFactory;
+import textanim.IKeywordFactory;
 import textanim.RotationAnimation;
 import textanim.ScaleAnimation;
 import textanim.TranslationAnimation;
 
 public class Interpreter {
 
-	private final KeywordFactory kwFactory;
+	private final IKeywordFactory kwFactory;
 	private final Lexer lexer;
 	private float[] center;
 
-	private Interpreter(KeywordFactory kwFactory, String text, float[] center) {
+	private Interpreter(IKeywordFactory kwFactory, String text, float[] center) {
 		this(kwFactory, new Lexer(text), center);
 	}
 
-	private Interpreter(KeywordFactory kwFactory, Lexer lexer, float[] center) {
+	private Interpreter(IKeywordFactory kwFactory, Lexer lexer, float[] center) {
 		this.kwFactory = kwFactory;
 		this.lexer = lexer;
 		this.center = center;
@@ -521,12 +521,12 @@ public class Interpreter {
 
 	}
 
-	public static void parse(KeywordFactory kwFactory, String line, int length, float[] center, ParsingResult result) {
+	public static void parse(IKeywordFactory kwFactory, String line, int length, float[] center, ParsingResult result) {
 		Interpreter i = new Interpreter(kwFactory, line, center);
 		i.line(result, length);
 	}
 
-	public static void parse(KeywordFactory kwFactory, String line, float[] center, ParsingResult result) {
+	public static void parse(IKeywordFactory kwFactory, String line, float[] center, ParsingResult result) {
 		parse(kwFactory, line, line.length(), center, result);
 	}
 
