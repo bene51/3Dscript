@@ -17,15 +17,15 @@ public class KeywordFactory implements IKeywordFactory {
 
 	public static enum ChannelKeyword implements Keyword {
 
-		COLOR_MIN("min color",     new String[] {"<min>"},    ExtendedRenderingState.COLOR_MIN),
-		COLOR_MAX("max color",     new String[] {"<max>"},    ExtendedRenderingState.COLOR_MAX),
-		COLOR_GAMMA("color gamma", new String[] {"<gamma>"},  ExtendedRenderingState.COLOR_GAMMA),
+		INTENSITY_MIN("min intensity",     new String[] {"<min>"},    ExtendedRenderingState.INTENSITY_MIN),
+		INTENSITY_MAX("max intensity",     new String[] {"<max>"},    ExtendedRenderingState.INTENSITY_MAX),
+		INTENSITY_GAMMA("intensity gamma", new String[] {"<gamma>"},  ExtendedRenderingState.INTENSITY_GAMMA),
 
 		ALPHA_MIN("min alpha",     new String[] {"<min>"},    ExtendedRenderingState.ALPHA_MIN),
 		ALPHA_MAX("max alpha",     new String[] {"<max>"},    ExtendedRenderingState.ALPHA_MAX),
 		ALPHA_GAMMA("alpha gamma", new String[] {"<gamma>"},  ExtendedRenderingState.ALPHA_GAMMA),
 
-		COLOR("color",             new String[] {"<min>", "<max>", "<gamma>"},  ExtendedRenderingState.COLOR_MIN, ExtendedRenderingState.COLOR_MAX, ExtendedRenderingState.COLOR_GAMMA),
+		INTENSITY("intensity",     new String[] {"<min>", "<max>", "<gamma>"},  ExtendedRenderingState.INTENSITY_MIN, ExtendedRenderingState.INTENSITY_MAX, ExtendedRenderingState.INTENSITY_GAMMA),
 		ALPHA("alpha",             new String[] {"<min>", "<max>", "<gamma>"},  ExtendedRenderingState.ALPHA_MIN, ExtendedRenderingState.ALPHA_MAX, ExtendedRenderingState.ALPHA_GAMMA),
 
 		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT);

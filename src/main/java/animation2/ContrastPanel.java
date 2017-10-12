@@ -103,7 +103,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		gammaATF.addListener(this);
 		gammaATF.addNumberFieldFocusListener(this);
 
-		gammaCTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.COLOR_GAMMA], 1));
+		gammaCTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.INTENSITY_GAMMA], 1));
 		gammaATF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.ALPHA_GAMMA], 1));
 
 		this.slider = new DoubleSliderCanvas(histogram[channel], min[channel], max[channel], r[channel], this);
@@ -287,7 +287,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	public void setChannel(int c) {
 		this.channel = c;
 		gammaATF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.ALPHA_GAMMA], 1));
-		gammaCTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.COLOR_GAMMA], 1));
+		gammaCTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.INTENSITY_GAMMA], 1));
 		slider.set(histogram[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		slider.repaint();
@@ -332,9 +332,9 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	@Override
 	public void valueChanged(double v) {
 		try {
-			slider.renderingSettings[ExtendedRenderingState.COLOR_MIN]   = (float)Double.parseDouble(minCTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.COLOR_MAX]   = (float)Double.parseDouble(maxCTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.COLOR_GAMMA] = (float)Double.parseDouble(gammaCTF.getText());
+			slider.renderingSettings[ExtendedRenderingState.INTENSITY_MIN]   = (float)Double.parseDouble(minCTF.getText());
+			slider.renderingSettings[ExtendedRenderingState.INTENSITY_MAX]   = (float)Double.parseDouble(maxCTF.getText());
+			slider.renderingSettings[ExtendedRenderingState.INTENSITY_GAMMA] = (float)Double.parseDouble(gammaCTF.getText());
 			slider.renderingSettings[ExtendedRenderingState.ALPHA_MIN]   = (float)Double.parseDouble(minATF.getText());
 			slider.renderingSettings[ExtendedRenderingState.ALPHA_MAX]   = (float)Double.parseDouble(maxATF.getText());
 			slider.renderingSettings[ExtendedRenderingState.ALPHA_GAMMA] = (float)Double.parseDouble(gammaATF.getText());
@@ -345,8 +345,8 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	}
 
 	private void updateTextfieldsFromSliders() {
-		minCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.COLOR_MIN], 1));
-		maxCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.COLOR_MAX], 1));
+		minCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.INTENSITY_MIN], 1));
+		maxCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.INTENSITY_MAX], 1));
 		minATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.ALPHA_MIN], 1));
 		maxATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.ALPHA_MAX], 1));
 		fireRenderingSettingsChanged();
@@ -440,17 +440,17 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 					}
 					break;
 				case DRAGGING_COLOR_LEFT:
-					tmp = (float)Math.max((float)min, Math.min(renderingSettings[ExtendedRenderingState.COLOR_MAX], newx));
-					if(tmp != renderingSettings[ExtendedRenderingState.COLOR_MIN]) {
-						renderingSettings[ExtendedRenderingState.COLOR_MIN] = tmp;
+					tmp = (float)Math.max((float)min, Math.min(renderingSettings[ExtendedRenderingState.INTENSITY_MAX], newx));
+					if(tmp != renderingSettings[ExtendedRenderingState.INTENSITY_MIN]) {
+						renderingSettings[ExtendedRenderingState.INTENSITY_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
 					}
 					break;
 				case DRAGGING_COLOR_RIGHT:
-					tmp = (float)Math.min((float)max, Math.max(renderingSettings[ExtendedRenderingState.COLOR_MIN], newx - 1));
-					if(tmp != renderingSettings[ExtendedRenderingState.COLOR_MAX]) {
-						renderingSettings[ExtendedRenderingState.COLOR_MAX] = tmp;
+					tmp = (float)Math.min((float)max, Math.max(renderingSettings[ExtendedRenderingState.INTENSITY_MIN], newx - 1));
+					if(tmp != renderingSettings[ExtendedRenderingState.INTENSITY_MAX]) {
+						renderingSettings[ExtendedRenderingState.INTENSITY_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
 					}
@@ -519,9 +519,9 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				g.drawLine(1 + bx, by, 1 + bx, by + bh);
 			}
 
-			int cmin   = (int)renderingSettings[ExtendedRenderingState.COLOR_MIN];
-			int cmax   = (int)renderingSettings[ExtendedRenderingState.COLOR_MAX];
-			int cgamma = (int)renderingSettings[ExtendedRenderingState.COLOR_GAMMA];
+			int cmin   = (int)renderingSettings[ExtendedRenderingState.INTENSITY_MIN];
+			int cmax   = (int)renderingSettings[ExtendedRenderingState.INTENSITY_MAX];
+			int cgamma = (int)renderingSettings[ExtendedRenderingState.INTENSITY_GAMMA];
 			int amin   = (int)renderingSettings[ExtendedRenderingState.ALPHA_MIN];
 			int amax   = (int)renderingSettings[ExtendedRenderingState.ALPHA_MAX];
 			int agamma = (int)renderingSettings[ExtendedRenderingState.ALPHA_GAMMA];

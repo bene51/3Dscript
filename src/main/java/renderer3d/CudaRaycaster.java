@@ -180,9 +180,9 @@ public class CudaRaycaster {
 		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
 			channelSettings[c] = new float[] {
-					(float)(channelProperties[c][ExtendedRenderingState.COLOR_MIN]),
-					(float)(channelProperties[c][ExtendedRenderingState.COLOR_MAX]),
-					(float)(channelProperties[c][ExtendedRenderingState.COLOR_GAMMA]),
+					(float)(channelProperties[c][ExtendedRenderingState.INTENSITY_MIN]),
+					(float)(channelProperties[c][ExtendedRenderingState.INTENSITY_MAX]),
+					(float)(channelProperties[c][ExtendedRenderingState.INTENSITY_GAMMA]),
 					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_MIN]),
 					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_MAX]),
 					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_GAMMA]),

@@ -16,9 +16,9 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int NEAR              = 6;
 	public static final int FAR               = 7;
 
-	public static final int COLOR_MIN   = 0;
-	public static final int COLOR_MAX   = 1;
-	public static final int COLOR_GAMMA = 2;
+	public static final int INTENSITY_MIN   = 0;
+	public static final int INTENSITY_MAX   = 1;
+	public static final int INTENSITY_GAMMA = 2;
 	public static final int ALPHA_MIN   = 3;
 	public static final int ALPHA_MAX   = 4;
 	public static final int ALPHA_GAMMA = 5;
@@ -53,9 +53,9 @@ public class ExtendedRenderingState extends RenderingState {
 
 		for(int c = 0; c < renderingSettings.length; c++) {
 			Color cC = channelColors[c];
-			channelProperties[c][COLOR_MIN]   = renderingSettings[c].colorMin;
-			channelProperties[c][COLOR_MAX]   = renderingSettings[c].colorMax;
-			channelProperties[c][COLOR_GAMMA] = renderingSettings[c].colorGamma;
+			channelProperties[c][INTENSITY_MIN]   = renderingSettings[c].colorMin;
+			channelProperties[c][INTENSITY_MAX]   = renderingSettings[c].colorMax;
+			channelProperties[c][INTENSITY_GAMMA] = renderingSettings[c].colorGamma;
 			channelProperties[c][ALPHA_MIN]   = renderingSettings[c].alphaMin;
 			channelProperties[c][ALPHA_MAX]   = renderingSettings[c].alphaMax;
 			channelProperties[c][ALPHA_GAMMA] = renderingSettings[c].alphaGamma;
@@ -63,6 +63,7 @@ public class ExtendedRenderingState extends RenderingState {
 			channelProperties[c][CHANNEL_COLOR_RED]   = cC.getRed();
 			channelProperties[c][CHANNEL_COLOR_GREEN] = cC.getGreen();
 			channelProperties[c][CHANNEL_COLOR_BLUE]  = cC.getBlue();
+
 		}
 	}
 

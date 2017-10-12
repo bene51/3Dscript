@@ -77,9 +77,9 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 //			renderingSettings[c].colorGamma = 1;
 //			renderingSettings[c].weight = 1;
 
-			rs.setChannelProperty(c, ExtendedRenderingState.COLOR_MIN,   luts[c].min);
-			rs.setChannelProperty(c, ExtendedRenderingState.COLOR_MAX,   luts[c].max);
-			rs.setChannelProperty(c, ExtendedRenderingState.COLOR_GAMMA, 1);
+			rs.setChannelProperty(c, ExtendedRenderingState.INTENSITY_MIN,   luts[c].min);
+			rs.setChannelProperty(c, ExtendedRenderingState.INTENSITY_MAX,   luts[c].max);
+			rs.setChannelProperty(c, ExtendedRenderingState.INTENSITY_GAMMA, 1);
 			rs.setChannelProperty(c, ExtendedRenderingState.ALPHA_MIN,   luts[c].min);
 			rs.setChannelProperty(c, ExtendedRenderingState.ALPHA_MAX,   luts[c].max);
 			rs.setChannelProperty(c, ExtendedRenderingState.ALPHA_GAMMA, 2);
