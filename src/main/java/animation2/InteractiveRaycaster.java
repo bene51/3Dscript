@@ -76,8 +76,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		calculateChannelMinAndMax();
 
-		final float zStep = 1;
-		renderer = new Renderer3D(image, image.getWidth(), image.getHeight(), zStep);
+		renderer = new Renderer3D(image, image.getWidth(), image.getHeight());
 		ExtendedRenderingState rs = renderer.getRenderingState();
 		worker = new RenderingThread(renderer);
 
@@ -93,7 +92,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		rs.setNonchannelProperty(ExtendedRenderingState.NEAR, croppingPanel.getNear());
 		rs.setNonchannelProperty(ExtendedRenderingState.FAR,  croppingPanel.getFar());
 
-		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), zStep, renderer.getBoundingBox());
+		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), 1, renderer.getBoundingBox());
 
 		animationPanel = dialog.addAnimationPanel();
 
@@ -334,10 +333,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 		outsize.width = (int)Math.round(outsize.width * mag);
 		outsize.height = (int)Math.round(outsize.height * mag);
 
-		outputPanel.setOutputSize(outsize.width, outsize.height, zStep);
+		outputPanel.setOutputSize(outsize.width, outsize.height, 1);
 
 		setOutputSize(outsize.width, outsize.height);
-		setZStep(zStep);
 
 		Toolbar.getInstance().setTool(Toolbar.HAND);
 

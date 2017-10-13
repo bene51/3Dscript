@@ -30,14 +30,12 @@ public class CudaRaycaster {
 	private static native void initRaycaster8(
 			int nChannels,
 			int width, int height, int depth,
-			int wOut, int hOut,
-			float zStep, float alphastop);
+			int wOut, int hOut);
 
 	private static native void initRaycaster16(
 			int nChannels,
 			int width, int height, int depth,
-			int wOut, int hOut,
-			float zStep, float alphastop);
+			int wOut, int hOut);
 
 	public static native void close();
 
@@ -57,6 +55,7 @@ public class CudaRaycaster {
 			float[] inverseTransform,
 			float near,
 			float far,
+			float alphacorr,
 			float[][] channelSettings,
 			int bgred, int bggreen, int bgblue);
 
@@ -70,11 +69,7 @@ public class CudaRaycaster {
 	protected BoundingBox bbox;
 	protected Color bg = Toolbar.getBackgroundColor();
 
-	public CudaRaycaster(ImagePlus imp, int wOut, int hOut, float zStep) {
-		this(imp, wOut, hOut, zStep, 0.95f);
-	}
-
-	public CudaRaycaster(ImagePlus imp, int wOut, int hOut, float zStep, float alphastop) {
+	public CudaRaycaster(ImagePlus imp, int wOut, int hOut) {
 		wIn = imp.getWidth();
 		hIn = imp.getHeight();
 		dIn = imp.getNSlices();
@@ -86,9 +81,9 @@ public class CudaRaycaster {
 		bbox = new BoundingBox(wIn, hIn, dIn, cal.pixelWidth, cal.pixelHeight, cal.pixelDepth);
 
 		if(imp.getType() == ImagePlus.GRAY8)
-			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
+			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut);
 		else if(imp.getType() == ImagePlus.GRAY16)
-			initRaycaster16(nChannels, wIn, hIn, dIn, wOut, hOut, zStep, alphastop);
+			initRaycaster16(nChannels, wIn, hIn, dIn, wOut, hOut);
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 		setImage(imp);
@@ -174,6 +169,7 @@ public class CudaRaycaster {
 			float[] fwdTransform,
 			float[] invTransform,
 			double[][] channelProperties,
+			float alphacorr,
 			float near,
 			float far) {
 
@@ -195,7 +191,7 @@ public class CudaRaycaster {
 		}
 		// TODO remove this line and set from GUI
 		Color bg = Toolbar.getBackgroundColor();
-		int[] result = cast(invTransform, near, far, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
+		int[] result = cast(invTransform, near, far, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);

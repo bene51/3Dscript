@@ -22,8 +22,8 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 
 	private final IKeywordFactory kwFactory = new KeywordFactory();
 
-	public Renderer3D(ImagePlus image, int wOut, int hOut, float zStep) {
-		super(image, wOut, hOut, zStep);
+	public Renderer3D(ImagePlus image, int wOut, int hOut) {
+		super(image, wOut, hOut);
 
 		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
@@ -124,8 +124,24 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		CombinedTransform transform = kf.getFwdTransform();
 		float[] fwd = transform.calculateForwardTransform();
 		float[] inv = CombinedTransform.calculateInverseTransform(fwd);
+
+		// calculate an opacity correction factor
+		// https://stackoverflow.com/questions/12494439/opacity-correction-in-raycasting-volume-rendering
+		// - reference sample spacing (dx on the website) is pw
+		// - real sample spacing depends on the angle and the zStep, which in turn influences the transform's pdOut
+		// - real sample spacing in pixel coordinates is (inv[2], inv[6], inv[10])
+		// - multiplied with the input pixel spacings, this is a vector whose length is \tilde{dx} (on the website)
+		// - the correction factor is then \tilde{dx} / dx.
+		float[] pdIn = transform.getInputSpacing();
+		float dx = pdIn[0] * inv[2];
+		float dy = pdIn[1] * inv[6];
+		float dz = pdIn[2] * inv[10];
+		float len = (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
+		float alphacorr = len / pdIn[0];
+
 		rs.setFrom(kf);
 		return super.project(fwd, inv, kf.getChannelProperties(),
+				alphacorr,
 				(float)kf.getNonchannelProperty(ExtendedRenderingState.NEAR),
 				(float)kf.getNonchannelProperty(ExtendedRenderingState.FAR));
 	}

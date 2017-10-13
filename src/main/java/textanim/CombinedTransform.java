@@ -40,6 +40,10 @@ public class CombinedTransform {
 		return pdOut;
 	}
 
+	public float[] getInputSpacing() {
+		return pdIn;
+	}
+
 	@Override
 	public CombinedTransform clone() {
 		float[] pdIn   = new float[3];

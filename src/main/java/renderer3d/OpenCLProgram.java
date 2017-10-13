@@ -64,7 +64,7 @@ public class OpenCLProgram {
 				"		__global unsigned int *d_result,\n" +
 				"		int2 target_size,\n" +
 				"		const float16 inverseTransform,\n" +
-				"		float zstart, float zend, float zStep,\n";
+				"		float zstart, float zend,\n";
 			for(int c = 0; c < channels; c++) {
 				source = source +
 				"		float alphamin" + c + ", float alphamax" + c + ", float alphagamma" + c + ",\n" +
@@ -72,7 +72,7 @@ public class OpenCLProgram {
 				"		float weight" + c + ",\n";
 			}
 			source = source +
-				"		float alphastop,\n" +
+				"		float alphacorr,\n" +
 				"		float3 inc,\n";
 			if(backgroundTexture)
 				source = source +
@@ -113,7 +113,7 @@ public class OpenCLProgram {
 				"\n" +
 				"		float3 p0 = r0 + inear * inc;\n" +
 				"\n" +
-				"		int n = (int)floor(fdim(ifar, inear) / zStep);\n" +
+				"		int n = (int)floor(fdim(ifar, inear));\n" +
 				"		unsigned int maxv = (1 << bitsPerSample);\n" +
 				"";
 			for(int c = 0; c < channels; c++) {
@@ -232,7 +232,7 @@ public class OpenCLProgram {
 			"		__global unsigned int *d_result,\n" +
 			"		int2 target_size,\n" +
 			"		const float16 inverseTransform,\n" +
-			"		float zstart, float zend, float zStep,\n";
+			"		float zstart, float zend,\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
 			"		float alphamin" + c + ", float alphamax" + c + ", float alphagamma" + c + ",\n" +
@@ -240,7 +240,7 @@ public class OpenCLProgram {
 			"		float weight" + c + ",\n";
 		}
 		source = source +
-			"		float alphastop,\n" +
+			"		float alphacorr,\n" +
 			"		float3 inc,\n";
 		if(backgroundTexture)
 			source = source +
@@ -281,7 +281,7 @@ public class OpenCLProgram {
 			"\n" +
 			"		float3 p0 = r0 + inear * inc;\n" +
 			"\n" +
-			"		int n = (int)floor(fdim(ifar, inear) / zStep);\n" +
+			"		int n = (int)floor(fdim(ifar, inear));\n" +
 //			"		if(x == 0 && y == 0) printf(\"n = %d\\n\", n);\n" +
 			"		unsigned int maxv = (1 << bitsPerSample);\n" +
 			"";
@@ -303,7 +303,10 @@ public class OpenCLProgram {
 			"				float v" + c + " = maxv * read_imagef(texture" + c + ", sampler, (float4)(p0 + 0.5f, 0)).x + 0.5;\n" +
 			"				float2 rAlphaColor" + c + " = pow(\n" +
 			"					clamp((v" + c + " - minAlphaColor" + c + ") / dAlphaColor" + c + ", 0.0f, 1.0f),\n" +
-			"					gammaAlphaColor" + c + ");\n\n";
+			"					gammaAlphaColor" + c + ");\n" +
+			"\n" +
+			"				// Opacity correction:\n" +
+			"				rAlphaColor" + c + ".x = 1 - pow(1 - rAlphaColor" + c + ".x, alphacorr);\n";
 		}
 		source = source +
 			"\n" +
