@@ -121,7 +121,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.translateBy(dx, dy, 0, true);
-					worker.push(kf, -1, -1, -1);
+					push(kf);
 				}
 				else {
 					float speed = 0.7f;
@@ -136,7 +136,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.rotateBy(ax, ay);
-					worker.push(kf, -1, -1, -1);
+					push(kf);
 				}
 			}
 		};
@@ -155,7 +155,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.translateBy(dx, dy, 0, true);
-					worker.push(kf, -1, -1, -1);
+					push(kf);
 				}
 				// rotation
 				else {
@@ -171,7 +171,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					ExtendedRenderingState kf = mouseDownFrame.clone();
 					CombinedTransform t = kf.getFwdTransform();
 					t.rotateBy(ax, ay);
-					worker.push(kf, -1, -1, -1);
+					push(kf);
 
 					IJ.showStatus(ax + "\u00B0" + ", " + ay + "\u00B0");
 					transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
@@ -195,7 +195,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
 				CombinedTransform t = kf.getFwdTransform();
 				t.zoomInto(ex, ey, factor);
-				worker.push(kf, -1, -1, -1);
+				push(kf);
 
 				transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 			}
@@ -205,7 +205,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged() {
-				worker.push(renderer.getRenderingState(), -1, -1, -1);
+				push();
 			}
 
 			@Override
@@ -230,7 +230,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					renderer.setProgram(OpenCLProgram.makeSourceForMIP(nChannels, false));
 					break;
 				}
-				worker.push(renderer.getRenderingState(), -1, -1, -1);
+				push();
 			}
 		});
 
@@ -252,7 +252,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
 				kf.setNonchannelProperty(ExtendedRenderingState.NEAR, near);
 				kf.setNonchannelProperty(ExtendedRenderingState.FAR,  far);
-				worker.push(kf, -1, -1, -1);
+				push(kf);
 			}
 
 			@Override
@@ -264,7 +264,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX, bbx1);
 				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX, bby1);
 				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX, bbz1);
-				worker.push(kf, -1, -1, -1);
+				push(kf);
 			}
 
 			@Override
@@ -284,7 +284,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					float[] fwd = kf.getFwdTransform().calculateForwardTransform();
 					renderer.crop(image, mask, fwd);
 
-					worker.push(kf, -1, -1, -1);
+					push(kf);
 				}
 				else {
 					IJ.error("Selection required");
@@ -301,7 +301,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void boundingBoxChanged() {
-				worker.push(renderer.getRenderingState(), -1, -1, -1);
+				push();
 			}
 		});
 
@@ -344,32 +344,52 @@ public class InteractiveRaycaster implements PlugInFilter {
 //		renderer.setBackground(cp);
 	}
 
+	private void push() {
+		push(renderer.getRenderingState(), -1, -1);
+	}
+
+	private void push(ExtendedRenderingState rs) {
+		push(rs, -1, -1);
+	}
+
+	private void push(int w, int h) {
+		push(renderer.getRenderingState(), -1, -1);
+	}
+
+	private void push(ExtendedRenderingState rs, int w, int h) {
+		System.out.println("push");
+//		CombinedTransform ct = rs.getFwdTransform();
+//		ct.setZStep(3);
+//		worker.push(rs, w, h, -1);
+//		ct.setZStep(2);
+//		worker.push(rs, w, h, -1);
+//		ct.setZStep(1);
+		worker.push(rs, w, h, -1);
+		System.out.println("after push");
+	}
+
 	public void setOutputSize(int tgtW, int tgtH) {
 		renderer.setTargetSize(tgtW, tgtH);
 		Calibration cal = worker.out.getCalibration();
 		renderer.getRenderingState().getFwdTransform().adjustOutputCalibration(cal);
-		worker.push(renderer.getRenderingState(), tgtW, tgtH, -1);
+		push(tgtW, tgtH);
 	}
 
 	public void setZStep(float zStep) {
-		float pdOut = (float)image.getCalibration().pixelDepth * zStep;
-		CombinedTransform t = renderer.getRenderingState().getFwdTransform();
-		float[] pd = t.getOutputSpacing();
-		pd[2] = pdOut;
-		t.setOutputSpacing(pd);
-		worker.push(renderer.getRenderingState(), -1, -1, -1);
+		renderer.getRenderingState().getFwdTransform().setZStep(zStep);
+		push();
 	}
 
 	public void resetRenderingSettings() {
 		renderer.resetRenderingSettings();
-		worker.push(renderer.getRenderingState(), -1, -1, -1);
+		push();
 		contrastPanel.setChannel(contrastPanel.getChannel());
 	}
 
 	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
 		ExtendedRenderingState kf = renderer.getRenderingState().clone();
 		kf.getFwdTransform().setTransformation(ax, ay, az, dx, dy, dz, s);
-		worker.push(kf, -1, -1, -1);
+		push(kf);
 		transformationPanel.setTransformation(new float[] {ax, ay, az}, new float[] {dx, dy, dz}, s);
 	}
 

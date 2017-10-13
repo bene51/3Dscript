@@ -43,7 +43,7 @@ public class RenderingThread {
 		rs.getFwdTransform().adjustOutputCalibration(cal);
 		out.show();
 
-		thread = new Thread() {
+		thread = new Thread("3D-Animation rendering thread") {
 			@Override
 			public void run() {
 				loop(rs);
@@ -62,6 +62,7 @@ public class RenderingThread {
 	}
 
 	public void push(ExtendedRenderingState rs, int w, int h, int imaget) {
+		System.out.println("push: before lock");
 		synchronized(lock) {
 			event.rs.setFrom(rs);
 			event.valid = true;
@@ -72,6 +73,7 @@ public class RenderingThread {
 		synchronized(this) {
 			notifyAll();
 		}
+		System.out.println("push: after lock");
 	}
 
 	public Event poll(Event ret) {

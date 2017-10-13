@@ -36,6 +36,16 @@ public class CombinedTransform {
 		Transform.invert(toTransform);
 	}
 
+	public void setOutputSpacingZ(float pdOutZ) {
+		pdOut[2] = pdOutZ;
+		toTransform = Transform.fromCalibration(pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
+		Transform.invert(toTransform); // TODO invert can be faster because it's a diagonal matrix
+	}
+
+	public void setZStep(float zStep) {
+		setOutputSpacingZ(pdIn[2] * zStep);
+	}
+
 	public float[] getOutputSpacing() {
 		return pdOut;
 	}
