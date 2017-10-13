@@ -265,5 +265,4 @@ public class PovrayRenderer implements IRenderer3D {
 		PovrayRenderer pr = new PovrayRenderer(imp, new File("D:\\povray\\transparencytest\\original"), 640, 480);
 		pr.doRender(pr.getRenderingState());
 	}
-
 }

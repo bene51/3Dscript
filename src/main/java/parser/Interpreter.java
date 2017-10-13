@@ -1,5 +1,8 @@
 package parser;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import parser.Autocompletion.ChoiceAutocompletion;
 import parser.Autocompletion.IntegerAutocompletion;
 import parser.Autocompletion.RealAutocompletion;
@@ -382,6 +385,7 @@ public class Interpreter {
 
 		int[] timelineIdcs = null;
 		String[] autocompletionDescriptions = null;
+		Map<String, double[]> replacements = null;
 		int channel = -1;
 		if(keyword(GeneralKeyword.CHANNEL, true) != null) {
 			space(result, false);
@@ -391,11 +395,13 @@ public class Interpreter {
 			Keyword cp = channelproperty(result, cursorpos);
 			timelineIdcs = cp.getRenderingStateProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
+			replacements = cp.getReplacementMap();
 		}
 		else {
 			Keyword cp = nonchannelproperty(result, cursorpos);
 			timelineIdcs = cp.getRenderingStateProperties();
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
+			replacements = cp.getReplacementMap();
 		}
 
 		space(result, false);
@@ -404,24 +410,72 @@ public class Interpreter {
 
 		space(result, false);
 
+		ArrayList<String> compl = new ArrayList<String>(replacements.keySet());
+
 		NumberOrMacro[] tgts = null;
+
 		switch(timelineIdcs.length) {
 		case 1:
-			result.setAutocompletion(new RealAutocompletion(autocompletionDescriptions[0]));
-			tgts = new NumberOrMacro[] { mor() };
+			if(compl.isEmpty())
+				result.setAutocompletion(new RealAutocompletion(autocompletionDescriptions[0]));
+			else {
+				compl.add(0, autocompletionDescriptions[0]);
+				result.setAutocompletion(new ChoiceAutocompletion(lexer.getIndex(), compl.toArray(new String[] {})));
+			}
+			if(!compl.isEmpty()) { // replacments available
+				Token token = lexer.getNextToken(replacements.keySet(), true);
+				if(token == null) // not one of the replacement strings
+					tgts = new NumberOrMacro[] { mor() };
+				else {
+					double[] vals = replacements.get(token.text);
+					tgts = new NumberOrMacro[] { new NumberOrMacro(vals[0]) };
+				}
+			} else {
+				tgts = new NumberOrMacro[] { mor() };
+			}
 			break;
 		case 2:
-			result.setAutocompletion(new TupleAutocompletion(
-					autocompletionDescriptions[0],
-					autocompletionDescriptions[1]));
-			tgts = tuple(result);
+			if(compl.isEmpty())
+				result.setAutocompletion(new TupleAutocompletion(
+						autocompletionDescriptions[0],
+						autocompletionDescriptions[1]));
+			else {
+				compl.add(0, "(" + autocompletionDescriptions[0] + ", " + autocompletionDescriptions[1] + ")");
+				result.setAutocompletion(new ChoiceAutocompletion(lexer.getIndex(), compl.toArray(new String[] {})));
+			}
+			if(!compl.isEmpty()) { // replacments available
+				Token token = lexer.getNextToken(replacements.keySet(), true);
+				if(token == null) // not one of the replacement strings
+					tgts = tuple(result);
+				else {
+					double[] vals = replacements.get(token.text);
+					tgts = new NumberOrMacro[] { new NumberOrMacro(vals[0]), new NumberOrMacro(vals[1]) };
+				}
+			} else {
+				tgts = tuple(result);
+			}
 			break;
 		case 3:
-			result.setAutocompletion(new TripleAutocompletion(
-					autocompletionDescriptions[0],
-					autocompletionDescriptions[1],
-					autocompletionDescriptions[2]));
-			tgts = triple(result);
+			if(compl.isEmpty())
+				result.setAutocompletion(new TripleAutocompletion(
+						autocompletionDescriptions[0],
+						autocompletionDescriptions[1],
+						autocompletionDescriptions[2]));
+			else {
+				compl.add(0, "(" + autocompletionDescriptions[0] + ", " + autocompletionDescriptions[1] + ", " + autocompletionDescriptions[2] + ")");
+				result.setAutocompletion(new ChoiceAutocompletion(lexer.getIndex(), compl.toArray(new String[] {})));
+			}
+			if(!compl.isEmpty()) { // replacments available
+				Token token = lexer.getNextToken(replacements.keySet(), true);
+				if(token == null) // not one of the replacement strings
+					tgts = triple(result);
+				else {
+					double[] vals = replacements.get(token.text);
+					tgts = new NumberOrMacro[] { new NumberOrMacro(vals[0]), new NumberOrMacro(vals[1]), new NumberOrMacro(vals[2]) };
+				}
+			} else {
+				tgts = triple(result);
+			}
 			break;
 		}
 

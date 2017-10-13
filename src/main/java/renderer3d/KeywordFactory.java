@@ -1,5 +1,8 @@
 package renderer3d;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import parser.Keyword;
 import textanim.IKeywordFactory;
 
@@ -28,15 +31,23 @@ public class KeywordFactory implements IKeywordFactory {
 		INTENSITY("intensity",     new String[] {"<min>", "<max>", "<gamma>"},  ExtendedRenderingState.INTENSITY_MIN, ExtendedRenderingState.INTENSITY_MAX, ExtendedRenderingState.INTENSITY_GAMMA),
 		ALPHA("alpha",             new String[] {"<min>", "<max>", "<gamma>"},  ExtendedRenderingState.ALPHA_MIN, ExtendedRenderingState.ALPHA_MAX, ExtendedRenderingState.ALPHA_GAMMA),
 
+		COLOR("color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.CHANNEL_COLOR_RED, ExtendedRenderingState.CHANNEL_COLOR_GREEN, ExtendedRenderingState.CHANNEL_COLOR_BLUE),
+
 		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
 		private final int[] rsProperties;
+		private final Map<String, double[]> replacementMap;
 
 		private ChannelKeyword(String text, String[] autocompletionDesc, int... rsProperties) {
+			this(text, autocompletionDesc, new HashMap<String, double[]>(), rsProperties);
+		}
+
+		private ChannelKeyword(String text, String[] autocompletionDesc, Map<String, double[]> replacementMap, int... rsProperties) {
 			this.keyword = text;
 			this.autocompletionDesc = autocompletionDesc;
+			this.replacementMap = replacementMap;
 			this.rsProperties = rsProperties;
 		}
 
@@ -58,6 +69,11 @@ public class KeywordFactory implements IKeywordFactory {
 		@Override
 		public int length() {
 			return keyword.length();
+		}
+
+		@Override
+		public Map<String, double[]> getReplacementMap() {
+			return replacementMap;
 		}
 	}
 
@@ -82,11 +98,17 @@ public class KeywordFactory implements IKeywordFactory {
 		private final String keyword;
 		private final String[] autocompletionDesc;
 		private final int[] rsProperties;
+		private final Map<String, double[]> replacementMap;
 
 		private NonChannelKeyword(String text, String[] autocompletionDesc, int... rsProperties) {
+			this(text, autocompletionDesc, new HashMap<String, double[]>(), rsProperties);
+		}
+
+		private NonChannelKeyword(String text, String[] autocompletionDesc, Map<String, double[]> replacementMap, int... rsProperties) {
 			this.keyword = text;
 			this.autocompletionDesc = autocompletionDesc;
 			this.rsProperties = rsProperties;
+			this.replacementMap = replacementMap;
 		}
 
 		@Override
@@ -108,5 +130,21 @@ public class KeywordFactory implements IKeywordFactory {
 		public int length() {
 			return keyword.length();
 		}
+
+		@Override
+		public Map<String, double[]> getReplacementMap() {
+			return replacementMap;
+		}
+	}
+
+	private static Map<String, double[]> makeColorMap() {
+		HashMap<String, double[]> map = new HashMap<String, double[]>();
+		map.put("red",     new double[] {255.0, 0.0, 0.0});
+		map.put("green",   new double[] {0.0, 255.0, 0.0});
+		map.put("blue",    new double[] {0.0, 0.0, 255.0});
+		map.put("yellow",  new double[] {255.0, 255.0, 0.0});
+		map.put("cyan",    new double[] {0.0, 255.0, 255.0});
+		map.put("magenta", new double[] {255.0, 0.0, 255.0});
+		return map;
 	}
 }

@@ -1,5 +1,8 @@
 package povray;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import parser.Keyword;
 
 public enum PovrayKeyword implements Keyword {
@@ -37,5 +40,10 @@ public enum PovrayKeyword implements Keyword {
 	@Override
 	public int length() {
 		return keyword.length();
+	}
+
+	@Override
+	public Map<String, double[]> getReplacementMap() {
+		return new HashMap<String, double[]>();
 	}
 }

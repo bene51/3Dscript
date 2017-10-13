@@ -12,6 +12,19 @@ public class Lexer {
 		this.index = 0;
 	}
 
+	public Token getNextToken(Iterable<String> tokens, boolean optional) {
+		for(String token : tokens) {
+			if(input.regionMatches(true, index, token, 0, token.length())) {
+				int pos = index;
+				index += token.length();
+				return new Token(token, TokenType.KEYWORD, pos);
+			}
+		}
+		if(optional)
+			return null; // without increasing index;
+		throw new RuntimeException("Error at position " + index + ": Expected one of " + tokens.toString() + " but found end of line.");
+	}
+
 	public Token getNextToken(Keyword keyword, boolean optional) {
 		if(input.regionMatches(true, index, keyword.getKeyword(), 0, keyword.length())) {
 			int pos = index;

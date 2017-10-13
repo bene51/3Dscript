@@ -1,5 +1,8 @@
 package parser;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public interface Keyword {
 
 	public String getKeyword();
@@ -9,6 +12,8 @@ public interface Keyword {
 	public int[] getRenderingStateProperties();
 
 	public int length();
+
+	public Map<String, double[]> getReplacementMap();
 
 
 	public enum GeneralKeyword implements Keyword {
@@ -54,6 +59,11 @@ public interface Keyword {
 		public int[] getRenderingStateProperties() {
 			return null;
 		}
+
+		@Override
+		public Map<String, double[]> getReplacementMap() {
+			return new HashMap<String, double[]>();
+		}
 	}
 
 	public static enum Transition implements Keyword {
@@ -96,6 +106,11 @@ public interface Keyword {
 		@Override
 		public int[] getRenderingStateProperties() {
 			return null;
+		}
+
+		@Override
+		public Map<String, double[]> getReplacementMap() {
+			return new HashMap<String, double[]>();
 		}
 	}
 }
