@@ -152,7 +152,7 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		Calibration cal = image.getCalibration();
 		float pwOut = (float)(image.getWidth()  * cal.pixelWidth  / w);
 		float phOut = (float)(image.getHeight() * cal.pixelHeight / h);
-		float pdOut = (float)cal.pixelDepth;
+		float pdOut = rs.getFwdTransform().getOutputSpacing()[2];
 		float[] p = new float[] {pwOut, phOut, pdOut};
 
 		rs.getFwdTransform().setOutputSpacing(p);
