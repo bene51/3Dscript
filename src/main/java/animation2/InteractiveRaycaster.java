@@ -357,15 +357,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private void push(ExtendedRenderingState rs, int w, int h) {
-		System.out.println("push");
-//		CombinedTransform ct = rs.getFwdTransform();
-//		ct.setZStep(3);
-//		worker.push(rs, w, h, -1);
-//		ct.setZStep(2);
-//		worker.push(rs, w, h, -1);
-//		ct.setZStep(1);
 		worker.push(rs, w, h, -1);
-		System.out.println("after push");
 	}
 
 	public void setOutputSize(int tgtW, int tgtH) {

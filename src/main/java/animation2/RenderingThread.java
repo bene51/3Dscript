@@ -9,14 +9,13 @@ import renderer3d.Renderer3D;
 public class RenderingThread {
 
 	private Thread thread;
-	private final Object lock = new Object();
 	private boolean shutdown = false;
 
 	private Renderer3D raycaster;
 
 	final ImagePlus out;
 
-	private Event event;
+	private final Event event;
 
 	static class Event {
 
@@ -56,43 +55,38 @@ public class RenderingThread {
 		Event e = new Event(rs);
 		while(!shutdown) {
 			poll(e);
-			render(e);
+			for(int dz = 5; dz >= 1; dz--) {
+				e.rs.getFwdTransform().setZStep(dz);
+				render(e);
+				if(event.valid)
+					break;
+			}
 		}
 		CudaRaycaster.close();
 	}
 
-	public void push(ExtendedRenderingState rs, int w, int h, int imaget) {
-		System.out.println("push: before lock");
-		synchronized(lock) {
+	public synchronized void push(ExtendedRenderingState rs, int w, int h, int imaget) {
 			event.rs.setFrom(rs);
 			event.valid = true;
 			event.tgtW = w;
 			event.tgtH = h;
 			event.imaget = imaget;
-		}
-		synchronized(this) {
 			notifyAll();
-		}
-		System.out.println("push: after lock");
 	}
 
-	public Event poll(Event ret) {
-		if(!event.valid) {
-			synchronized(this) {
-				try {
-					wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+	public synchronized Event poll(Event ret) {
+		while(!event.valid) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-		synchronized(lock) {
-			ret.rs.setFrom(event.rs);
-			ret.tgtW = event.tgtW;
-			ret.tgtH = event.tgtH;
-			ret.imaget = event.imaget;
-			event.valid = false;
-		}
+		ret.rs.setFrom(event.rs);
+		ret.tgtW = event.tgtW;
+		ret.tgtH = event.tgtH;
+		ret.imaget = event.imaget;
+		event.valid = false;
 		return ret;
 	}
 
