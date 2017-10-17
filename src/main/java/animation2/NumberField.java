@@ -49,7 +49,6 @@ public class NumberField extends JPanel {
 	}
 
 	private void fireValueChanged(double v) {
-		System.out.println("fire");
 		for(Listener l : listener)
 			l.valueChanged(v);
 	}
