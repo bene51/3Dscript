@@ -182,6 +182,7 @@ public class DoubleSlider extends JPanel implements FocusListener, NumberField.L
 				@Override
 				public void componentResized(ComponentEvent e) {
 					diagram.setSizes(getWidth(), getHeight());
+					repaint();
 				}
 			});
 		}
