@@ -61,7 +61,6 @@ public class SwitchablePanel extends JPanel {
 				panel.setVisible(visible);
 				String sign = visible ? "hide" : "show";
 				label2.setText(sign);
-				invalidate();
 				revalidate();
 			}
 		});
@@ -70,14 +69,12 @@ public class SwitchablePanel extends JPanel {
 	public void switchOn() {
 		panel.setVisible(true);
 		label2.setText("hide");
-		invalidate();
 		revalidate();
 	}
 
 	public void switchOff() {
 		panel.setVisible(false);
 		label2.setText("show");
-		invalidate();
 		revalidate();
 	}
 
