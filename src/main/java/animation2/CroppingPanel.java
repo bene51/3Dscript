@@ -48,7 +48,6 @@ public class CroppingPanel extends JPanel {
 		DoubleSlider slider = new DoubleSlider(realMinMax, setMinMax, color);
 
 		GridBagLayout layout = (GridBagLayout)getLayout();
-		c.gridy++;
 
 		c.gridx = 0;
 		if(label != null) {
@@ -65,6 +64,7 @@ public class CroppingPanel extends JPanel {
 		c.weightx = 1.0;
 		layout.setConstraints(slider, c);
 		add(slider);
+		c.gridy++;
 		return slider;
 	}
 
@@ -78,6 +78,8 @@ public class CroppingPanel extends JPanel {
 		int h = image.getHeight();
 		int d = image.getNSlices();
 		int max = Math.max(w, Math.max(h, d));
+
+		c.gridy = 0;
 		nearfar = addDoubleSlider(
 				"near/far",
 				new int[] {-2 * max, 2 * max},
@@ -113,7 +115,6 @@ public class CroppingPanel extends JPanel {
 
 		JButton b = new JButton("Cut off ROI");
 		c.gridx = 0;
-		c.gridy++;
 		c.insets = new Insets(7, 0, 0, 0);
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.EAST;
