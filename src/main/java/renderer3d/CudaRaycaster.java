@@ -197,7 +197,9 @@ public class CudaRaycaster {
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
 		bbox.drawScalebar(ret, fwdTransform, invTransform);
 
-		bbox.drawFrontClippingPlane(ret, fwdTransform, invTransform, near);
+		float len = (float)Math.sqrt(invTransform[2] * invTransform[2] + invTransform[6] * invTransform[6] + invTransform[10] * invTransform[10]);
+
+		bbox.drawFrontClippingPlane(ret, fwdTransform, invTransform, near / len);
 		return ret;
 	}
 
