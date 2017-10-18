@@ -120,8 +120,10 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		channelChoice.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				setChannel(channelChoice.getSelectedIndex());
-				fireChannelChanged();
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					setChannel(channelChoice.getSelectedIndex());
+					fireChannelChanged();
+				}
 			}
 		});
 
@@ -240,10 +242,12 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		algo.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				switch(algo.getSelectedIndex()) {
-				case 0: fireRenderingAlgorithmChanged(RenderingAlgorithm.INDEPENDENT_TRANSPARENCY); break;
-				case 1: fireRenderingAlgorithmChanged(RenderingAlgorithm.COMBINED_TRANSPARENCY); break;
-				case 2: fireRenderingAlgorithmChanged(RenderingAlgorithm.MAXIMUM_INTENSITY); break;
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					switch(algo.getSelectedIndex()) {
+					case 0: fireRenderingAlgorithmChanged(RenderingAlgorithm.INDEPENDENT_TRANSPARENCY); break;
+					case 1: fireRenderingAlgorithmChanged(RenderingAlgorithm.COMBINED_TRANSPARENCY); break;
+					case 2: fireRenderingAlgorithmChanged(RenderingAlgorithm.MAXIMUM_INTENSITY); break;
+					}
 				}
 			}
 		});
