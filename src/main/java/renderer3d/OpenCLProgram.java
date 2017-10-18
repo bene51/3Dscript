@@ -6,7 +6,7 @@ public class OpenCLProgram {
 		System.out.println(makeSource(2, false, true));
 	}
 
-	public static String makeSourceForMIP(int channels, boolean backgroundTexture) {
+	private static String makeCommonSource(int channels) {
 		String source =
 				"bool\n" +
 				"intersects(float3 bb0, float3 bb1, float3 r0, float3 rd, float *i0, float *i1) {\n" +
@@ -50,7 +50,12 @@ public class OpenCLProgram {
 				"	if(x < data_size.x && y < data_size.y && z < data_size.z)\n" +
 				"		write_imagef(texture, (int4)(x, y, z, 0), (float4)(1));\n" +
 				"}\n" +
-				"\n" +
+				"\n";
+		return source;
+	}
+
+	public static String makeSourceForMIP(int channels, boolean backgroundTexture) {
+		String source = makeCommonSource(channels) +
 				"kernel void\n" +
 				"raycastKernel(\n";
 			for(int c = 0; c < channels; c++) {
@@ -175,50 +180,7 @@ public class OpenCLProgram {
 	}
 
 	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha) {
-		String source =
-			"bool\n" +
-			"intersects(float3 bb0, float3 bb1, float3 r0, float3 rd, float *i0, float *i1) {\n" +
-			"\n" +
-			"	int3 parallel = fabs(rd) < (float3)(10e-5);\n" +
-			"	if(any(parallel && (r0 < bb0 || r0 > bb1)))\n" +
-			"		return false;\n" +
-			"\n" +
-			"	float3 T1 = (bb0 - r0) / rd;\n" +
-			"	float3 T2 = (bb1 - r0) / rd;\n" +
-			"\n" +
-			"	float3 Tnear = min(T1, T2);\n" +
-			"	float3 Tfar = max(T1, T2);\n" +
-			"\n" +
-			"	*i0 = max(Tnear.x, max(Tnear.y, Tnear.z));\n" +
-			"	*i1 = min(Tfar.x, min(Tfar.y, Tfar.z));\n" +
-			"\n" +
-			"	return (*i1 > *i0);\n" +
-			"}\n" +
-			"\n" +
-			"\n" +
-			"inline float3 multiplyMatrixVector(float16 m, float4 v)\n" +
-			"{\n" +
-			"    return (float3) (\n" +
-			"	dot(m.s0123, v),\n" +
-			"	dot(m.s4567, v),\n" +
-			"	dot(m.s89AB, v)\n" +
-			"    );\n" +
-			"}\n" +
-			"\n" +
-			"kernel void\n" +
-			"white(\n" +
-			"		__write_only image3d_t texture,\n" +
-			"		int3 data_size,\n" +
-			"		int bitsPerSample)\n" +
-			"{\n" +
-			"	int x = get_global_id(0);\n" +
-			"	int y = get_global_id(1);\n" +
-			"	int z = get_global_id(2);\n" +
-			"\n" +
-			"	if(x < data_size.x && y < data_size.y && z < data_size.z)\n" +
-			"		write_imagef(texture, (int4)(x, y, z, 0), (float4)(1));\n" +
-			"}\n" +
-			"\n" +
+		String source = makeCommonSource(channels) +
 			"kernel void\n" +
 			"raycastKernel(\n";
 		for(int c = 0; c < channels; c++) {
