@@ -156,7 +156,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		c.anchor = GridBagConstraints.WEST;
 		c.weightx = 0;
 		c.insets = new Insets(3, 3, 0, 0);
-		add(new JLabel("color"), c);
+		add(new JLabel("intensity"), c);
 		c.insets = new Insets(3, 3, 0, 3);
 		c.weightx = 1;
 		c.gridx++;
