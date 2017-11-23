@@ -30,8 +30,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 
-import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.AnimationAutoCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
@@ -64,6 +64,8 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 
 	private final IKeywordFactory kwFactory;
 
+	private final AnimationAutoCompletion ac;
+
 	/**
 	 * Constructor.
 	 */
@@ -84,7 +86,7 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 		getDocument().addDocumentListener(this);
 
 		CompletionProvider provider = new AnimationCompletionProvider(kwFactory);
-		final AnimationAutoCompletion ac = new AnimationAutoCompletion(provider);
+		ac = new AnimationAutoCompletion(provider);
 		ac.setTriggerKey(KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.CTRL_DOWN_MASK, false));
 		ac.setAutoCompleteEnabled(true);
 		ac.setAutoActivationDelay(5);
@@ -186,6 +188,10 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 			@Override
 			public void changedUpdate(DocumentEvent e) {}
 		});
+	}
+
+	public AnimationAutoCompletion getAutoCompletion() {
+		return ac;
 	}
 
 	@Override

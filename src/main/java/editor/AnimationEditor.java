@@ -59,8 +59,8 @@ import textanim.Animator.Listener;
 import textanim.CustomDecimalFormat;
 import textanim.IRecordingProvider;
 import textanim.IRecordingProvider.RecordingItem;
-import textanim.RenderingState;
 import textanim.IRenderer3D;
+import textanim.RenderingState;
 
 
 @SuppressWarnings("serial")
@@ -818,7 +818,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
 		} catch(Exception e) {}
 		originalText.insert(offset, text.toString());
+
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
 		tab.editorPane.setText(originalText.toString());
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
 
 		int xStart = text.indexOf("X") + offset;
 		tab.editorPane.setSelectionStart(xStart);
@@ -844,7 +847,11 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
 		} catch(Exception e) {}
 		originalText.insert(offset, s);
+
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
 		tab.editorPane.setText(originalText.toString());
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
+
 
 		int xStart = s.indexOf("X") + offset;
 		tab.editorPane.setSelectionStart(xStart);
@@ -933,7 +940,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
 		} catch(Exception e) {}
 		originalText.insert(offset, text.toString());
+
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
 		tab.editorPane.setText(originalText.toString());
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
 
 		int xStart = text.indexOf("X") + offset;
 		tab.editorPane.setSelectionStart(xStart);
