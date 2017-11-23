@@ -287,7 +287,7 @@ public class OpenCLProgram {
 			"				float a" + c + " = alpha" + c + ";\n";
 			}
 			source = source +
-			"				float tmp" + c + " = (1 - a" + c + ") * rAlphaColor" + c + ".x;\n" +
+			"				float tmp" + c + " = weight" + c + " * (1 - a" + c + ") * rAlphaColor" + c + ".x;\n" +
 			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n" +
 			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n";
 		}
@@ -311,7 +311,6 @@ public class OpenCLProgram {
 			"		d_result[idx_out] = (unsigned int)((out_r << 16) | (out_g << 8) | out_b);\n" +
 			"	}\n" +
 			"}";
-		System.out.println(source);
 		return source;
 	}
 
