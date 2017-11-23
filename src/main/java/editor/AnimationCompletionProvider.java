@@ -67,7 +67,7 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 //			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
 			Interpreter.parse(kwFactory, input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 		Autocompletion autocompletion = result.getAutocompletion();
@@ -142,7 +142,7 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 //			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
 			Interpreter.parse(kwFactory, input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 
 		Autocompletion autocompletion = result.getAutocompletion();
