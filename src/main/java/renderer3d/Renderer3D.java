@@ -193,9 +193,7 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		Color[] channelColors = new Color[nChannels];
 		if(!image.isComposite()) {
 			LUT lut = image.getProcessor().getLut();
-			int t = image.getType();
-			boolean grayscale = t == ImagePlus.GRAY8 || t == ImagePlus.GRAY16 || t == ImagePlus.GRAY32;
-			if(lut != null && !grayscale) {
+			if(lut != null) {
 				channelColors[0] = getLUTColor(lut);
 			} else {
 				channelColors[0] = Color.WHITE;
