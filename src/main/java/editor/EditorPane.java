@@ -31,8 +31,6 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 
 import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.autocomplete.AutoCompletionEvent;
-import org.fife.ui.autocomplete.AutoCompletionListener;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -95,12 +93,6 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 		ac.setParameterAssistanceEnabled(true);
 
 		ac.install(this);
-		ac.addAutoCompletionListener(new AutoCompletionListener() {
-			@Override
-			public void autoCompleteUpdate(AutoCompletionEvent e) {
-				System.out.println(e.getEventType());
-			}
-		});
 
 		this.getDocument().addDocumentListener(new DocumentListener() {
 
