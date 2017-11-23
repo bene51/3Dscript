@@ -204,10 +204,7 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		}
 		for(int c = 0; c < image.getNChannels(); c++) {
 			image.setC(c + 1);
-			Color col = ((CompositeImage)image).getChannelColor();
-			if(col.equals(Color.BLACK))
-				col = Color.white;
-			channelColors[c] = col;
+			channelColors[c] = getLUTColor(((CompositeImage)image).getChannelLut());
 		}
 		return channelColors;
 	}
@@ -217,9 +214,6 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		int r = lut.getRed(index);
 		int g = lut.getGreen(index);
 		int b = lut.getBlue(index);
-		if (r<100 || g<100 || b<100)
-			return new Color(r, g, b);
-		else
-			return Color.WHITE;
+		return new Color(r, g, b);
 	}
 }

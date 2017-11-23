@@ -190,10 +190,12 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 		for(int i = 0; i < renderingSettings.length; i++) {
 			final int ch = i;
-			Color color = new Color(
-					(int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_RED],
-					(int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN],
-					(int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]);
+			int red   = (int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_RED];
+			int green = (int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN];
+			int blue  = (int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE];
+			Color color = new Color(red, green, blue);
+			if (red >= 100 && green >= 100 && blue >= 100)
+				color = Color.black;
 
 			final SingleSlider wslider = addSingleSlider(
 					"Channel " + (i + 1) + " weight",
@@ -215,10 +217,16 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 					if(e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 2)
 						return;
 					Color c = ColorPicker.pick();
-					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = c.getRed();
-					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = c.getGreen();
-					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = c.getBlue();
-					wslider.setColor(c);
+					int red   = c.getRed();
+					int green = c.getGreen();
+					int blue  = c.getBlue();
+					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = red;
+					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = green;
+					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = blue;
+					if(red < 100 || green < 100 || blue < 100)
+						wslider.setColor(c);
+					else
+						wslider.setColor(Color.BLACK);
 					setChannel(channel);
 				}
 			});
@@ -399,10 +407,14 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			this.min = min;
 			this.max = max;
 			this.renderingSettings = r;
-			this.color = new Color(
-					(int)r[ExtendedRenderingState.CHANNEL_COLOR_RED],
-					(int)r[ExtendedRenderingState.CHANNEL_COLOR_GREEN],
-					(int)r[ExtendedRenderingState.CHANNEL_COLOR_BLUE]);
+			int red   = (int)r[ExtendedRenderingState.CHANNEL_COLOR_RED];
+			int green = (int)r[ExtendedRenderingState.CHANNEL_COLOR_GREEN];
+			int blue  = (int)r[ExtendedRenderingState.CHANNEL_COLOR_BLUE];
+			if (red < 100 || green < 100 || blue < 100)
+				this.color = new Color(red, green, blue);
+			else
+				this.color = Color.black;
+
 		}
 
 		public void update() {
