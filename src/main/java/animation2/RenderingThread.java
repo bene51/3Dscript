@@ -75,7 +75,7 @@ public class RenderingThread {
 	}
 
 	public synchronized Event poll(Event ret) {
-		while(!event.valid) {
+		while(!event.valid && !shutdown) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
