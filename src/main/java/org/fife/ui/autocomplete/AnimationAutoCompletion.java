@@ -50,6 +50,20 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
+import org.fife.ui.autocomplete.AutoCompletePopupWindow;
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.AutoCompletionEvent;
+import org.fife.ui.autocomplete.AutoCompletionListener;
+import org.fife.ui.autocomplete.AutoCompletionStyleContext;
+import org.fife.ui.autocomplete.Completion;
+import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.ExternalURLHandler;
+import org.fife.ui.autocomplete.LinkRedirector;
+import org.fife.ui.autocomplete.ParameterizedCompletion;
+import org.fife.ui.autocomplete.ParameterizedCompletionContext;
+import org.fife.ui.autocomplete.TemplateCompletion;
+import org.fife.ui.autocomplete.AutoCompletionEvent.Type;
+
 
 /**
  * Adds auto-completion to a text component. Provides a popup window with a
@@ -78,7 +92,7 @@ import javax.swing.text.JTextComponent;
  * also handles communication between the CompletionProvider and the actual
  * popup Window.
  */
-public class AutoCompletion {
+public class AnimationAutoCompletion extends AutoCompletion {
 
 	/**
 	 * The text component we're providing completion for.
@@ -278,7 +292,8 @@ public class AutoCompletion {
 	 *
 	 * @param provider The completion provider. This cannot be <code>null</code>
 	 */
-	public AutoCompletion(CompletionProvider provider) {
+	public AnimationAutoCompletion(CompletionProvider provider) {
+		super(provider);
 
 		setChoicesWindowSize(350, 200);
 		setDescriptionWindowSize(350, 250);
@@ -307,6 +322,7 @@ public class AutoCompletion {
 	 * @param l The listener to add.
 	 * @see #removeAutoCompletionListener(AutoCompletionListener)
 	 */
+	@Override
 	public void addAutoCompletionListener(AutoCompletionListener l) {
 		listeners.add(AutoCompletionListener.class, l);
 	}
@@ -316,6 +332,7 @@ public class AutoCompletion {
 	 * Displays the popup window. Hosting applications can call this method to
 	 * programmatically begin an auto-completion operation.
 	 */
+	@Override
 	public void doCompletion() {
 		refreshPopupWindow();
 	}
@@ -326,6 +343,7 @@ public class AutoCompletion {
 	 *
 	 * @param type The type of event to fire.
 	 */
+	@Override
 	protected void fireAutoCompletionEvent(AutoCompletionEvent.Type type) {
 
 		// Guaranteed to return a non-null array
@@ -353,6 +371,7 @@ public class AutoCompletion {
 	 * @return The delay, in milliseconds.
 	 * @see #setAutoActivationDelay(int)
 	 */
+	@Override
 	public int getAutoActivationDelay() {
 		return autoActivationListener.timer.getDelay();
 	}
@@ -365,6 +384,7 @@ public class AutoCompletion {
 	 * @return Whether to auto-complete single choices.
 	 * @see #setAutoCompleteSingleChoices(boolean)
 	 */
+	@Override
 	public boolean getAutoCompleteSingleChoices() {
 		return autoCompleteSingleChoices;
 	}
@@ -375,6 +395,7 @@ public class AutoCompletion {
 	 *
 	 * @return The completion provider.
 	 */
+	@Override
 	public CompletionProvider getCompletionProvider() {
 		return provider;
 	}
@@ -411,11 +432,13 @@ public class AutoCompletion {
 	 * @see #setExternalURLHandler(ExternalURLHandler)
 	 * @see #getLinkRedirector()
 	 */
+	@Override
 	public ExternalURLHandler getExternalURLHandler() {
 		return externalURLHandler;
 	}
 
 
+	@Override
 	int getLineOfCaret() {
 		Document doc = textComponent.getDocument();
 		Element root = doc.getDefaultRootElement();
@@ -441,6 +464,7 @@ public class AutoCompletion {
 	 * @return The default list cell renderer.
 	 * @see #setListCellRenderer(ListCellRenderer)
 	 */
+	@Override
 	public ListCellRenderer getListCellRenderer() {
 		return renderer;
 	}
@@ -456,6 +480,7 @@ public class AutoCompletion {
 	 * @see #setParamChoicesRenderer(ListCellRenderer)
 	 * @see #isParameterAssistanceEnabled()
 	 */
+	@Override
 	public ListCellRenderer getParamChoicesRenderer() {
 		return paramChoicesRenderer;
 	}
@@ -474,6 +499,7 @@ public class AutoCompletion {
 	 * @param len The length of the text being replaced.
 	 * @return The text to replace with.
 	 */
+	@Override
 	protected String getReplacementText(Completion c, Document doc, int start,
 			int len) {
 		return c.getReplacementText();
@@ -487,6 +513,7 @@ public class AutoCompletion {
 	 * @return Whether the description window should be shown.
 	 * @see #setShowDescWindow(boolean)
 	 */
+	@Override
 	public boolean getShowDescWindow() {
 		return showDescWindow;
 	}
@@ -507,9 +534,10 @@ public class AutoCompletion {
 	 * Returns the text component for which auto-completion is enabled.
 	 *
 	 * @return The text component, or <code>null</code> if this
-	 *         {@link AutoCompletion} is not installed on any text component.
+	 *         {@link AnimationAutoCompletion} is not installed on any text component.
 	 * @see #install(JTextComponent)
 	 */
+	@Override
 	public JTextComponent getTextComponent() {
 		return textComponent;
 	}
@@ -521,6 +549,7 @@ public class AutoCompletion {
 	 * @return The orientation of the text component, or <code>null</code> if we
 	 *         are not installed on one.
 	 */
+	@Override
 	ComponentOrientation getTextComponentOrientation() {
 		return textComponent == null ? null : textComponent
 				.getComponentOrientation();
@@ -533,6 +562,7 @@ public class AutoCompletion {
 	 * @return The trigger key.
 	 * @see #setTriggerKey(KeyStroke)
 	 */
+	@Override
 	public KeyStroke getTriggerKey() {
 		return trigger;
 	}
@@ -543,6 +573,7 @@ public class AutoCompletion {
 	 *
 	 * @return Whether any windows were visible.
 	 */
+	@Override
 	public boolean hideChildWindows() {
 		// return hidePopupWindow() || hideToolTipWindow();
 		boolean res = hidePopupWindow();
@@ -571,6 +602,7 @@ public class AutoCompletion {
 	 *
 	 * @return Whether the popup window was visible.
 	 */
+	@Override
 	protected boolean hidePopupWindow() {
 		if (popupWindow != null) {
 			if (popupWindow.isVisible()) {
@@ -600,15 +632,16 @@ public class AutoCompletion {
 	}
 
 
-	/**
-	 * Inserts a completion. Any time a code completion event occurs, the actual
-	 * text insertion happens through this method.
-	 *
-	 * @param c A completion to insert. This cannot be <code>null</code>.
-	 */
-	protected final void insertCompletion(Completion c) {
-		insertCompletion(c, false);
-	}
+//	/**
+//	 * Inserts a completion. Any time a code completion event occurs, the actual
+//	 * text insertion happens through this method.
+//	 *
+//	 * @param c A completion to insert. This cannot be <code>null</code>.
+//	 */
+//	@Override
+//	protected final void insertCompletion(Completion c) {
+//		insertCompletion(c, false);
+//	}
 
 
 	/**
@@ -619,6 +652,7 @@ public class AutoCompletion {
 	 * @param typedParamListStartChar Whether the parameterized completion start
 	 *        character was typed (typically <code>'('</code>).
 	 */
+	@Override
 	protected void insertCompletion(Completion c,
 			boolean typedParamListStartChar) {
 
@@ -652,12 +686,13 @@ public class AutoCompletion {
 
 	/**
 	 * Installs this auto-completion on a text component. If this
-	 * {@link AutoCompletion} is already installed on another text component,
+	 * {@link AnimationAutoCompletion} is already installed on another text component,
 	 * it is uninstalled first.
 	 *
 	 * @param c The text component.
 	 * @see #uninstall()
 	 */
+	@Override
 	public void install(JTextComponent c) {
 
 		if (textComponent != null) {
@@ -724,6 +759,7 @@ public class AutoCompletion {
 	 * @return The action to use.
 	 * @see AutoCompleteAction
 	 */
+	@Override
 	protected Action createAutoCompleteAction() {
 		return new AutoCompleteAction();
 	}
@@ -740,6 +776,7 @@ public class AutoCompletion {
 	 * @see #getAutoActivationDelay()
 	 * @see #isAutoCompleteEnabled()
 	 */
+	@Override
 	public boolean isAutoActivationEnabled() {
 		return autoActivationEnabled;
 	}
@@ -751,6 +788,7 @@ public class AutoCompletion {
 	 * @return Whether auto-completion is enabled.
 	 * @see #setAutoCompleteEnabled(boolean)
 	 */
+	@Override
 	public boolean isAutoCompleteEnabled() {
 		return autoCompleteEnabled;
 	}
@@ -765,6 +803,7 @@ public class AutoCompletion {
 	 *         changes.
 	 * @see #setHideOnCompletionProviderChange(boolean)
 	 */
+	@Override
 	protected boolean isHideOnCompletionProviderChange() {
 		return hideOnCompletionProviderChange;
 	}
@@ -778,6 +817,7 @@ public class AutoCompletion {
 	 * reset to show all completions.
 	 * @see #setHideOnNoText(boolean)
 	 */
+	@Override
 	protected boolean isHideOnNoText() {
 		return hideOnNoText;
 	}
@@ -789,6 +829,7 @@ public class AutoCompletion {
 	 * @return Whether parameter assistance is enabled.
 	 * @see #setParameterAssistanceEnabled(boolean)
 	 */
+	@Override
 	public boolean isParameterAssistanceEnabled() {
 		return parameterAssistanceEnabled;
 	}
@@ -799,6 +840,7 @@ public class AutoCompletion {
 	 *
 	 * @return Whether the completion popup window is visible.
 	 */
+	@Override
 	public boolean isPopupVisible() {
 		return popupWindow != null && popupWindow.isVisible();
 	}
@@ -814,6 +856,7 @@ public class AutoCompletion {
 	 *
 	 * @return The current line number of the caret.
 	 */
+	@Override
 	protected int refreshPopupWindow() {
 
 		// Bene:
@@ -914,6 +957,7 @@ public class AutoCompletion {
 	 * @param l The listener to remove.
 	 * @see #addAutoCompletionListener(AutoCompletionListener)
 	 */
+	@Override
 	public void removeAutoCompletionListener(AutoCompletionListener l) {
 		listeners.remove(AutoCompletionListener.class, l);
 	}
@@ -926,6 +970,7 @@ public class AutoCompletion {
 	 * @param ms The delay, in milliseconds. This should be greater than zero.
 	 * @see #getAutoActivationDelay()
 	 */
+	@Override
 	public void setAutoActivationDelay(int ms) {
 		ms = Math.max(0, ms);
 		autoActivationListener.timer.stop();
@@ -941,6 +986,7 @@ public class AutoCompletion {
 	 * @see #isAutoActivationEnabled()
 	 * @see #setAutoActivationDelay(int)
 	 */
+	@Override
 	public void setAutoActivationEnabled(boolean enabled) {
 		if (enabled != autoActivationEnabled) {
 			autoActivationEnabled = enabled;
@@ -962,6 +1008,7 @@ public class AutoCompletion {
 	 * @param enabled Whether auto-completion is enabled.
 	 * @see #isAutoCompleteEnabled()
 	 */
+	@Override
 	public void setAutoCompleteEnabled(boolean enabled) {
 		if (enabled != autoCompleteEnabled) {
 			autoCompleteEnabled = enabled;
@@ -977,6 +1024,7 @@ public class AutoCompletion {
 	 * @param autoComplete Whether to auto-complete single choices.
 	 * @see #getAutoCompleteSingleChoices()
 	 */
+	@Override
 	public void setAutoCompleteSingleChoices(boolean autoComplete) {
 		autoCompleteSingleChoices = autoComplete;
 	}
@@ -990,6 +1038,7 @@ public class AutoCompletion {
 	 * @throws IllegalArgumentException If <code>provider</code> is
 	 *         <code>null</code>.
 	 */
+	@Override
 	public void setCompletionProvider(CompletionProvider provider) {
 		if (provider == null) {
 			throw new IllegalArgumentException("provider cannot be null");
@@ -1008,6 +1057,7 @@ public class AutoCompletion {
 	 * @param h The new height.
 	 * @see #setDescriptionWindowSize(int, int)
 	 */
+	@Override
 	public void setChoicesWindowSize(int w, int h) {
 		preferredChoicesWindowSize = new Dimension(w, h);
 		if (popupWindow != null) {
@@ -1023,6 +1073,7 @@ public class AutoCompletion {
 	 * @param h The new height.
 	 * @see #setChoicesWindowSize(int, int)
 	 */
+	@Override
 	public void setDescriptionWindowSize(int w, int h) {
 		preferredDescWindowSize = new Dimension(w, h);
 		if (popupWindow != null) {
@@ -1042,6 +1093,7 @@ public class AutoCompletion {
 	 * @param handler The new handler.
 	 * @see #getExternalURLHandler()
 	 */
+	@Override
 	public void setExternalURLHandler(ExternalURLHandler handler) {
 		this.externalURLHandler = handler;
 	}
@@ -1056,6 +1108,7 @@ public class AutoCompletion {
 	 *        when the completion provider changes.
 	 * @see #isHideOnCompletionProviderChange()
 	 */
+	@Override
 	protected void setHideOnCompletionProviderChange(
 			boolean hideOnCompletionProviderChange) {
 		this.hideOnCompletionProviderChange = hideOnCompletionProviderChange;
@@ -1070,6 +1123,7 @@ public class AutoCompletion {
 	 *        completion list is reset to show all completions.
 	 * @see #isHideOnNoText()
 	 */
+	@Override
 	protected void setHideOnNoText(boolean hideOnNoText) {
 		this.hideOnNoText = hideOnNoText;
 	}
@@ -1085,7 +1139,7 @@ public class AutoCompletion {
 	 * @see #getLinkRedirector()
 	 */
 	public static void setLinkRedirector(LinkRedirector linkRedirector) {
-		AutoCompletion.linkRedirector = linkRedirector;
+		AnimationAutoCompletion.linkRedirector = linkRedirector;
 	}
 
 
@@ -1097,6 +1151,7 @@ public class AutoCompletion {
 	 *        default renderer is used.
 	 * @see #getListCellRenderer()
 	 */
+	@Override
 	public void setListCellRenderer(ListCellRenderer renderer) {
 		this.renderer = renderer;
 		if (popupWindow != null) {
@@ -1116,6 +1171,7 @@ public class AutoCompletion {
 	 * @see #getParamChoicesRenderer()
 	 * @see #setParameterAssistanceEnabled(boolean)
 	 */
+	@Override
 	public void setParamChoicesRenderer(ListCellRenderer r) {
 		paramChoicesRenderer = r;
 	}
@@ -1131,6 +1187,7 @@ public class AutoCompletion {
 	 * @param enabled Whether parameter assistance should be enabled.
 	 * @see #isParameterAssistanceEnabled()
 	 */
+	@Override
 	public void setParameterAssistanceEnabled(boolean enabled) {
 		parameterAssistanceEnabled = enabled;
 	}
@@ -1143,6 +1200,7 @@ public class AutoCompletion {
 	 * @param visible Whether the window should be made visible or hidden.
 	 * @see #isPopupVisible()
 	 */
+	@Override
 	protected void setPopupVisible(boolean visible) {
 		if (visible!=popupWindow.isVisible()) {
 			popupWindow.setVisible(visible);
@@ -1157,6 +1215,7 @@ public class AutoCompletion {
 	 * @param show Whether to show the description window.
 	 * @see #getShowDescWindow()
 	 */
+	@Override
 	public void setShowDescWindow(boolean show) {
 		hidePopupWindow(); // Needed to force it to take effect
 		showDescWindow = show;
@@ -1171,6 +1230,7 @@ public class AutoCompletion {
 	 * @throws IllegalArgumentException If <code>ks</code> is <code>null</code>.
 	 * @see #getTriggerKey()
 	 */
+	@Override
 	public void setTriggerKey(KeyStroke ks) {
 		if (ks == null) {
 			throw new IllegalArgumentException("trigger key cannot be null");
@@ -1233,6 +1293,7 @@ public class AutoCompletion {
 	 *
 	 * @see #install(JTextComponent)
 	 */
+	@Override
 	public void uninstall() {
 
 		if (textComponent != null) {
@@ -1312,7 +1373,7 @@ public class AutoCompletion {
 
 		private Timer timer;
 		private boolean justInserted;
-		private String last;
+		private String last; // Bene
 
 		public AutoActivationListener() {
 			timer = new Timer(200, this);
@@ -1321,6 +1382,7 @@ public class AutoCompletion {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			System.out.println("AutoActivationListener.actionPerformed()");
 			Document doc = getTextComponent().getDocument();
 			int dot = getTextComponent().getCaretPosition();
 			String text = null;
@@ -1331,9 +1393,14 @@ public class AutoCompletion {
 			}
 
 			char ch = text.charAt(dot - 1);
-			if(Character.isLetter(ch) || ch == ' ')
-				if(!text.equals(last))
+			System.out.println("AutoActivationListener.actionPerformed(): last character = " + ch + "(" + Integer.toHexString(ch) + ")");
+			if(Character.isLetter(ch) || ch == ' ' || ch == '\r' || ch == '\n') {
+				if(!text.equals(last)) {
+					System.out.println("AutoActivationListener.actionPerformed(): calling doCompletion()");
 					doCompletion();
+				}
+			}
+			// doCompletion(); Bene
 		}
 
 		public void addTo(JTextComponent tc) {
@@ -1344,12 +1411,12 @@ public class AutoCompletion {
 
 		@Override
 		public void caretUpdate(CaretEvent e) {
-			if (justInserted) {
-				justInserted = false;
-			}
-			else {
-				timer.stop();
-			}
+//			if (justInserted) {
+//				justInserted = false;
+//			}
+//			else {
+//				timer.stop();
+//			}
 		}
 
 		@Override
@@ -1365,11 +1432,12 @@ public class AutoCompletion {
 
 		@Override
 		public void insertUpdate(DocumentEvent e) {
-			System.out.println("insertUpdate");
+			System.out.println("AutoActivationListener.insertUpdate");
 			justInserted = false;
 			if (isAutoCompleteEnabled() && isAutoActivationEnabled()
 					/* Bene && e.getLength() == 1 */) {
 				if (provider.isAutoActivateOkay(textComponent)) {
+					System.out.println("AutoActivationListener.insertUpdate(): timer restarted");
 					timer.restart();
 					justInserted = true;
 				}
