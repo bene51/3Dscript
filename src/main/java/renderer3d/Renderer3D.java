@@ -68,6 +68,7 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
 //		RenderingSettings[] renderingSettings = rs.renderingSettings;
+		Color[] channelColors = calculateChannelColors();
 		for(int c = 0; c < luts.length; c++) {
 //			renderingSettings[c].alphaMin = (float)luts[c].min;
 //			renderingSettings[c].alphaMax = (float)luts[c].max;
@@ -83,6 +84,10 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 			rs.setChannelProperty(c, ExtendedRenderingState.ALPHA_MIN,   luts[c].min);
 			rs.setChannelProperty(c, ExtendedRenderingState.ALPHA_MAX,   luts[c].max);
 			rs.setChannelProperty(c, ExtendedRenderingState.ALPHA_GAMMA, 2);
+			rs.setChannelProperty(c, ExtendedRenderingState.WEIGHT, 1);
+			rs.setChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_RED,   channelColors[c].getRed());
+			rs.setChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_GREEN, channelColors[c].getGreen());
+			rs.setChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_BLUE,  channelColors[c].getBlue());
 		}
 	}
 
