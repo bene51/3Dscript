@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 
 import ij.ImagePlus;
 import renderer3d.BoundingBox;
+import renderer3d.Scalebar;
 
 
 public class AnimatorDialog extends JDialog {
@@ -87,8 +88,8 @@ public class AnimatorDialog extends JDialog {
 		return slider;
 	}
 
-	public OutputPanel addOutputPanel(int width, int height, float zStep, BoundingBox bb) {
-		OutputPanel outputPanel = new OutputPanel(width, height, zStep, bb);
+	public OutputPanel addOutputPanel(int width, int height, float zStep, BoundingBox bb, Scalebar sb) {
+		OutputPanel outputPanel = new OutputPanel(width, height, zStep, bb, sb);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;

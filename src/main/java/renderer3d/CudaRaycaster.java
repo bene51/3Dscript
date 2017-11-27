@@ -67,6 +67,7 @@ public class CudaRaycaster {
 	protected int hOut;
 	protected int wIn, hIn, dIn, nChannels;
 	protected BoundingBox bbox;
+	protected Scalebar sbar;
 	protected Color bg = Toolbar.getBackgroundColor();
 
 	public CudaRaycaster(ImagePlus imp, int wOut, int hOut) {
@@ -79,6 +80,7 @@ public class CudaRaycaster {
 
 		Calibration cal = imp.getCalibration();
 		bbox = new BoundingBox(wIn, hIn, dIn, cal.pixelWidth, cal.pixelHeight, cal.pixelDepth);
+		sbar = new Scalebar(wIn, hIn, dIn, cal.pixelWidth, cal.pixelHeight, cal.pixelDepth);
 
 		if(imp.getType() == ImagePlus.GRAY8)
 			initRaycaster8(nChannels, wIn, hIn, dIn, wOut, hOut);
@@ -92,6 +94,10 @@ public class CudaRaycaster {
 
 	public BoundingBox getBoundingBox() {
 		return bbox;
+	}
+
+	public Scalebar getScalebar() {
+		return sbar;
 	}
 
 	private static float[] calculateForwardTransform(float scale, float[] translation, float[] rotation, float[] center, float[] fromCalib, float[] toTransform) {
@@ -171,7 +177,8 @@ public class CudaRaycaster {
 			double[][] channelProperties,
 			float alphacorr,
 			float near,
-			float far) {
+			float far,
+			float pwOut) {
 
 		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
@@ -195,7 +202,7 @@ public class CudaRaycaster {
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
-		bbox.drawScalebar(ret, fwdTransform, invTransform);
+		sbar.drawScalebar(ret, fwdTransform, invTransform, pwOut);
 
 		float len = (float)Math.sqrt(invTransform[2] * invTransform[2] + invTransform[6] * invTransform[6] + invTransform[10] * invTransform[10]);
 

@@ -148,7 +148,8 @@ public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
 		return super.project(fwd, inv, kf.getChannelProperties(),
 				alphacorr,
 				(float)kf.getNonchannelProperty(ExtendedRenderingState.NEAR),
-				(float)kf.getNonchannelProperty(ExtendedRenderingState.FAR));
+				(float)kf.getNonchannelProperty(ExtendedRenderingState.FAR),
+				transform.getOutputSpacing()[0] / transform.getScale());
 	}
 
 	@Override

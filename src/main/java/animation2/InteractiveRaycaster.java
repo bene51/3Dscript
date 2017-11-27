@@ -93,7 +93,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 		rs.setNonchannelProperty(ExtendedRenderingState.NEAR, croppingPanel.getNear());
 		rs.setNonchannelProperty(ExtendedRenderingState.FAR,  croppingPanel.getFar());
 
-		outputPanel = dialog.addOutputPanel(worker.out.getWidth(), worker.out.getHeight(), 1, renderer.getBoundingBox());
+		outputPanel = dialog.addOutputPanel(
+				worker.out.getWidth(), worker.out.getHeight(), 1,
+				renderer.getBoundingBox(),
+				renderer.getScalebar());
 
 		animationPanel = dialog.addAnimationPanel();
 
@@ -305,6 +308,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void boundingBoxChanged() {
 				push();
 			}
+
+			@Override
+			public void scalebarChanged() {
+				push();
+			}
 		});
 
 		dialog.addWindowListener(new WindowAdapter() {
@@ -365,8 +373,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 	public void setOutputSize(int tgtW, int tgtH) {
 		renderer.setTargetSize(tgtW, tgtH);
 		Calibration cal = worker.out.getCalibration();
-		renderer.getRenderingState().getFwdTransform().adjustOutputCalibration(cal);
-		renderer.getScalebar().setDefaultLength(renderer.getRenderingState().getFwdTransform().getOutputSpacing()[0]);
+		CombinedTransform trans = renderer.getRenderingState().getFwdTransform();
+		trans.adjustOutputCalibration(cal);
+		renderer.getScalebar().setDefaultLength(trans.getOutputSpacing()[0] / trans.getScale());
 		push(tgtW, tgtH);
 	}
 

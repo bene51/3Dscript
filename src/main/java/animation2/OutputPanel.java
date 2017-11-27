@@ -1,5 +1,6 @@
 package animation2;
 
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -29,12 +30,17 @@ import javax.swing.JTextField;
 
 import fiji.util.gui.GenericDialogPlus;
 import renderer3d.BoundingBox;
+import renderer3d.Scalebar;
+import renderer3d.Scalebar.Position;
 
 public class OutputPanel extends JPanel implements FocusListener, NumberField.Listener {
 
 	public static void main(String...strings) {
 		JFrame f = new JFrame("");
-		f.getContentPane().add(new OutputPanel(200, 200, 1, new BoundingBox(100, 100, 100, 1, 1, 1)));
+		f.getContentPane().add(new OutputPanel(
+				200, 200, 1,
+				new BoundingBox(100, 100, 100, 1, 1, 1),
+				new Scalebar(100, 100, 100, 1, 1, 1)));
 		f.pack();
 		f.setVisible(true);
 	}
@@ -47,16 +53,19 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 	public static interface Listener {
 		public void outputSizeChanged(int w, int h);
 		public void boundingBoxChanged();
+		public void scalebarChanged();
 	}
 
 	private final ArrayList<Listener> listeners =	new ArrayList<Listener>();
 
 	private final BoundingBox boundingBox;
+	private final Scalebar scaleBar;
 
-	public OutputPanel(int w, int h, float zStep, final BoundingBox boundingBox) {
+	public OutputPanel(int w, int h, float zStep, final BoundingBox boundingBox, final Scalebar scaleBar) {
 		super(new GridLayout(2, 1));
 
 		this.boundingBox = boundingBox;
+		this.scaleBar = scaleBar;
 
 		widthTF = new NumberField(4);
 		widthTF.setFocusable(true);
@@ -97,6 +106,16 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 		c.gridx++;
 		c.weightx = 1;
 		propertiesPanel.add(bbProperties, c);
+
+		final JCheckBox sbBox = new JCheckBox("Scalebar", scaleBar.isVisible());
+		final JButton sbProperties = new JButton("Properties");
+
+		c.gridx = 0; c.gridy = 1;
+		c.weightx = 0;
+		propertiesPanel.add(sbBox, c);
+		c.gridx++;
+		c.weightx = 1;
+		propertiesPanel.add(sbProperties, c);
 
 		add(propertiesPanel);
 
@@ -156,6 +175,106 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 				}
 			}
 		});
+
+		sbBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				scaleBar.setVisible(sbBox.isSelected());
+				fireScalebarChanged();
+			}
+		});
+
+		sbProperties.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Color color = scaleBar.getColor();
+				float width = scaleBar.getWidth();
+				Position position = scaleBar.getPosition();
+				float offset = scaleBar.getOffset();
+				float length = scaleBar.getLength();
+
+				String[] positions = Scalebar.Position.getNames();
+
+				final GenericDialogPlus gd = new GenericDialogPlus("");
+				gd.addChoice("Position", positions, position.toString());
+				final Choice pChoice = (Choice)gd.getChoices().lastElement();
+				gd.addNumericField("length", length, 0);
+				final TextField lTF = (TextField)gd.getNumericFields().lastElement();
+				gd.addNumericField("line width", width, 2);
+				final TextField lwTF = (TextField)gd.getNumericFields().lastElement();
+				gd.addNumericField("offset", offset, 0);
+				final TextField oTF = (TextField)gd.getNumericFields().lastElement();
+				gd.addSlider("red", 0, 255, color.getRed());
+				final Scrollbar redSlider = (Scrollbar)gd.getSliders().lastElement();
+				gd.addSlider("green", 0, 255, color.getGreen());
+				final Scrollbar greenSlider = (Scrollbar)gd.getSliders().lastElement();
+				gd.addSlider("blue", 0, 255, color.getBlue());
+				final Scrollbar blueSlider = (Scrollbar)gd.getSliders().lastElement();
+
+				pChoice.addItemListener(new ItemListener() {
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						scaleBar.setPosition(Scalebar.Position.values()[pChoice.getSelectedIndex()]);
+						fireScalebarChanged();
+					}
+				});
+				lTF.addTextListener(new TextListener() {
+					@Override
+					public void textValueChanged(TextEvent e) {
+						String s = lTF.getText();
+						try {
+							float f = (float)Double.parseDouble(s);
+							scaleBar.setLength(f);
+							fireScalebarChanged();
+						} catch(Exception ex) {}
+					}
+				});
+				oTF.addTextListener(new TextListener() {
+					@Override
+					public void textValueChanged(TextEvent e) {
+						String s = oTF.getText();
+						try {
+							float f = (float)Double.parseDouble(s);
+							scaleBar.setOffset(f);
+							fireScalebarChanged();
+						} catch(Exception ex) {}
+					}
+				});
+				lwTF.addTextListener(new TextListener() {
+					@Override
+					public void textValueChanged(TextEvent e) {
+						String s = lwTF.getText();
+						try {
+							float f = (float)Double.parseDouble(s);
+							scaleBar.setWidth(f);
+							fireScalebarChanged();
+						} catch(Exception ex) {}
+					}
+				});
+				AdjustmentListener li = new AdjustmentListener() {
+					@Override
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						int r = redSlider.getValue();
+						int g = greenSlider.getValue();
+						int b = blueSlider.getValue();
+						Color c = new Color(r, g, b);
+						scaleBar.setColor(c);
+						fireScalebarChanged();
+					}
+				};
+				redSlider.addAdjustmentListener(li);
+				greenSlider.addAdjustmentListener(li);
+				blueSlider.addAdjustmentListener(li);
+				gd.showDialog();
+				if(gd.wasCanceled()) {
+					scaleBar.setColor(color);
+					scaleBar.setWidth(width);
+					scaleBar.setPosition(position);
+					scaleBar.setLength(length);
+					scaleBar.setOffset(offset);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -199,5 +318,10 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 	private void fireBoundingBoxChanged() {
 		for(Listener l : listeners)
 			l.boundingBoxChanged();
+	}
+
+	private void fireScalebarChanged() {
+		for(Listener l : listeners)
+			l.scalebarChanged();
 	}
 }

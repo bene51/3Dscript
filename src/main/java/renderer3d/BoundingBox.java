@@ -5,8 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
-import ij.gui.Line;
-import ij.gui.Toolbar;
 import ij.process.ImageProcessor;
 
 public class BoundingBox {
@@ -14,8 +12,6 @@ public class BoundingBox {
 	private boolean boundingBoxVisible = true;
 	private float boundingBoxWidth = 1;
 	private Color boundingBoxColor = Color.GRAY;
-
-	private final boolean scalebar3D = false;
 
 	private static final int[][] QUADS = {
 			{0, 3, 2, 1},
@@ -98,42 +94,6 @@ public class BoundingBox {
 		double dot = normals[quad][0] * dirx + normals[quad][1] * diry + normals[quad][2] * dirz;
 
 		return dot < 0;
-	}
-
-	public void drawScalebar(ImageProcessor ip, float[] fwd, float[] inv) {
-		if(!scalebar3D)
-			return;
-		float x0 = positions[5][0] + 10;
-		float y0 = positions[5][1] - 10;
-		float z0 = positions[5][2] + 10;
-
-		float[] p0 = new float[3];
-		float[] px = new float[3];
-		float[] py = new float[3];
-		float[] pz = new float[3];
-
-		// the forward transformation applies to pixel coordinates, so
-		// w here corresponds to w * pw in real-world, we need 100 in real-world:
-		//            w ~ w * pw,
-		// w / (w * pw) ~ 1
-		//     100 / pw ~ lx
-		float lx = 100 / pw;
-		float ly = 100 / ph;
-		float lz = 100 / pd;
-
-		Transform.apply(fwd, x0, y0, z0, p0);
-		Transform.apply(fwd, x0 - lx, y0, z0, px);
-		Transform.apply(fwd, x0, y0 + ly, z0, py);
-		Transform.apply(fwd, x0, y0, z0 - lz, pz);
-
-		Graphics2D g = ((BufferedImage)ip.createImage()).createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setStroke(new java.awt.BasicStroke(Line.getWidth()));
-		g.setColor(Toolbar.getForegroundColor());
-
-		g.drawLine(Math.round(p0[0]), Math.round(p0[1]), Math.round(px[0]), Math.round(px[1]));
-		g.drawLine(Math.round(p0[0]), Math.round(p0[1]), Math.round(py[0]), Math.round(py[1]));
-		g.drawLine(Math.round(p0[0]), Math.round(p0[1]), Math.round(pz[0]), Math.round(pz[1]));
 	}
 
 	public void drawFrontClippingPlane(ImageProcessor ip, float[] fwd, float[] inv, float near) {
