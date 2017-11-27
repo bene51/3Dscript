@@ -122,6 +122,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					CombinedTransform t = kf.getFwdTransform();
 					t.translateBy(dx, dy, 0, true);
 					push(kf);
+					transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 				}
 				else {
 					float speed = 0.7f;
@@ -137,6 +138,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					CombinedTransform t = kf.getFwdTransform();
 					t.rotateBy(ax, ay);
 					push(kf);
+					transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 				}
 			}
 		};
@@ -174,7 +176,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 					push(kf);
 
 					IJ.showStatus(ax + "\u00B0" + ", " + ay + "\u00B0");
-					transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
+					// transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 				}
 			}
 
