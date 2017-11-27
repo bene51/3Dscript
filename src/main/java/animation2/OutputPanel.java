@@ -42,10 +42,10 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 	private static final long serialVersionUID = 1L;
 
 
-	private NumberField widthTF, heightTF, zStepTF;
+	private NumberField widthTF, heightTF; // , zStepTF;
 
 	public static interface Listener {
-		public void outputSizeChanged(int w, int h, float zStep);
+		public void outputSizeChanged(int w, int h);
 		public void boundingBoxChanged();
 	}
 
@@ -69,17 +69,11 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 		heightTF.setIntegersOnly(true);
 		heightTF.setLimits(0, 5000);
 
-		zStepTF = new NumberField(4);
-		zStepTF.setText(Float.toString(zStep));
-		zStepTF.setLimits(1, 5);
-
 		JPanel sizePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
 
 		sizePanel.add(widthTF);
 		sizePanel.add(new JLabel("   x "));
 		sizePanel.add(heightTF);
-		sizePanel.add(new JLabel("     zStep:"));
-		sizePanel.add(zStepTF);
 
 		add(sizePanel);
 
@@ -87,8 +81,6 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 		widthTF.addNumberFieldFocusListener(this);
 		heightTF.addListener(this);
 		heightTF.addNumberFieldFocusListener(this);
-		zStepTF.addListener(this);
-		zStepTF.addNumberFieldFocusListener(this);
 
 		JPanel propertiesPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -190,14 +182,9 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 		return (int)Double.parseDouble(heightTF.getText());
 	}
 
-	public float getZStep() {
-		return (float)Double.parseDouble(zStepTF.getText());
-	}
-
-	public void setOutputSize(int width, int height, float zStep) {
+	public void setOutputSize(int width, int height) {
 		widthTF.setText(Integer.toString(width));
 		heightTF.setText(Integer.toString(height));
-		zStepTF.setText(Float.toString(zStep));
 	}
 
 	public void addOutputPanelListener(Listener l) {
@@ -206,7 +193,7 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 
 	private void fireOutputSizeChanged() {
 		for(Listener l : listeners)
-			l.outputSizeChanged(getOutputWidth(), getOutputHeight(), getZStep());
+			l.outputSizeChanged(getOutputWidth(), getOutputHeight());
 	}
 
 	private void fireBoundingBoxChanged() {

@@ -294,9 +294,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		outputPanel.addOutputPanelListener(new OutputPanel.Listener() {
 			@Override
-			public void outputSizeChanged(int tgtW, int tgtH, float zStep) {
+			public void outputSizeChanged(int tgtW, int tgtH) {
 				setOutputSize(tgtW, tgtH);
-				setZStep(zStep);
 			}
 
 			@Override
@@ -333,7 +332,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		outsize.width = (int)Math.round(outsize.width * mag);
 		outsize.height = (int)Math.round(outsize.height * mag);
 
-		outputPanel.setOutputSize(outsize.width, outsize.height, 1);
+		outputPanel.setOutputSize(outsize.width, outsize.height);
 
 		setOutputSize(outsize.width, outsize.height);
 
