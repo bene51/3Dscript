@@ -31,6 +31,7 @@ import renderer3d.RecordingProvider;
 import renderer3d.Renderer3D;
 import renderer3d.RenderingAlgorithm;
 import renderer3d.Transform;
+import textanim.Animator;
 import textanim.CombinedTransform;
 
 /*
@@ -365,6 +366,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		renderer.setTargetSize(tgtW, tgtH);
 		Calibration cal = worker.out.getCalibration();
 		renderer.getRenderingState().getFwdTransform().adjustOutputCalibration(cal);
+		renderer.getScalebar().setDefaultLength(renderer.getRenderingState().getFwdTransform().getOutputSpacing()[0]);
 		push(tgtW, tgtH);
 	}
 
@@ -390,8 +392,39 @@ public class InteractiveRaycaster implements PlugInFilter {
 		setTransformation(0, 0, 0, 0, 0, 0, 1);
 	}
 
+	public void setGUIFromRenderingState(ExtendedRenderingState rs) {
+		// Contrast Panel
+		this.contrastPanel.setRenderingSettings(rs.getChannelProperties());
+
+		// Transformation Panel
+		CombinedTransform t = rs.getFwdTransform();
+		transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
+
+		// Cropping Panel
+		int bbx0 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN);
+		int bby0 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN);
+		int bbz0 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN);
+		int bbx1 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX);
+		int bby1 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX);
+		int bbz1 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX);
+		croppingPanel.setBoundingBox(bbx0, bby0, bbz0, bbx1, bby1, bbz1);
+
+		int near = (int)rs.getNonchannelProperty(ExtendedRenderingState.NEAR);
+		int far  = (int)rs.getNonchannelProperty(ExtendedRenderingState.FAR);
+		croppingPanel.setNearAndFar(near, far);
+
+		// TODO Output Panel, once its options are included in the RenderingState
+	}
+
 	public void startTextBasedAnimation() {
-		AnimationEditor editor = new AnimationEditor(renderer, RecordingProvider.getInstance());
+		Animator animator = new Animator(renderer);
+		animator.addAnimationListener(new Animator.Listener() {
+			@Override
+			public void animationFinished() {
+				setGUIFromRenderingState(renderer.getRenderingState());
+			}
+		});
+		AnimationEditor editor = new AnimationEditor(renderer, animator, RecordingProvider.getInstance());
 		editor.setVisible(true);
 	}
 

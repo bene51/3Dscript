@@ -267,6 +267,25 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		updateTextfieldsFromSliders();
 	}
 
+	public void setRenderingSettings(double[][] rs) {
+		this.renderingSettings = rs;
+		setChannel(channel);
+		for(int i = 0; i < renderingSettings.length; i++) {
+			final int ch = i;
+			int red   = (int)rs[ch][ExtendedRenderingState.CHANNEL_COLOR_RED];
+			int green = (int)rs[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN];
+			int blue  = (int)rs[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE];
+			Color color = new Color(red, green, blue);
+			if (red >= 100 && green >= 100 && blue >= 100)
+				color = Color.black;
+
+			double weight = rs[ch][ExtendedRenderingState.WEIGHT];
+
+			SingleSlider wslider = weightSliders[i];
+			wslider.set(100, (int)Math.round(100 * weight), color);
+		}
+	}
+
 	private SingleSlider addSingleSlider(String label, int realMax, int setMax, Color color, GridBagConstraints c) {
 		SingleSlider slider = new SingleSlider(realMax, setMax, color);
 

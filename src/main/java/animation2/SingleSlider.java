@@ -128,6 +128,7 @@ public class SingleSlider extends JPanel implements FocusListener, NumberField.L
 
 	public void set(final int realMax, final int setMax, Color color) {
 		slider.set(realMax, setMax, color);
+		maxTF.setText(Integer.toString(slider.setMax));
 	}
 
 	public void addSliderChangeListener(Listener l) {

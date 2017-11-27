@@ -17,6 +17,8 @@ public class Animator {
 		public void animationFinished();
 	}
 
+	private ArrayList<Listener> listeners = new ArrayList<Listener>();
+
 	private final IRenderer3D renderer;
 	private final List<Animation> animations;
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
@@ -28,12 +30,16 @@ public class Animator {
 		animations = new ArrayList<Animation>();
 	}
 
-	public void render(final int from, final int to, final Listener listener) throws InterruptedException, ExecutionException {
+	public void addAnimationListener(Listener l) {
+		this.listeners.add(l);
+	}
+
+	public void render(final int from, final int to) throws InterruptedException, ExecutionException {
 		exec.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					dorender(from, to, listener);
+					dorender(from, to);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -49,7 +55,7 @@ public class Animator {
 		return isExecuting;
 	}
 
-	private ImagePlus dorender(int from, int to, Listener listener) {
+	private ImagePlus dorender(int from, int to) {
 		isExecuting = true;
 		stopRendering = false;
 		List<RenderingState> frames = createRenderingStates(from, to);
@@ -78,7 +84,7 @@ public class Animator {
 		}
 
 		isExecuting = false;
-		listener.animationFinished();
+		fireAnimationFinished();
 		return ret;
 	}
 
@@ -111,5 +117,10 @@ public class Animator {
 			previous = kf;
 		}
 		return renderingStates;
+	}
+
+	private void fireAnimationFinished() {
+		for(Listener l : listeners)
+			l.animationFinished();
 	}
 }

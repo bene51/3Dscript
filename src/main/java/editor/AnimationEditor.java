@@ -55,7 +55,6 @@ import parser.Preprocessor;
 import renderer3d.Transform;
 import textanim.Animation;
 import textanim.Animator;
-import textanim.Animator.Listener;
 import textanim.CustomDecimalFormat;
 import textanim.IRecordingProvider;
 import textanim.IRecordingProvider.RecordingItem;
@@ -64,7 +63,7 @@ import textanim.RenderingState;
 
 
 @SuppressWarnings("serial")
-public class AnimationEditor extends JFrame implements ActionListener, ChangeListener, DocumentListener
+public class AnimationEditor extends JFrame implements ActionListener, ChangeListener, DocumentListener, Animator.Listener
 {
 //	public static void main(String[] args) {
 //		new AnimationEditor(null).setVisible(true);
@@ -103,10 +102,15 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	private final IRecordingProvider recordingProvider;
 
 	public AnimationEditor(IRenderer3D renderer, IRecordingProvider recordingProvider) {
+		this(renderer, new Animator(renderer), recordingProvider);
+	}
+
+	public AnimationEditor(IRenderer3D renderer, Animator animator, IRecordingProvider recordingProvider) {
 		super("Script Editor");
 		this.renderer = renderer;
+		this.animator = animator;
 		this.recordingProvider = recordingProvider;
-		this.animator = new Animator(renderer);
+		animator.addAnimationListener(this);
 
 		loadPreferences();
 
@@ -982,17 +986,18 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 					animator.addAnimation(ta);
 				}
 			}
-			animator.render(from, to, new Listener() {
-				@Override
-				public void animationFinished() {
-					tab.restore();
-				}
-			});
+			animator.render(from, to);
 		} catch(Exception ex) {
 			handleException(ex);
 			tab.restore();
 			throw new RuntimeException("Error reading animations", ex);
 		}
+	}
+
+	// Animator.Listener interface
+	@Override
+	public void animationFinished() {
+		getTab().restore();
 	}
 
 	public void cancelAnimation() {
