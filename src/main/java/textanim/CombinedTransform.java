@@ -145,7 +145,7 @@ public class CombinedTransform {
 		scale *= factor;
 
 
-		// TODO
+		// TODO - not sure if this is still a TODO item
 //		Calibration cal = out.getCalibration();
 //		cal.pixelWidth = pdOut[0] / scale[0];
 //		cal.pixelHeight = pdOut[1] / scale[0];

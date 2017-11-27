@@ -90,7 +90,6 @@ public class FindAndReplaceDialog extends JDialog implements ActionListener {
 				if (e.getKeyCode() == KeyEvent.VK_ESCAPE) dispose();
 			}
 		};
-		// TODO: handle via actionmap
 		for (final Component component : getContentPane().getComponents())
 			component.addKeyListener(listener);
 		searchField.addKeyListener(listener);

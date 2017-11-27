@@ -229,8 +229,6 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 	}
 
 	/**
-	 * TODO
-	 *
 	 * @param direction
 	 * @param select
 	 * @return
@@ -422,8 +420,6 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 	}
 
 	/**
-	 * TODO
-	 *
 	 * @param file
 	 */
 	public void setFileName(final File file) {
