@@ -85,7 +85,7 @@ public class IJ3DRenderer implements IRenderer3D {
 
 	@Override
 	public IKeywordFactory getKeywordFactory() {
-		return new IJ3DKeywordFactory();
+		return IJ3DKeywordFactory.getInstance();
 	}
 
 	@Override
