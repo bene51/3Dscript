@@ -77,7 +77,15 @@ public class InteractiveRaycaster implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		calculateChannelMinAndMax();
 
-		renderer = new Renderer3D(image, image.getWidth(), image.getHeight());
+		try {
+			renderer = new Renderer3D(image, image.getWidth(), image.getHeight());
+		} catch(UnsatisfiedLinkError e) {
+			IJ.handleException(e);
+			IJ.error("Either your graphics card doesn't support OpenCL "
+					+ "or your drivers are not uptodate. Please install "
+					+ "the newest drivers for your card and try again.");
+			return;
+		}
 		ExtendedRenderingState rs = renderer.getRenderingState();
 		worker = new RenderingThread(renderer);
 
