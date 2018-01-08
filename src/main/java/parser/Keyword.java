@@ -5,14 +5,31 @@ import java.util.Map;
 
 public interface Keyword {
 
+	/**
+	 * The actual keyword text.
+	 */
 	public String getKeyword();
 
+	/**
+	 * A list of strings that describe each expected value
+	 */
 	public String[] getAutocompletionDescriptions();
 
+	/**
+	 * Returns an array with the indices of the rendering state properties
+	 * (i.e. the indices in the nonchannelproperties and channelproperties
+	 * arrays defined in RenderingState).
+	 */
 	public int[] getRenderingStateProperties();
 
+	/**
+	 * Returns the length of the keyword.
+	 */
 	public int length();
 
+	/**
+	 * Returns a map that assigns pre-defined strings to values.
+	 */
 	public Map<String, double[]> getReplacementMap();
 
 
