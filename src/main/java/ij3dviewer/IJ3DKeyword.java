@@ -23,14 +23,17 @@ public enum IJ3DKeyword implements Keyword {
 	private final Map<String, double[]> replacementMap;
 
 	private IJ3DKeyword(String text, String[] autocompletionDesc, int... rsProperties) {
-		this(text, autocompletionDesc, new HashMap<String, double[]>(), rsProperties);
+		this(text, autocompletionDesc, null, rsProperties);
 	}
 
 	private IJ3DKeyword(String text, String[] autocompletionDesc, Map<String, double[]> replacementMap, int... rsProperties) {
 		this.keyword = text;
 		this.autocompletionDesc = autocompletionDesc;
 		this.rsProperties = rsProperties;
-		this.replacementMap = replacementMap;
+		if(replacementMap == null)
+			this.replacementMap = new HashMap<String, double[]>();
+		else
+			this.replacementMap = replacementMap;
 	}
 
 	@Override

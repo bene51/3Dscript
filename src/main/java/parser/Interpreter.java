@@ -1,6 +1,7 @@
 package parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import parser.Autocompletion.ChoiceAutocompletion;
@@ -403,6 +404,9 @@ public class Interpreter {
 			autocompletionDescriptions = cp.getAutocompletionDescriptions();
 			replacements = cp.getReplacementMap();
 		}
+
+		if(replacements == null)
+			replacements = new HashMap<String, double[]>();
 
 		space(result, false);
 		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), GeneralKeyword.TO.getKeyword()));
