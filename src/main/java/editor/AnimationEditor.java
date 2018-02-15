@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,10 +49,7 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.io.OpenDialog;
 import parser.Keyword.GeneralKeyword;
-import parser.ParsingResult;
-import parser.Preprocessor;
 import renderer3d.Transform;
-import textanim.Animation;
 import textanim.Animator;
 import textanim.CustomDecimalFormat;
 import textanim.IRecordingProvider;
@@ -960,33 +956,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		tab.showOutput();
 		tab.prepare();
 
-		HashMap<String, String> macros = new HashMap<String, String>();
-		ArrayList<String> lines = new ArrayList<String>();
+		String text = tab.editorPane.getText();
 
 		try {
-			Preprocessor.preprocess(tab.editorPane.getText(), lines, macros);
-
-			ImagePlus imp = renderer.getImage();
-			float[] rotcenter = new float[] {
-					(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
-					(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
-					(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
-			};
-			animator.clearAnimations();
-			int from = Integer.MAX_VALUE;
-			int to = 0;
-			for(String line : lines) {
-				ParsingResult pr = new ParsingResult();
-				parser.Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
-				from = Math.min(from, pr.getFrom());
-				to   = Math.max(to, pr.getTo());
-				Animation ta = pr.getResult();
-				if(ta != null) {
-					ta.pickScripts(macros);
-					animator.addAnimation(ta);
-				}
-			}
-			animator.render(from, to);
+			animator.render(text);
 		} catch(Exception ex) {
 			handleException(ex);
 			tab.restore();

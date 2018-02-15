@@ -1,14 +1,21 @@
 package textanim;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
+import parser.NoSuchMacroException;
+import parser.ParsingResult;
+import parser.Preprocessor;
+import parser.Preprocessor.PreprocessingException;
 import renderer3d.Transform;
 
 public class Animator {
@@ -47,6 +54,35 @@ public class Animator {
 				}
 			}
 		});
+	}
+
+	public void render(String text) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+		HashMap<String, String> macros = new HashMap<String, String>();
+		ArrayList<String> lines = new ArrayList<String>();
+
+		Preprocessor.preprocess(text, lines, macros);
+
+		ImagePlus imp = renderer.getImage();
+		float[] rotcenter = new float[] {
+				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
+				(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
+				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
+		};
+		clearAnimations();
+		int from = Integer.MAX_VALUE;
+		int to = 0;
+		for(String line : lines) {
+			ParsingResult pr = new ParsingResult();
+			parser.Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
+			from = Math.min(from, pr.getFrom());
+			to   = Math.max(to, pr.getTo());
+			Animation ta = pr.getResult();
+			if(ta != null) {
+				ta.pickScripts(macros);
+				addAnimation(ta);
+			}
+		}
+		render(from, to);
 	}
 
 	public void cancelRendering() {
