@@ -99,12 +99,17 @@ public class Animator {
 		List<RenderingState> frames = createRenderingStates(from, to);
 		ImageStack stack = null;
 		ImagePlus ret = null;
-		for(RenderingState kf : frames) {
+		for(int f = 0; f < frames.size(); f++) {
+			RenderingState kf = frames.get(f);
 			if(stopRendering)
 				break;
 //if(kf.getFrame() < 52)
 //	continue;
-			ImageProcessor ip = renderer.render(kf);
+
+			int fIdx = frames.indexOf(kf);
+			boolean alreadyRendered = fIdx >= 0 && fIdx < f;
+			ImageProcessor ip = alreadyRendered ? stack.getProcessor(fIdx + 1).duplicate() : renderer.render(kf);
+
 			if(stack == null)
 				stack = new ImageStack(ip.getWidth(), ip.getHeight());
 			stack.addSlice(ip);

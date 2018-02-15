@@ -1,5 +1,7 @@
 package textanim;
 
+import java.util.Arrays;
+
 public class RenderingState implements Comparable<RenderingState> {
 
 
@@ -94,5 +96,17 @@ public class RenderingState implements Comparable<RenderingState> {
 		if(frame < o.frame) return -1;
 		if(frame > o.frame) return +1;
 		return 0;
+	}
+
+	public boolean equalsIgnoreFrame(RenderingState rs) {
+		return Arrays.equals(rs.fwdTransform.calculateForwardTransform(), fwdTransform.calculateForwardTransform()) &&
+				Arrays.equals(rs.nonChannelProperties, nonChannelProperties) &&
+				Arrays.equals(rs.channelProperties, channelProperties);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		RenderingState rs = (RenderingState)o;
+		return equalsIgnoreFrame(rs);
 	}
 }
