@@ -34,8 +34,10 @@ public class Animator {
 		this.listeners.add(l);
 	}
 
+	private Future<?> submitted = null;
+
 	public void render(final int from, final int to) throws InterruptedException, ExecutionException {
-		exec.submit(new Runnable() {
+		submitted = exec.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
