@@ -103,8 +103,6 @@ public class Animator {
 			RenderingState kf = frames.get(f);
 			if(stopRendering)
 				break;
-//if(kf.getFrame() < 52)
-//	continue;
 
 			int fIdx = frames.indexOf(kf);
 			boolean alreadyRendered = fIdx >= 0 && fIdx < f;
