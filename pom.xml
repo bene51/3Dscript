@@ -12,11 +12,78 @@
 		<relativePath />
 	</parent>
 
+	<groupId>bla</groupId>
 	<artifactId>Animation2_</artifactId>
 
-	<name>plugins/Animation2_.jar</name>
-	<description></description>
+	<name>Animation2_.jar</name>
+	
+	<description>TODO</description>
+	
+	<url>TODO</url>
+	
+	<inceptionYear>2016</inceptionYear>
+	
+	<organization>
+		<name>OICE</name>
+		<url>http://oice.uni-erlangen.de</url>
+	</organization>
+	
+	<licenses>
+		<license>
+			<name>GNU General Public License v3+</name>
+			<url>https://www.gnu.org/licenses/gpl.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
+	<developers>
+		<developer>
+			<id>bschmid</id>
+			<name>Benjamin Schmid</name>
+			<url>TODO</url>
+			<roles>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+				<role>founder</role>
+			</roles>
+		</developer>
+	</developers>
+	
+	<contributors>
+		<contributor>
+			<name>none</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>none</name>
+		</mailingList>
+	</mailingLists>
+	
+	<scm>
+	<connection>TODO</connection>
+	</scm>
+
+	<issueManagement>
+		<system>TODO</system>
+		<url>TODO</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>none</system>
+	</ciManagement>
+	
+	<properties>
+		<license.licenseName>gpl_v3</license.licenseName>
+		<license.copyrightOwners>Benjamin Schmid</license.copyrightOwners>
+	</properties>
+
+	
 	<dependencies>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -51,6 +118,20 @@
 			<artifactId>vecmath</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 	<repositories>
 		<repository>
