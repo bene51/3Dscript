@@ -21,10 +21,10 @@ import ij.process.ImageProcessor;
  *   - change input image/texture dynamically
  *   - CPU fallback
  */
-public class CudaRaycaster {
+public class OpenCLRaycaster {
 
 	static {
-		System.loadLibrary("CudaRaycaster");
+		System.loadLibrary("OpenCLRaycaster");
 	}
 
 	private static native void initRaycaster8(
@@ -70,7 +70,7 @@ public class CudaRaycaster {
 	protected Scalebar sbar;
 	protected Color bg = Toolbar.getBackgroundColor();
 
-	public CudaRaycaster(ImagePlus imp, int wOut, int hOut) {
+	public OpenCLRaycaster(ImagePlus imp, int wOut, int hOut) {
 		wIn = imp.getWidth();
 		hIn = imp.getHeight();
 		dIn = imp.getNSlices();

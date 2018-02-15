@@ -13,7 +13,7 @@ import textanim.IKeywordFactory;
 import textanim.IRenderer3D;
 import textanim.RenderingState;
 
-public class Renderer3D extends CudaRaycaster implements IRenderer3D  {
+public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 
 	private final ExtendedRenderingState rs;
 

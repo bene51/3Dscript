@@ -2,8 +2,8 @@ package animation2;
 
 import ij.ImagePlus;
 import ij.measure.Calibration;
-import renderer3d.CudaRaycaster;
 import renderer3d.ExtendedRenderingState;
+import renderer3d.OpenCLRaycaster;
 import renderer3d.Renderer3D;
 
 public class RenderingThread {
@@ -62,7 +62,7 @@ public class RenderingThread {
 					break;
 			}
 		}
-		CudaRaycaster.close();
+		OpenCLRaycaster.close();
 	}
 
 	public synchronized void push(ExtendedRenderingState rs, int w, int h, int imaget) {
