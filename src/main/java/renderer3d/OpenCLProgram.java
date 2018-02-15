@@ -2,6 +2,8 @@ package renderer3d;
 
 public class OpenCLProgram {
 
+	public static final boolean useLights = false;
+
 	public static void main(String[] args) {
 		System.out.println(makeSource(2, false, true));
 	}
@@ -181,6 +183,51 @@ public class OpenCLProgram {
 
 	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha) {
 		String source = makeCommonSource(channels) +
+			"inline float2\n" +
+			"sample(float3 p0,\n" +
+			"		__read_only image3d_t texture,\n" +
+			"		sampler_t sampler,\n" +
+			"		float maxv,\n" +
+			"		float2 minAlphaColor,\n" +
+			"		float2 dAlphaColor,\n" +
+			"		float2 gammaAlphaColor,\n" +
+			"		float alphacorr) {\n" +
+	        "	float v0 = maxv * read_imagef(texture, sampler, (float4)(p0 + 0.5f, 0)).x;\n" +
+	        "	float2 rAlphaColor = pow(\n" +
+	        "	        clamp((v0 - minAlphaColor) / dAlphaColor, 0.0f, 1.0f),\n" +
+	        "	        gammaAlphaColor);\n" +
+	        "\n" +
+	        "	// Opacity correction:\n" +
+	        "	rAlphaColor.x = 1 - pow(1 - rAlphaColor.x, alphacorr);\n" +
+	        "	return rAlphaColor;\n" +
+	        "}\n" +
+	        "\n" +
+	        "float4\n" +
+	        "grad(float3 p0,\n" +
+	        "        __read_only image3d_t texture,\n" +
+	        "        sampler_t sampler,\n" +
+	        "        float maxv,\n" +
+	        "        float2 minAlphaColor,\n" +
+	        "        float2 dAlphaColor,\n" +
+	        "        float2 gammaAlphaColor,\n" +
+	        "        float alphacorr) {\n" +
+//	        "	float2 dx = sample((float3)(p0.x + 2, p0.y, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
+//	        "                alphaColor0;\n" +
+//	        "	float2 dy = sample((float3)(p0.x, p0.y + 2, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
+//	        "                alphaColor0;\n" +
+//	        "	float2 dz = sample((float3)(p0.x, p0.y, p0.z + 2), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
+//	        "                alphaColor0;\n" +
+	        "	float2 dx = sample((float3)(p0.x + 1, p0.y, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
+	        "                sample((float3)(p0.x - 1, p0.y, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr);\n" +
+	        "	float2 dy = sample((float3)(p0.x, p0.y + 1, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
+	        "                sample((float3)(p0.x, p0.y - 1, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr);\n" +
+	        "	float2 dz = sample((float3)(p0.x, p0.y, p0.z + 1), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
+	        "                sample((float3)(p0.x, p0.y, p0.z - 1), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr);\n" +
+//	        "	float4 grad = (float4)(dx.x * dx.y, dy.x * dy.y, dz.x * dz.y, 0);\n" +
+	        "	float4 grad = (float4)(dx.y, dy.y, dz.y, 0);\n" +
+	        "	return normalize(grad);\n" +
+			"}\n" +
+	        "\n" +
 			"kernel void\n" +
 			"raycastKernel(\n";
 		for(int c = 0; c < channels; c++) {
@@ -228,7 +275,7 @@ public class OpenCLProgram {
 			"		uint4 background = read_imageui(bgtexture, bgsampler, p);\n" +
 			"\n";
 		}
-			source = source +
+		source = source +
 			"		int3 bb0 = data_origin;\n" +
 			"		int3 bb1 = data_origin + data_size;\n" +
 			"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, inc, &inear, &ifar);\n" +
@@ -247,6 +294,21 @@ public class OpenCLProgram {
 //			"		if(x == 0 && y == 0) printf(\"n = %d\\n\", n);\n" +
 			"		unsigned int maxv = (1 << bitsPerSample);\n" +
 			"";
+		final float[] light = new float[] {1, 1, 1};
+		float tmp = (float)Math.sqrt(light[0] * light[0] + light[1] * light[1] + light[2] * light[2]);
+		light[0] /= tmp;
+		light[1] /= tmp;
+		light[2] /= tmp;
+
+		// halfway vector H = (L + V) / abs(L + V), L = light, V = view = (0, 0, 1)
+		final float[] ha = new float[] {
+				light[0],
+				light[1],
+				light[2] + 1};
+		tmp = (float)Math.sqrt(ha[0] * ha[0] + ha[1] * ha[1] + ha[2] * ha[2]);
+		ha[0] /= tmp;
+		ha[1] /= tmp;
+		ha[2] /= tmp;
 		for(int c = 0; c < channels; c++) {
 			source = source +
 			"		float color" + c + " = 0;\n" +
@@ -256,19 +318,44 @@ public class OpenCLProgram {
 			"		float2 gammaAlphaColor" + c + " = (float2)(alphagamma" + c + ", colorgamma" + c + ");\n" +
 			"		float2 dAlphaColor" + c + "     = maxAlphaColor" + c + " - minAlphaColor" + c + ";\n";
 		}
-		source = source + "\n" +
+		source = source + "\n";
+		if(useLights) {
+			source = source +
+			"		float4 li = (float4)(" + light[0] + ", " + light[1] + ", " + light[2] + ", 0);\n" +
+			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
+			"		float4 ha = (float4)(" + ha[0]    + ", " + ha[1]    + ", " + ha[2]    + ", 0);\n" +
+			"		ha = normalize((float4)(multiplyMatrixVector(inverseTransform, ha), 0));\n" +
+			"		float kd = 0.3;\n" +
+			"		float ks = 0.3;\n" +
+			"		float ko = 0.4;\n" +
+			"		float shininess = 5;\n";
+		}
+		source = source +
 			"		for(int step = 0; step < n; step++) {\n" +
 			"			if(all(p0 >= convert_float3(bb0) && p0 < convert_float3(bb1))) {\n" +
 			"\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
-			"				float v" + c + " = maxv * read_imagef(texture" + c + ", sampler, (float4)(p0 + 0.5f, 0)).x + 0.5;\n" +
-			"				float2 rAlphaColor" + c + " = pow(\n" +
-			"					clamp((v" + c + " - minAlphaColor" + c + ") / dAlphaColor" + c + ", 0.0f, 1.0f),\n" +
-			"					gammaAlphaColor" + c + ");\n" +
-			"\n" +
-			"				// Opacity correction:\n" +
-			"				rAlphaColor" + c + ".x = 1 - pow(1 - rAlphaColor" + c + ".x, alphacorr);\n";
+//			"				bool dbg = (x == 128 && y == 128 && p0.z == 30);\n" +
+			"				float2 rAlphaColor" + c + " = sample(p0, texture" + c + ", sampler, maxv, minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
+			if(!useLights)
+				continue;
+			source = source +
+			"				float4 grad" + c + " = grad(p0, texture" + c + ", sampler, maxv, minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n" +
+//			"				grad" + c + " = (float4)(multiplyMatrixVector(inverseTransform, grad" + c + "), 0);\n" +
+//			"				if(dbg) {\n" +
+//			"					printf(\"grad = %f, %f, %f\\n\", grad" + c + ".x, grad" + c + ".y, grad" + c + ".z);\n" +
+//			"					printf(\"li = %f, %f, %f\\n\", li.x, li.y, li.z);\n" +
+//			"					printf(\"ha = %f, %f, %f\\n\", ha.x, ha.y, ha.z);\n" +
+//			"					printf(\"kd = %f\\n\", kd);\n" +
+//			"					printf(\"ks = %f\\n\", ks);\n" +
+//			"					printf(\"tmpd = %f\\n\", tmpd);\n" +
+//			"					printf(\"tmph = %f\\n\", tmph);\n" +
+//			"				}\n" +
+			"				rAlphaColor" + c + ".y = \n" +
+			"										ko * rAlphaColor" + c + ".y +\n" +
+			"										kd * fmax((float)0, dot(li, grad" + c + ")) +\n" +
+			"										ks * fmax((float)0, pow(dot(ha, grad" + c + "), shininess));\n";
 		}
 		source = source +
 			"\n" +
@@ -301,6 +388,7 @@ public class OpenCLProgram {
 			"		alpha" + c + " = alpha" + c + " * weight" + c + ";\n";
 		}
 		source = source +
+					// color0 + rgb0.x + color1 * rgb1.x + ...
 			"		unsigned int out_r = " + sumOfProducts("color", "rgb", ".x", channels) + ";\n" +
 			"		unsigned int out_g = " + sumOfProducts("color", "rgb", ".y", channels) + ";\n" +
 			"		unsigned int out_b = " + sumOfProducts("color", "rgb", ".z", channels) + ";\n" +
