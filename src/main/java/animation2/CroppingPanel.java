@@ -68,6 +68,22 @@ public class CroppingPanel extends JPanel {
 		return slider;
 	}
 
+	public static double getNear(ImagePlus image) {
+		int w = image.getWidth();
+		int h = image.getHeight();
+		int d = image.getNSlices();
+		int max = Math.max(w, Math.max(h, d));
+		return -2 * max;
+	}
+
+	public static double getFar(ImagePlus image) {
+		int w = image.getWidth();
+		int h = image.getHeight();
+		int d = image.getNSlices();
+		int max = Math.max(w, Math.max(h, d));
+		return 2 * max;
+	}
+
 	public CroppingPanel(ImagePlus image) {
 		super();
 		GridBagLayout gridbag = new GridBagLayout();
