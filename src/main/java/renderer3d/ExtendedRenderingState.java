@@ -26,11 +26,17 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int CHANNEL_COLOR_RED   = 7;
 	public static final int CHANNEL_COLOR_GREEN = 8;
 	public static final int CHANNEL_COLOR_BLUE  = 9;
+	public static final int USE_LIGHT           = 10;
+	public static final int LIGHT_K_OBJECT      = 11;
+	public static final int LIGHT_K_DIFFUSE     = 12;
+	public static final int LIGHT_K_SPECULAR    = 13;
+	public static final int LIGHT_SHININESS     = 14;
+
 
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[8];
-		channelProperties = new double[nChannels][10];
+		channelProperties = new double[nChannels][15];
 	}
 
 	public ExtendedRenderingState(
@@ -63,7 +69,11 @@ public class ExtendedRenderingState extends RenderingState {
 			channelProperties[c][CHANNEL_COLOR_RED]   = cC.getRed();
 			channelProperties[c][CHANNEL_COLOR_GREEN] = cC.getGreen();
 			channelProperties[c][CHANNEL_COLOR_BLUE]  = cC.getBlue();
-
+			channelProperties[c][USE_LIGHT]        = renderingSettings[c].useLight ? 1 : 0;
+			channelProperties[c][LIGHT_K_OBJECT]   = renderingSettings[c].k_o;
+			channelProperties[c][LIGHT_K_DIFFUSE]  = renderingSettings[c].k_d;
+			channelProperties[c][LIGHT_K_SPECULAR] = renderingSettings[c].k_s;
+			channelProperties[c][LIGHT_SHININESS]  = renderingSettings[c].shininess;
 		}
 	}
 

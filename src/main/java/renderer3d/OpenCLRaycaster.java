@@ -193,6 +193,11 @@ public class OpenCLRaycaster {
 					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_RED]),
 					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_GREEN]),
 					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_BLUE]),
+					(int)(channelProperties[c][ExtendedRenderingState.USE_LIGHT]),
+					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_OBJECT]),
+					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE]),
+					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_SPECULAR]),
+					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_SHININESS]),
 //					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}

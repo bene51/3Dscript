@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,11 +21,14 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import renderer3d.ExtendedRenderingState;
 import renderer3d.RenderingAlgorithm;
@@ -57,6 +61,15 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	private NumberField minATF = new NumberField(4);
 	private NumberField maxATF = new NumberField(4);
 	private NumberField gammaATF = new NumberField(4);
+
+	private NumberField koTF = new NumberField(4);
+	private NumberField kdTF = new NumberField(4);
+	private NumberField ksTF = new NumberField(4);
+	private NumberField shininessTF = new NumberField(4);
+
+	private JPanel lightPanel;
+
+	private JCheckBox useLightCB;
 
 	private JComboBox<String> channelChoice;
 
@@ -103,8 +116,28 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		gammaATF.addListener(this);
 		gammaATF.addNumberFieldFocusListener(this);
 
+		koTF.addListener(this);
+		koTF.addNumberFieldFocusListener(this);
+		kdTF.addListener(this);
+		kdTF.addNumberFieldFocusListener(this);
+		ksTF.addListener(this);
+		ksTF.addNumberFieldFocusListener(this);
+		shininessTF.addListener(this);
+		shininessTF.addNumberFieldFocusListener(this);
+
 		gammaCTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.INTENSITY_GAMMA], 1));
 		gammaATF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.ALPHA_GAMMA], 1));
+
+		// TODO light checkbox
+
+		koTF.setLimits(0, 1);
+		koTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.LIGHT_K_OBJECT], 1));
+		kdTF.setLimits(0, 1);
+		kdTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.LIGHT_K_DIFFUSE], 1));
+		ksTF.setLimits(0, 1);
+		ksTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.LIGHT_K_SPECULAR], 1));
+		ksTF.setLimits(0, 5);
+		shininessTF.setText(CustomDecimalFormat.format(r[channel][ExtendedRenderingState.LIGHT_SHININESS], 1));
 
 		this.slider = new DoubleSliderCanvas(histogram[channel], min[channel], max[channel], r[channel], this);
 		GridBagLayout gridbag = new GridBagLayout();
@@ -186,7 +219,42 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		c.anchor = GridBagConstraints.EAST;
 		add(maxATF, c);
 
+
+		c.gridx = 0;
+		c.gridy++;
+		c.weightx = 0;
+		c.anchor = GridBagConstraints.WEST;
+		c.insets = new Insets(10, 0, 0, 0);
+		this.useLightCB = new JCheckBox("Enable light", r[channel][ExtendedRenderingState.USE_LIGHT] > 0);
+		add(useLightCB, c);
+
+		c.gridy++;
+		c.insets = new Insets(0, 20, 10, 0);
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.weightx = 1;
+
+		lightPanel = new JPanel(new GridLayout(4, 2, 3, 3));
+		lightPanel.add(new JLabel("object"));
+		lightPanel.add(koTF);
+		lightPanel.add(new JLabel("diffuse"));
+		lightPanel.add(kdTF);
+		lightPanel.add(new JLabel("specular"));
+		lightPanel.add(ksTF);
+		lightPanel.add(new JLabel("shininess"));
+		lightPanel.add(shininessTF);
+		add(lightPanel, c);
+		lightPanel.setVisible(useLightCB.isSelected());
+
+		useLightCB.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				lightPanel.setVisible(useLightCB.isSelected());
+			}
+		});
+
+
 		weightSliders = new SingleSlider[renderingSettings.length];
+		c.insets = new Insets(3, 3, 0, 3);
 
 		for(int i = 0; i < renderingSettings.length; i++) {
 			final int ch = i;
@@ -319,6 +387,11 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		this.channel = c;
 		gammaATF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.ALPHA_GAMMA], 1));
 		gammaCTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.INTENSITY_GAMMA], 1));
+		koTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_K_OBJECT], 1));
+		kdTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_K_DIFFUSE], 1));
+		ksTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_K_SPECULAR], 1));
+		shininessTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_SHININESS], 1));
+		useLightCB.setSelected(renderingSettings[c][ExtendedRenderingState.USE_LIGHT] > 0);
 		slider.set(histogram[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		slider.repaint();
@@ -369,6 +442,10 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			slider.renderingSettings[ExtendedRenderingState.ALPHA_MIN]   = (float)Double.parseDouble(minATF.getText());
 			slider.renderingSettings[ExtendedRenderingState.ALPHA_MAX]   = (float)Double.parseDouble(maxATF.getText());
 			slider.renderingSettings[ExtendedRenderingState.ALPHA_GAMMA] = (float)Double.parseDouble(gammaATF.getText());
+			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_OBJECT]   = (float)Double.parseDouble(koTF.getText());
+			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_DIFFUSE]  = (float)Double.parseDouble(kdTF.getText());
+			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_SPECULAR] = (float)Double.parseDouble(ksTF.getText());
+			slider.renderingSettings[ExtendedRenderingState.LIGHT_SHININESS]  = (float)Double.parseDouble(shininessTF.getText());
 			slider.update();
 			fireRenderingSettingsChanged();
 		} catch(Exception ex) {

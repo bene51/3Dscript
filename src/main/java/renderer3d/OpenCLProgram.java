@@ -2,7 +2,7 @@ package renderer3d;
 
 public class OpenCLProgram {
 
-	public static final boolean useLights = false;
+	public static final boolean useLights = true;
 
 	public static void main(String[] args) {
 		System.out.println(makeSource(2, false, true));
@@ -246,7 +246,8 @@ public class OpenCLProgram {
 			source = source +
 			"		float alphamin" + c + ", float alphamax" + c + ", float alphagamma" + c + ",\n" +
 			"		float colormin" + c + ", float colormax" + c + ", float colorgamma" + c + ",\n" +
-			"		float weight" + c + ",\n";
+			"		float weight" + c + ",\n" +
+			"		float4 light" + c + ",\n";
 		}
 		source = source +
 			"		float alphacorr,\n" +
@@ -325,10 +326,7 @@ public class OpenCLProgram {
 			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
 			"		float4 ha = (float4)(" + ha[0]    + ", " + ha[1]    + ", " + ha[2]    + ", 0);\n" +
 			"		ha = normalize((float4)(multiplyMatrixVector(inverseTransform, ha), 0));\n" +
-			"		float kd = 0.3;\n" +
-			"		float ks = 0.3;\n" +
-			"		float ko = 0.4;\n" +
-			"		float shininess = 5;\n";
+			"		float ko, kd, ks, shininess;\n";
 		}
 		source = source +
 			"		for(int step = 0; step < n; step++) {\n" +
@@ -337,6 +335,10 @@ public class OpenCLProgram {
 		for(int c = 0; c < channels; c++) {
 			source = source +
 //			"				bool dbg = (x == 128 && y == 128 && p0.z == 30);\n" +
+			"				ko = light" + c + ".x;\n" +
+			"				kd = light" + c + ".y;\n" +
+			"				ks = light" + c + ".z;\n" +
+			"				shininess = light" + c + ".w;\n" +
 			"				float2 rAlphaColor" + c + " = sample(p0, texture" + c + ", sampler, maxv, minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
 			if(!useLights)
 				continue;
