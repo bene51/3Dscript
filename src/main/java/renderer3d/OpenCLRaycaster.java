@@ -47,14 +47,10 @@ public class OpenCLRaycaster {
 
 	private static native void setTargetSize(int width, int height);
 
-	private static native void setBoundingBox(int bx, int by, int bz, int bw, int bh, int pb);
-
 	private static native void setKernel(String program);
 
 	private static native int[] cast(
 			float[] inverseTransform,
-			float near,
-			float far,
 			float alphacorr,
 			float[][] channelSettings,
 			int bgred, int bggreen, int bgblue);
@@ -88,8 +84,8 @@ public class OpenCLRaycaster {
 			initRaycaster16(nChannels, wIn, hIn, dIn, wOut, hOut);
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
+		setKernel(OpenCLProgram.makeSource(nChannels, false, false, false));
 		setImage(imp);
-		setKernel(OpenCLProgram.makeSource(nChannels, false, false));
 	}
 
 	public BoundingBox getBoundingBox() {
@@ -157,13 +153,13 @@ public class OpenCLRaycaster {
 	public void setBackground(ColorProcessor cp) {
 		if(cp == null) {
 			clearBackground();
-			setKernel(OpenCLProgram.makeSource(nChannels, false, false));
+			setKernel(OpenCLProgram.makeSource(nChannels, false, false, false));
 			return;
 		}
 		int[] rgb = (int[])cp.getPixels();
 		setBackground(rgb, cp.getWidth(), cp.getHeight());
 		// setKernel(OpenCLProgram.makeSourceForMIP(nChannels, true));
-		setKernel(OpenCLProgram.makeSource(nChannels, true, false));
+		setKernel(OpenCLProgram.makeSource(nChannels, true, false, false));
 	}
 
 	public void setBackground(Color c) {
@@ -176,8 +172,6 @@ public class OpenCLRaycaster {
 			float[] invTransform,
 			double[][] channelProperties,
 			float alphacorr,
-			float near,
-			float far,
 			float pwOut) {
 
 		float[][] channelSettings = new float[channelProperties.length][];
@@ -193,17 +187,24 @@ public class OpenCLRaycaster {
 					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_RED]),
 					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_GREEN]),
 					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_BLUE]),
+					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMIN]),
+					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMIN]),
+					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMIN]),
+					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMAX]),
+					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMAX]),
+					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMAX]),
+					(float)(channelProperties[c][ExtendedRenderingState.NEAR]),
+					(float)(channelProperties[c][ExtendedRenderingState.FAR]),
 					(int)(channelProperties[c][ExtendedRenderingState.USE_LIGHT]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_OBJECT]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_SPECULAR]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_SHININESS]),
-//					channelColors[c].getRed(), channelColors[c].getGreen(), channelColors[c].getBlue(), // color
 			};
 		}
 		// TODO remove this line and set from GUI
 		Color bg = Toolbar.getBackgroundColor();
-		int[] result = cast(invTransform, near, far, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
+		int[] result = cast(invTransform, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
@@ -211,7 +212,9 @@ public class OpenCLRaycaster {
 
 		float len = (float)Math.sqrt(invTransform[2] * invTransform[2] + invTransform[6] * invTransform[6] + invTransform[10] * invTransform[10]);
 
-		bbox.drawFrontClippingPlane(ret, fwdTransform, invTransform, near / len);
+		for(int c = 0; c < channelSettings.length; c++)
+			bbox.drawFrontClippingPlane(ret, fwdTransform, invTransform,
+					(float)channelProperties[c][ExtendedRenderingState.NEAR] / len);
 		return ret;
 	}
 
@@ -233,16 +236,13 @@ public class OpenCLRaycaster {
 		return hOut;
 	}
 
-	public void setBBox(int bx0, int by0, int bz0, int bx1, int by1, int bz1) {
-		setBoundingBox(bx0, by0, bz0, bx1 - bx0, by1 - by0, bz1 - bz0);
-	}
-
 	public void setProgram(String src) {
 		setKernel(src);
 	}
 
 	public void crop(
 			final ImagePlus in,
+			final int channel,
 			final ByteProcessor mask,
 			final float[] fwdTransform) {
 //		clear(0);
@@ -267,7 +267,8 @@ public class OpenCLRaycaster {
 		final int n = nC * dIn;
 		final AtomicInteger prog = new AtomicInteger(0);
 
-		for(int ic = 0; ic < nC; ic++) {
+//		for(int ic = 0; ic < nC; ic++) {
+		final int ic = channel + 1;
 			for (int iz = 0; iz < dIn; iz++) {
 				final int z = iz;
 				final int c = ic;
@@ -300,7 +301,7 @@ public class OpenCLRaycaster {
 					}
 				});
 			}
-		}
+//		}
 		exec.shutdown();
 		try {
 			exec.awaitTermination(1, TimeUnit.DAYS);

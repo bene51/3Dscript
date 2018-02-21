@@ -33,7 +33,24 @@ public class KeywordFactory implements IKeywordFactory {
 
 		COLOR("color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.CHANNEL_COLOR_RED, ExtendedRenderingState.CHANNEL_COLOR_GREEN, ExtendedRenderingState.CHANNEL_COLOR_BLUE),
 
-		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT);
+		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT),
+
+		BOUNDING_BOX_X_MIN("bounding box min x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN),
+		BOUNDING_BOX_Y_MIN("bounding box min y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN),
+		BOUNDING_BOX_Z_MIN("bounding box min z", new String[] {"<z>"}, ExtendedRenderingState.BOUNDINGBOX_ZMIN),
+		BOUNDING_BOX_X_MAX("bounding box max x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMAX),
+		BOUNDING_BOX_Y_MAX("bounding box max y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMAX),
+		BOUNDING_BOX_Z_MAX("bounding box max z", new String[] {"<z>"}, ExtendedRenderingState.BOUNDINGBOX_ZMAX),
+
+		BOUNDING_BOX_X("bounding box x", new String[] {"<xmin>", "<xmax>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN, ExtendedRenderingState.BOUNDINGBOX_XMAX),
+		BOUNDING_BOX_Y("bounding box y", new String[] {"<ymin>", "<ymax>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN, ExtendedRenderingState.BOUNDINGBOX_YMAX),
+		BOUNDING_BOX_Z("bounding box z", new String[] {"<zmin>", "<zmax>"}, ExtendedRenderingState.BOUNDINGBOX_ZMIN, ExtendedRenderingState.BOUNDINGBOX_ZMAX),
+
+		FRONT_CLIPPING("front clipping", new String[] {"<front>"}, ExtendedRenderingState.NEAR),
+		BACK_CLIPPING("back clipping",   new String[] {"<back>"},  ExtendedRenderingState.FAR),
+
+		FRONT_BACK_CLIPPING("front/back clipping", new String[] {"<front>", "<back>"}, ExtendedRenderingState.NEAR, ExtendedRenderingState.FAR);
+
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
@@ -79,21 +96,6 @@ public class KeywordFactory implements IKeywordFactory {
 
 	public static enum NonChannelKeyword implements Keyword {
 
-		BOUNDING_BOX_X_MIN("bounding box min x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN),
-		BOUNDING_BOX_Y_MIN("bounding box min y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN),
-		BOUNDING_BOX_Z_MIN("bounding box min z", new String[] {"<z>"}, ExtendedRenderingState.BOUNDINGBOX_ZMIN),
-		BOUNDING_BOX_X_MAX("bounding box max x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMAX),
-		BOUNDING_BOX_Y_MAX("bounding box max y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMAX),
-		BOUNDING_BOX_Z_MAX("bounding box max z", new String[] {"<z>"}, ExtendedRenderingState.BOUNDINGBOX_ZMAX),
-
-		BOUNDING_BOX_X("bounding box x", new String[] {"<xmin>", "<xmax>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN, ExtendedRenderingState.BOUNDINGBOX_XMAX),
-		BOUNDING_BOX_Y("bounding box y", new String[] {"<ymin>", "<ymax>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN, ExtendedRenderingState.BOUNDINGBOX_YMAX),
-		BOUNDING_BOX_Z("bounding box z", new String[] {"<zmin>", "<zmax>"}, ExtendedRenderingState.BOUNDINGBOX_ZMIN, ExtendedRenderingState.BOUNDINGBOX_ZMAX),
-
-		FRONT_CLIPPING("front clipping", new String[] {"<front>"}, ExtendedRenderingState.NEAR),
-		BACK_CLIPPING("back clipping",   new String[] {"<back>"},  ExtendedRenderingState.FAR),
-
-		FRONT_BACK_CLIPPING("front/back clipping", new String[] {"<front>", "<back>"}, ExtendedRenderingState.NEAR, ExtendedRenderingState.FAR);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;

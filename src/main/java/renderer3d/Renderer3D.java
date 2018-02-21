@@ -50,7 +50,11 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		for(int c = 0; c < nC; c++) {
 			renderingSettings[c] = new RenderingSettings(
 					(float)luts[c].min, (float)luts[c].max, 1,
-					(float)luts[c].min, (float)luts[c].max, 2);
+					(float)luts[c].min, (float)luts[c].max, 2,
+					1,
+					0, 0, 0,
+					image.getWidth(), image.getHeight(), image.getNSlices(),
+					near, far);
 		}
 		Color[] channelColors = calculateChannelColors();
 
@@ -59,25 +63,14 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		this.rs = new ExtendedRenderingState(0,
 				renderingSettings,
 				channelColors,
-				near, far,
-				transformation,
-				0, 0, 0, image.getWidth(), image.getHeight(), image.getNSlices());
+				transformation);
 	}
 
 	public void resetRenderingSettings() {
 		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
-//		RenderingSettings[] renderingSettings = rs.renderingSettings;
 		Color[] channelColors = calculateChannelColors();
 		for(int c = 0; c < luts.length; c++) {
-//			renderingSettings[c].alphaMin = (float)luts[c].min;
-//			renderingSettings[c].alphaMax = (float)luts[c].max;
-//			renderingSettings[c].alphaGamma = 2;
-//			renderingSettings[c].colorMin = (float)luts[c].min;
-//			renderingSettings[c].colorMax = (float)luts[c].max;
-//			renderingSettings[c].colorGamma = 1;
-//			renderingSettings[c].weight = 1;
-
 			rs.setChannelProperty(c, ExtendedRenderingState.INTENSITY_MIN,   luts[c].min);
 			rs.setChannelProperty(c, ExtendedRenderingState.INTENSITY_MAX,   luts[c].max);
 			rs.setChannelProperty(c, ExtendedRenderingState.INTENSITY_GAMMA, 1);
@@ -104,27 +97,6 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 	@Override
 	public ImageProcessor render(RenderingState kf2) {
 		ExtendedRenderingState kf = (ExtendedRenderingState)kf2;
-		int kfbbx0 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN);
-		int kfbby0 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN);
-		int kfbbz0 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN);
-		int kfbbx1 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX);
-		int kfbby1 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX);
-		int kfbbz1 = (int)kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX);
-		if(kfbbx0 != (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN) ||
-				kfbby0 != (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN) ||
-				kfbbz0 != (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN) ||
-				kfbbx1 != (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX) ||
-				kfbby1 != (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX) ||
-				kfbbz1 != (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX)) {
-
-			super.setBBox(kfbbx0, kfbby0, kfbbz0, kfbbx1, kfbby1, kfbbz1);
-			rs.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN, kfbbx0);
-			rs.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN, kfbby0);
-			rs.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN, kfbbz0);
-			rs.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX, kfbbx1);
-			rs.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX, kfbby1);
-			rs.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX, kfbbz1);
-		}
 
 		CombinedTransform transform = kf.getFwdTransform();
 		float[] fwd = transform.calculateForwardTransform();
@@ -147,8 +119,6 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		rs.setFrom(kf);
 		return super.project(fwd, inv, kf.getChannelProperties(),
 				alphacorr,
-				(float)kf.getNonchannelProperty(ExtendedRenderingState.NEAR),
-				(float)kf.getNonchannelProperty(ExtendedRenderingState.FAR),
 				transform.getOutputSpacing()[0] / transform.getScale());
 	}
 

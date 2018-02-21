@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 public class RenderingState implements Comparable<RenderingState> {
 
-
 	public static int UNSET = Integer.MIN_VALUE;
 
 	protected int frame;
@@ -72,7 +71,6 @@ public class RenderingState implements Comparable<RenderingState> {
 		else {
 			System.arraycopy(o.nonChannelProperties, 0, this.nonChannelProperties, 0, this.nonChannelProperties.length);
 		}
-
 	}
 
 	public void setFwdTransform(CombinedTransform fwd) {

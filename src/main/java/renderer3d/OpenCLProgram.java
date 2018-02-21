@@ -4,12 +4,23 @@ public class OpenCLProgram {
 
 	public static final boolean useLights = true;
 
+	public static final int GRADIENT_MODE_ONTHEFLY            = 0;
+	public static final int GRADIENT_MODE_TEXTURE             = 1;
+	public static final int GRADIENT_MODE_DOWNSAMPLED_TEXTURE = 2;
+
+	public static final int GRADIENT_MODE = GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
+
 	public static void main(String[] args) {
-		System.out.println(makeSource(2, false, true));
+		System.out.println(makeSource(2, false, true, false));
+//		System.out.println(makeSourceForMIP(2, false));
 	}
 
+	@SuppressWarnings("unused")
 	private static String makeCommonSource(int channels) {
 		String source =
+		        /* ****************************************************************
+				 * intersects()
+				 * ****************************************************************/
 				"bool\n" +
 				"intersects(float3 bb0, float3 bb1, float3 r0, float3 rd, float *i0, float *i1) {\n" +
 				"\n" +
@@ -39,6 +50,9 @@ public class OpenCLProgram {
 				"    );\n" +
 				"}\n" +
 				"\n" +
+		        /* ****************************************************************
+				 * white()
+				 * ****************************************************************/
 				"kernel void\n" +
 				"white(\n" +
 				"		__write_only image3d_t texture,\n" +
@@ -53,136 +67,69 @@ public class OpenCLProgram {
 				"		write_imagef(texture, (int4)(x, y, z, 0), (float4)(1));\n" +
 				"}\n" +
 				"\n";
-		return source;
-	}
+		        /* ****************************************************************
+				 * downsampled()
+				 * ****************************************************************/
+if(GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
+				source = source +
+				"inline float downsampled(__read_only image3d_t texture, sampler_t sampler, int x, int y, int z)\n" +
+				"{\n" +
+				"		int x2 = 2 * x;\n" +
+				"		int y2 = 2 * y;\n" +
+				"		int z2 = 2 * z;\n" +
+				"		return     (read_imagef(texture, sampler, (float4)(x2,     y2,     z2,     0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2 + 1, y2,     z2,     0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2,     y2 + 1, z2,     0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2 + 1, y2 + 1, z2,     0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2,     y2,     z2 + 1, 0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2 + 1, y2,     z2 + 1, 0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2,     y2 + 1, z2 + 1, 0)).x +\n" +
+		        "					read_imagef(texture, sampler, (float4)(x2 + 1, y2 + 1, z2 + 1, 0)).x) / 8.0f;\n" +
+				"}\n" +
+				"\n";
+} else if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE) {
+				source = source +
+				"inline float downsampled(__read_only image3d_t texture, sampler_t sampler, int x, int y, int z)\n" +
+				"{\n" +
+				"		return read_imagef(texture, sampler, (float4)(x, y, z, 0)).x;\n" +
+				"}\n" +
+				"\n";
+}
 
-	public static String makeSourceForMIP(int channels, boolean backgroundTexture) {
-		String source = makeCommonSource(channels) +
+if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
+		        /* ****************************************************************
+				 * calculateGradients()
+				 * ****************************************************************/
+				source = source +
 				"kernel void\n" +
-				"raycastKernel(\n";
-			for(int c = 0; c < channels; c++) {
-				source = source +
-				"		__read_only image3d_t texture" + c + ", int3 rgb" + c + ",\n";
-			}
-			source = source +
-				"		sampler_t sampler,\n" +
-				"		int3 data_origin,\n" +
-				"		int3 data_size,\n" +
-				"		__global unsigned int *d_result,\n" +
-				"		int2 target_size,\n" +
-				"		const float16 inverseTransform,\n" +
-				"		float zstart, float zend,\n";
-			for(int c = 0; c < channels; c++) {
-				source = source +
-				"		float alphamin" + c + ", float alphamax" + c + ", float alphagamma" + c + ",\n" +
-				"		float colormin" + c + ", float colormax" + c + ", float colorgamma" + c + ",\n" +
-				"		float weight" + c + ",\n";
-			}
-			source = source +
-				"		float alphacorr,\n" +
-				"		float3 inc,\n";
-			if(backgroundTexture)
-				source = source +
-				"		__read_only image2d_t bgtexture, sampler_t bgsampler,\n";
-			else
-				source = source +
-				"		int3 background,\n";
-			source = source +
-				"		int bitsPerSample)\n" +
+				"calculateGradients(\n" +
+				"			__read_only image3d_t image,\n" +
+				"			sampler_t sampler,\n" +
+				"			__write_only image3d_t gradients,\n" +
+				"			int3 grad_size)\n" +
 				"{\n" +
 				"	int x = get_global_id(0);\n" +
 				"	int y = get_global_id(1);\n" +
+				"	int z = get_global_id(2);\n" +
 				"\n" +
-				"	if(x < target_size.x && y < target_size.y) {\n" +
-				"		float3 r0 = multiplyMatrixVector(inverseTransform, (float4)(x, y, 0, 1));\n" +
-				"		float inear = 0;\n" +
-				"		float ifar = 0;\n" +
-				"\n";
-			if(backgroundTexture) {
-				source = source +
-				"\n" +
-				"		float2 p = (float2)((float)x / target_size.x, (float)y / target_size.y);\n" +
-				"		uint4 background = read_imageui(bgtexture, bgsampler, p);\n" +
-				"\n";
-			}
-				source = source +
-				"		int3 bb0 = data_origin;\n" +
-				"		int3 bb1 = data_origin + data_size;\n" +
-				"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, inc, &inear, &ifar);\n" +
-				"		int idx_out = y * target_size.x + x;\n" +
-				"		if(!hits) {\n" +
-				"			d_result[idx_out] = (unsigned int)((background.x << 16) | (background.y << 8) | background.z); \n" +
-				"			return;\n" +
-				"		}\n" +
-				"		inear = fmax(inear, zstart);\n" +
-				"		ifar  = fmin(ifar, zend);\n" +
-				"\n" +
-				"\n" +
-				"		float3 p0 = r0 + inear * inc;\n" +
-				"\n" +
-				"		int n = (int)floor(fdim(ifar, inear));\n" +
-				"		unsigned int maxv = (1 << bitsPerSample);\n" +
-				"";
-			for(int c = 0; c < channels; c++) {
-				source = source +
-				"		float color" + c + " = 0;\n" +
-				"		float alpha" + c + " = 0;\n" +
-				"		float2 minAlphaColor" + c + "   = (float2)(alphamin" + c + ", colormin" + c + ");\n" +
-				"		float2 maxAlphaColor" + c + "   = (float2)(alphamax" + c + ", colormax" + c + ");\n" +
-				"		float2 gammaAlphaColor" + c + " = (float2)(alphagamma" + c + ", colorgamma" + c + ");\n" +
-				"		float2 dAlphaColor" + c + "     = maxAlphaColor" + c + " - minAlphaColor" + c + ";\n";
-			}
-			source = source + "\n" +
-				"		for(int step = 0; step < n; step++) {\n" +
-				"			if(all(p0 >= convert_float3(bb0) && p0 < convert_float3(bb1))) {\n" +
-				"\n";
-			for(int c = 0; c < channels; c++) {
-				source = source +
-				"				float v" + c + " = maxv * read_imagef(texture" + c + ", sampler, (float4)(p0 + 0.5f, 0)).x + 0.5;\n" +
-				"				float2 rAlphaColor" + c + " = pow(\n" +
-				"					clamp((v" + c + " - minAlphaColor" + c + ") / dAlphaColor" + c + ", 0.0f, 1.0f),\n" +
-				"					gammaAlphaColor" + c + ");\n\n";
-			}
-			source = source +
-				"\n" +
-				"				// mix(x, y, a) = x + (y-x)a = (1-a)x + ay for 0 <= a <= 1\n" +
-				"				// mad(a, b, c) = a * b + c;\n" +
-				"\n" +
-				"				// color = color + (1 - alpha) * alphar * colorr;\n" +
-				"				// alpha = alpha + (1 - alpha) * alphar;\n";
-			for(int c = 0; c < channels; c++) {
-				source = source +
-						"\n" +
-				"				if(rAlphaColor" + c + ".y > color" + c + ") {\n" +
-				"					color" + c + " = rAlphaColor" + c + ".y;\n" +
-				"					alpha" + c + " = rAlphaColor" + c + ".x;\n" +
-				"				}\n";
-			}
-			source = source +
-				"			}\n" +
-				"			p0 = p0 + inc;\n" +
-				"		}\n";
-			for(int c = 0; c < channels; c++) {
-				source = source +
-				"		color" + c + " = color" + c + " * weight" + c + ";\n";
-			}
-			source = source +
-				"		unsigned int out_r = " + sumOfProducts("color", "rgb", ".x", channels) + ";\n" +
-				"		unsigned int out_g = " + sumOfProducts("color", "rgb", ".y", channels) + ";\n" +
-				"		unsigned int out_b = " + sumOfProducts("color", "rgb", ".z", channels) + ";\n" +
-				"		float alpha = clamp(" + sum("alpha", channels) + ", 0.0f, 1.0f);\n" +
-				"		out_r = (unsigned int)(clamp(alpha * out_r + (1 - alpha) * background.x, 0.0f, 255.0f));\n" +
-				"		out_g = (unsigned int)(clamp(alpha * out_g + (1 - alpha) * background.y, 0.0f, 255.0f));\n" +
-				"		out_b = (unsigned int)(clamp(alpha * out_b + (1 - alpha) * background.z, 0.0f, 255.0f));\n" +
-				"		d_result[idx_out] = (unsigned int)((out_r << 16) | (out_g << 8) | out_b);\n" +
+				"	if(x < grad_size.x && y < grad_size.y && z < grad_size.z) {\n" +
+		        "		float dx = downsampled(image, sampler, x + 1, y, z) - downsampled(image, sampler, x - 1, y, z);\n" +
+		        "		float dy = downsampled(image, sampler, x, y + 1, z) - downsampled(image, sampler, x, y - 1, z);\n" +
+		        "		float dz = downsampled(image, sampler, x, y, z + 1) - downsampled(image, sampler, x, y, z - 1);\n" +
+		        "		int4 v = convert_int4(round(255 * normalize((float4)(dx, dy, dz, 0))));" +
+				"		write_imagei(gradients, (int4)(x, y, z, 0), v);\n" +
 				"	}\n" +
-				"}";
-			System.out.println(source);
-			return source;
+				"}\n" +
+				"\n";
+}
+		return source;
 	}
 
-	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha) {
+	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip) {
 		String source = makeCommonSource(channels) +
+		    /* ****************************************************************
+			 * sample()
+			 * ****************************************************************/
 			"inline float2\n" +
 			"sample(float3 p0,\n" +
 			"		__read_only image3d_t texture,\n" +
@@ -201,8 +148,13 @@ public class OpenCLProgram {
 	        "	rAlphaColor.x = 1 - pow(1 - rAlphaColor.x, alphacorr);\n" +
 	        "	return rAlphaColor;\n" +
 	        "}\n" +
-	        "\n" +
-	        "float4\n" +
+	        "\n";
+	        /* ****************************************************************
+			 * grad()
+			 * ****************************************************************/
+if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
+			source = source +
+			"float4\n" +
 	        "grad(float3 p0,\n" +
 	        "        __read_only image3d_t texture,\n" +
 	        "        sampler_t sampler,\n" +
@@ -211,42 +163,67 @@ public class OpenCLProgram {
 	        "        float2 dAlphaColor,\n" +
 	        "        float2 gammaAlphaColor,\n" +
 	        "        float alphacorr) {\n" +
-//	        "	float2 dx = sample((float3)(p0.x + 2, p0.y, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
-//	        "                alphaColor0;\n" +
-//	        "	float2 dy = sample((float3)(p0.x, p0.y + 2, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
-//	        "                alphaColor0;\n" +
-//	        "	float2 dz = sample((float3)(p0.x, p0.y, p0.z + 2), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
-//	        "                alphaColor0;\n" +
-	        "	float2 dx = sample((float3)(p0.x + 1, p0.y, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
-	        "                sample((float3)(p0.x - 1, p0.y, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr);\n" +
-	        "	float2 dy = sample((float3)(p0.x, p0.y + 1, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
-	        "                sample((float3)(p0.x, p0.y - 1, p0.z), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr);\n" +
-	        "	float2 dz = sample((float3)(p0.x, p0.y, p0.z + 1), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr) -\n" +
-	        "                sample((float3)(p0.x, p0.y, p0.z - 1), texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr);\n" +
-//	        "	float4 grad = (float4)(dx.x * dx.y, dy.x * dy.y, dz.x * dz.y, 0);\n" +
-	        "	float4 grad = (float4)(dx.y, dy.y, dz.y, 0);\n" +
+	        "	float3 p = p0 + 0.5f;\n" +
+	        "	float dx = 255 * (read_imagef(texture, sampler, (float4)(p.x + 1, p.y, p.z, 0)).x -\n" +
+	        "					read_imagef(texture, sampler, (float4)(p.x - 1, p.y, p.z, 0)).x);\n" +
+	        "	float dy = 255 * (read_imagef(texture, sampler, (float4)(p.x, p.y + 1, p.z, 0)).x -\n" +
+	        "					read_imagef(texture, sampler, (float4)(p.x, p.y - 1, p.z, 0)).x);\n" +
+	        "	float dz = 255 * (read_imagef(texture, sampler, (float4)(p.x, p.y, p.z + 1, 0)).x -\n" +
+	        "					read_imagef(texture, sampler, (float4)(p.x, p.y, p.z - 1, 0)).x);\n" +
+			"	float4 grad = (float4)(dx, dy, dz, 0);\n" +
 	        "	return normalize(grad);\n" +
 			"}\n" +
-	        "\n" +
+	        "\n";
+} else if(GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
+			source = source +
+			"float4\n" +
+			"grad(float3 p0,\n" +
+	        "        __read_only image3d_t grad,\n" +
+	        "        sampler_t sampler) {\n" +
+	        "	float3 p = p0 + 0.5f;\n" +
+	        "	float4 gradient = convert_float4(read_imagei(grad, sampler, (float4)(p.x / 2, p.y / 2, p.z / 2, 0)));\n" +
+	        "	return normalize(gradient);\n" +
+			"}\n" +
+	        "\n";
+} else if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE) {
+			source = source +
+			"float4\n" +
+			"grad(float3 p0,\n" +
+		    "        __read_only image3d_t grad,\n" +
+		    "        sampler_t sampler) {\n" +
+		    "	float3 p = p0 + 0.5f;\n" +
+		    "	float4 gradient = convert_float4(read_imagei(grad, sampler, (float4)(p.x, p.y, p.z, 0)));\n" +
+		    "	return normalize(gradient);\n" +
+			"}\n" +
+		    "\n";
+}
+
+	        /* ****************************************************************
+			 * raycastKernel()
+			 * ****************************************************************/
+			source = source +
 			"kernel void\n" +
 			"raycastKernel(\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
-			"		__read_only image3d_t texture" + c + ", int3 rgb" + c + ",\n";
+			"		__read_only image3d_t texture" + c + ",";
+			if(GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY)
+				source = source + " __read_only image3d_t gradient" + c + ",";
+			source = source + " int3 rgb" + c + ",\n";
 		}
 		source = source +
 			"		sampler_t sampler,\n" +
-			"		int3 data_origin,\n" +
-			"		int3 data_size,\n" +
 			"		__global unsigned int *d_result,\n" +
 			"		int2 target_size,\n" +
-			"		const float16 inverseTransform,\n" +
-			"		float zstart, float zend,\n";
+			"		const float16 inverseTransform,\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
 			"		float alphamin" + c + ", float alphamax" + c + ", float alphagamma" + c + ",\n" +
 			"		float colormin" + c + ", float colormax" + c + ", float colorgamma" + c + ",\n" +
 			"		float weight" + c + ",\n" +
+			"		int3 bb0" + c + ",\n" +
+			"		int3 bb1" + c + ",\n" +
+			"		float zstart" + c + ", float zend" + c + ",\n" +
 			"		float4 light" + c + ",\n";
 		}
 		source = source +
@@ -265,9 +242,11 @@ public class OpenCLProgram {
 			"	int y = get_global_id(1);\n" +
 			"\n" +
 			"	if(x < target_size.x && y < target_size.y) {\n" +
+//			"		bool dbg = (x == 128 && y == 128);\n" +
+			"		unsigned int maxv = (1 << bitsPerSample);\n" +
+			"\n" +
 			"		float3 r0 = multiplyMatrixVector(inverseTransform, (float4)(x, y, 0, 1));\n" +
-			"		float inear = 0;\n" +
-			"		float ifar = 0;\n" +
+			"		int idx_out = y * target_size.x + x;\n" +
 			"\n";
 		if(backgroundTexture) {
 			source = source +
@@ -277,24 +256,37 @@ public class OpenCLProgram {
 			"\n";
 		}
 		source = source +
-			"		int3 bb0 = data_origin;\n" +
-			"		int3 bb1 = data_origin + data_size;\n" +
-			"		bool hits = intersects(convert_float3(bb0), convert_float3(bb1), r0, inc, &inear, &ifar);\n" +
-			"		int idx_out = y * target_size.x + x;\n" +
+			"		bool hits   = false;\n" +
+			"		float inear = 1e5;\n" +
+			"		float ifar  = -1e5;\n" +
+			"\n";
+		for(int c = 0; c < channels; c++) {
+			source = source +
+			"		float inear" + c + " = 0;\n" +
+			"		float ifar" + c + "  = 0;\n" +
+			"		hits = intersects(convert_float3(bb0" + c + "), convert_float3(bb1" + c + "), r0, inc, &inear" + c + ", &ifar" + c + ") || hits;\n" +
+			"		inear" + c + " = fmax(inear" + c + ", zstart" + c + ");\n" +
+			"		ifar" + c + "  = fmin(ifar" + c + ", zend" + c + ");\n" +
+			"		inear  = fmin(inear, inear" + c + ");\n" +
+			"		ifar   = fmax(ifar, ifar" + c + ");\n" +
+//			"		if(dbg) {\n" +
+//			"			printf(\"zstart" + c + " = %f\\n\", zstart" + c + ");\n" +
+//			"			printf(\"zend" + c + " = %f\\n\", zend" + c + ");\n" +
+//			"			printf(\"bb0" + c + " = %d, %d, %d\\n\", bb0" + c + ".x, bb0" + c + ".y, bb0" + c + ".z);\n" +
+//			"			printf(\"bb1" + c + " = %d, %d, %d\\n\", bb1" + c + ".x, bb1" + c + ".y, bb1" + c + ".z);\n" +
+//			"			printf(\"inear" + c + " = %f\\n\", inear" + c + ");\n" +
+//			"			printf(\"ifar" + c + " = %f\\n\", ifar" + c + ");\n" +
+//			"		}\n" +
+			"\n";
+		}
+		source = source +
 			"		if(!hits) {\n" +
 			"			d_result[idx_out] = (unsigned int)((background.x << 16) | (background.y << 8) | background.z); \n" +
 			"			return;\n" +
 			"		}\n" +
-			"		inear = fmax(inear, zstart);\n" +
-			"		ifar  = fmin(ifar, zend);\n" +
-			"\n" +
 			"\n" +
 			"		float3 p0 = r0 + inear * inc;\n" +
-			"\n" +
-			"		int n = (int)floor(fdim(ifar, inear));\n" +
-//			"		if(x == 0 && y == 0) printf(\"n = %d\\n\", n);\n" +
-			"		unsigned int maxv = (1 << bitsPerSample);\n" +
-			"";
+			"\n";
 		final float[] light = new float[] {1, 1, 1};
 		float tmp = (float)Math.sqrt(light[0] * light[0] + light[1] * light[1] + light[2] * light[2]);
 		light[0] /= tmp;
@@ -317,34 +309,69 @@ public class OpenCLProgram {
 			"		float2 minAlphaColor" + c + "   = (float2)(alphamin" + c + ", colormin" + c + ");\n" +
 			"		float2 maxAlphaColor" + c + "   = (float2)(alphamax" + c + ", colormax" + c + ");\n" +
 			"		float2 gammaAlphaColor" + c + " = (float2)(alphagamma" + c + ", colorgamma" + c + ");\n" +
-			"		float2 dAlphaColor" + c + "     = maxAlphaColor" + c + " - minAlphaColor" + c + ";\n";
+			"		float2 dAlphaColor" + c + "     = maxAlphaColor" + c + " - minAlphaColor" + c + ";\n" +
+			"\n";
 		}
-		source = source + "\n";
 		if(useLights) {
 			source = source +
 			"		float4 li = (float4)(" + light[0] + ", " + light[1] + ", " + light[2] + ", 0);\n" +
 			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
 			"		float4 ha = (float4)(" + ha[0]    + ", " + ha[1]    + ", " + ha[2]    + ", 0);\n" +
 			"		ha = normalize((float4)(multiplyMatrixVector(inverseTransform, ha), 0));\n" +
-			"		float ko, kd, ks, shininess;\n";
+			"		float ko, kd, ks, shininess;\n" +
+			"\n";
 		}
 		source = source +
-			"		for(int step = 0; step < n; step++) {\n" +
-			"			if(all(p0 >= convert_float3(bb0) && p0 < convert_float3(bb1))) {\n" +
+			"		for(int step = floor(inear); step < ifar; step++) {\n" +
+			"\n" +
+			"			// mix(x, y, a) = x + (y-x)a = (1-a)x + ay for 0 <= a <= 1\n" +
+			"			// mad(a, b, c) = a * b + c;\n" +
+			"\n" +
+			"			// color = color + (1 - alpha) * alphar * colorr;\n" +
+			"			// alpha = alpha + (1 - alpha) * alphar;\n" +
 			"\n";
 		for(int c = 0; c < channels; c++) {
 			source = source +
-//			"				bool dbg = (x == 128 && y == 128 && p0.z == 30);\n" +
+			"			bool ch" + c + " = all(p0 >= convert_float3(bb0" + c + ") && p0 < convert_float3(bb1" + c + ")) &&\n" +
+			"					step >= inear" + c + " &&\n" +
+			"					step <= ifar" + c + ";\n" +
+//			"			if(dbg && step == 20) {\n" +
+//			"				printf(\"ch" + c + " = %d\\n\", ch" + c + ");\n" +
+//			"			}\n" +
+			"			if(ch" + c + ") {\n" +
+			"				float2 rAlphaColor" + c + " = sample(p0,\n" +
+			"						texture" + c + ", sampler, maxv,\n" +
+			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n" +
+			"\n";
+			if(mip) {
+			source = source +
+			"				if(rAlphaColor" + c + ".y > color" + c + ") {\n" +
+			"					color" + c + " = rAlphaColor" + c + ".y;\n" +
+			"					alpha" + c + " = rAlphaColor" + c + ".x;\n" +
+			"				}\n" +
+			"			}\n" +
+			"\n";
+				continue;
+			}
+			if(useLights) {
+			source = source +
 			"				ko = light" + c + ".x;\n" +
 			"				kd = light" + c + ".y;\n" +
 			"				ks = light" + c + ".z;\n" +
 			"				shininess = light" + c + ".w;\n" +
-			"				float2 rAlphaColor" + c + " = sample(p0, texture" + c + ", sampler, maxv, minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
-			if(!useLights)
-				continue;
+			"\n";
+if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			source = source +
-			"				float4 grad" + c + " = grad(p0, texture" + c + ", sampler, maxv, minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n" +
-//			"				grad" + c + " = (float4)(multiplyMatrixVector(inverseTransform, grad" + c + "), 0);\n" +
+			"				float4 grad" + c + " = grad(p0,\n" +
+			"						texture" + c + ", sampler, maxv,\n" +
+			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
+}
+else {
+			source = source +
+			"				float4 grad" + c + " = grad(p0, gradient" + c + ", sampler);\n";
+}
+			source = source +
+			"\n" +
 //			"				if(dbg) {\n" +
 //			"					printf(\"grad = %f, %f, %f\\n\", grad" + c + ".x, grad" + c + ".y, grad" + c + ".z);\n" +
 //			"					printf(\"li = %f, %f, %f\\n\", li.x, li.y, li.z);\n" +
@@ -355,18 +382,11 @@ public class OpenCLProgram {
 //			"					printf(\"tmph = %f\\n\", tmph);\n" +
 //			"				}\n" +
 			"				rAlphaColor" + c + ".y = \n" +
-			"										ko * rAlphaColor" + c + ".y +\n" +
-			"										kd * fmax((float)0, dot(li, grad" + c + ")) +\n" +
-			"										ks * fmax((float)0, pow(dot(ha, grad" + c + "), shininess));\n";
-		}
-		source = source +
-			"\n" +
-			"				// mix(x, y, a) = x + (y-x)a = (1-a)x + ay for 0 <= a <= 1\n" +
-			"				// mad(a, b, c) = a * b + c;\n" +
-			"\n" +
-			"				// color = color + (1 - alpha) * alphar * colorr;\n" +
-			"				// alpha = alpha + (1 - alpha) * alphar;\n";
-		for(int c = 0; c < channels; c++) {
+			"						ko * rAlphaColor" + c + ".y +\n" +
+			"						kd * fmax((float)0, dot(li, grad" + c + ")) +\n" +
+			"						ks * fmax((float)0, pow(dot(ha, grad" + c + "), shininess));\n" +
+			"\n";
+			}
 			source = source + "\n";
 			if(combinedAlpha) {
 				source = source +
@@ -378,10 +398,11 @@ public class OpenCLProgram {
 			source = source +
 			"				float tmp" + c + " = weight" + c + " * (1 - a" + c + ") * rAlphaColor" + c + ".x;\n" +
 			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n" +
-			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n";
+			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n" +
+			"			}\n" +
+			"\n";
 		}
 		source = source +
-			"			}\n" +
 			"			p0 = p0 + inc;\n" +
 			"		}\n";
 		for(int c = 0; c < channels; c++) {

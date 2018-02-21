@@ -34,7 +34,12 @@ public class DummyCudaRaycaster {
 				1,      // colorGamma,
 				300,    // alphaMin,
 				3000,   // alphaMax,
-				2f);    // alphaGamma,
+				2f,     // alphaGamma,
+				1,      // weight
+				0, 0, 0,
+				imp.getWidth(), imp.getHeight(), imp.getNSlices(),
+				-10e10f,
+				10e10f);
 
 		RenderingSettings renderingSettings1 = new RenderingSettings(
 				300,   // colorMin,
@@ -42,7 +47,12 @@ public class DummyCudaRaycaster {
 				1,     // colorGamma,
 				300,   // alphaMin,
 				3000,  // alphaMax,
-				2);    // alphaGamma,
+				2f,     // alphaGamma,
+				1,      // weight
+				0, 0, 0,
+				imp.getWidth(), imp.getHeight(), imp.getNSlices(),
+				-10e10f,
+				10e10f);
 
 		RenderingSettings[] renderingSettings = new RenderingSettings[] {renderingSettings0, renderingSettings1};
 

@@ -65,27 +65,35 @@ public class RecordingProvider implements IRecordingProvider {
 			public String getRecording(RenderingState rs) {
 				ExtendedRenderingState kf = (ExtendedRenderingState)rs;
 				StringBuffer text = new StringBuffer("At frame X:\n");
-				text.append("- change ")
-					.append(KeywordFactory.NonChannelKeyword.BOUNDING_BOX_X.getKeyword())
-					.append(" to (")
-					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN))
-					.append(", ")
-					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX))
-					.append(")\n");
-				text.append("- change ")
-				.append(KeywordFactory.NonChannelKeyword.BOUNDING_BOX_Y.getKeyword())
-					.append(" to (")
-					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN))
-					.append(", ")
-					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX))
-					.append(")\n");
-				text.append("- change ")
-				.append(KeywordFactory.NonChannelKeyword.BOUNDING_BOX_Z.getKeyword())
-					.append(" to (")
-					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN))
-					.append(", ")
-					.append(kf.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX))
-					.append(")\n");
+				for(int c = 0; c < kf.getNChannels(); c++) {
+					text.append("- change channel ")
+						.append(c + 1)
+						.append(" ")
+						.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_X.getKeyword())
+						.append(" to (")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_XMIN))
+						.append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_XMAX))
+						.append(")\n");
+					text.append("- change channel ")
+						.append(c + 1)
+						.append(" ")
+						.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_Y.getKeyword())
+						.append(" to (")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_YMIN))
+						.append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_YMAX))
+						.append(")\n");
+					text.append("- change channel ")
+						.append(c + 1)
+						.append(" ")
+						.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_Z.getKeyword())
+						.append(" to (")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMIN))
+						.append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMAX))
+						.append(")\n");
+				}
 				return text.toString();
 			}
 		});

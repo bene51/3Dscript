@@ -98,8 +98,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 
 		croppingPanel = dialog.addCroppingPanel(image);
-		rs.setNonchannelProperty(ExtendedRenderingState.NEAR, croppingPanel.getNear());
-		rs.setNonchannelProperty(ExtendedRenderingState.FAR,  croppingPanel.getFar());
+		for(int c = 0; c < image.getNChannels(); c++) {
+			rs.setChannelProperty(c, ExtendedRenderingState.NEAR, croppingPanel.getNear());
+			rs.setChannelProperty(c, ExtendedRenderingState.FAR,  croppingPanel.getFar());
+		}
 
 		outputPanel = dialog.addOutputPanel(
 				worker.out.getWidth(), worker.out.getHeight(), 1,
@@ -223,7 +225,20 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
-			public void channelChanged() {}
+			public void channelChanged() {
+				int channel = contrastPanel.getChannel();
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				croppingPanel.setBoundingBox(
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMIN),
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMIN),
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMIN),
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMAX),
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMAX),
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMAX));
+				croppingPanel.setNearAndFar(
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.NEAR),
+						(int)kf.getChannelProperty(channel, ExtendedRenderingState.FAR));
+			}
 
 			@Override
 			public void renderingSettingsReset() {
@@ -235,13 +250,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 				int nChannels = renderer.getNChannels();
 				switch(algorithm) {
 				case INDEPENDENT_TRANSPARENCY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false));
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false));
 					break;
 				case COMBINED_TRANSPARENCY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true));
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false));
 					break;
 				case MAXIMUM_INTENSITY:
-					renderer.setProgram(OpenCLProgram.makeSourceForMIP(nChannels, false));
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true));
 					break;
 				}
 				push();
@@ -263,21 +278,23 @@ public class InteractiveRaycaster implements PlugInFilter {
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
 			@Override
 			public void nearFarChanged(int near, int far) {
+				int channel = contrastPanel.getChannel();
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
-				kf.setNonchannelProperty(ExtendedRenderingState.NEAR, near);
-				kf.setNonchannelProperty(ExtendedRenderingState.FAR,  far);
+				kf.setChannelProperty(channel, ExtendedRenderingState.NEAR, near);
+				kf.setChannelProperty(channel, ExtendedRenderingState.FAR,  far);
 				push(kf);
 			}
 
 			@Override
 			public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
+				int channel = contrastPanel.getChannel();
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
-				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN, bbx0);
-				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN, bby0);
-				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN, bbz0);
-				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX, bbx1);
-				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX, bby1);
-				kf.setNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX, bbz1);
+				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMIN, bbx0);
+				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMIN, bby0);
+				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMIN, bbz0);
+				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMAX, bbx1);
+				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMAX, bby1);
+				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMAX, bbz1);
 				push(kf);
 			}
 
@@ -296,7 +313,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 					ExtendedRenderingState kf = renderer.getRenderingState();
 					float[] fwd = kf.getFwdTransform().calculateForwardTransform();
-					renderer.crop(image, mask, fwd);
+					renderer.crop(image, contrastPanel.getChannel(), mask, fwd);
 
 					push(kf);
 				}
@@ -417,17 +434,18 @@ public class InteractiveRaycaster implements PlugInFilter {
 		CombinedTransform t = rs.getFwdTransform();
 		transformationPanel.setTransformation(t.guessEulerAnglesDegree(), t.getTranslation(), t.getScale());
 
+		int channel = contrastPanel.getChannel();
 		// Cropping Panel
-		int bbx0 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMIN);
-		int bby0 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMIN);
-		int bbz0 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMIN);
-		int bbx1 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_XMAX);
-		int bby1 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_YMAX);
-		int bbz1 = (int)rs.getNonchannelProperty(ExtendedRenderingState.BOUNDINGBOX_ZMAX);
+		int bbx0 = (int)rs.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMIN);
+		int bby0 = (int)rs.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMIN);
+		int bbz0 = (int)rs.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMIN);
+		int bbx1 = (int)rs.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMAX);
+		int bby1 = (int)rs.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMAX);
+		int bbz1 = (int)rs.getChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMAX);
 		croppingPanel.setBoundingBox(bbx0, bby0, bbz0, bbx1, bby1, bbz1);
 
-		int near = (int)rs.getNonchannelProperty(ExtendedRenderingState.NEAR);
-		int far  = (int)rs.getNonchannelProperty(ExtendedRenderingState.FAR);
+		int near = (int)rs.getChannelProperty(channel, ExtendedRenderingState.NEAR);
+		int far  = (int)rs.getChannelProperty(channel, ExtendedRenderingState.FAR);
 		croppingPanel.setNearAndFar(near, far);
 
 		// TODO Output Panel, once its options are included in the RenderingState
