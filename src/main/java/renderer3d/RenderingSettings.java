@@ -12,7 +12,7 @@ public class RenderingSettings {
 
 	public float weight = 1;
 
-	public boolean useLight = true;
+	public boolean useLight = false;
 
 	public float k_o = 1;
 	public float k_d = 0;

@@ -84,7 +84,8 @@ public class OpenCLRaycaster {
 			initRaycaster16(nChannels, wIn, hIn, dIn, wOut, hOut);
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
-		setKernel(OpenCLProgram.makeSource(nChannels, false, false, false));
+		boolean[] useLights = new boolean[nChannels];
+		setKernel(OpenCLProgram.makeSource(nChannels, false, false, false, useLights));
 		setImage(imp);
 	}
 
@@ -150,20 +151,16 @@ public class OpenCLRaycaster {
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 	}
 
-	public void setBackground(ColorProcessor cp) {
+	public void setBackground(ColorProcessor cp, boolean combinedAlpha, boolean mip, boolean[] useLights) {
 		if(cp == null) {
 			clearBackground();
-			setKernel(OpenCLProgram.makeSource(nChannels, false, false, false));
+			setKernel(OpenCLProgram.makeSource(nChannels, false, combinedAlpha, mip, useLights));
 			return;
 		}
 		int[] rgb = (int[])cp.getPixels();
 		setBackground(rgb, cp.getWidth(), cp.getHeight());
 		// setKernel(OpenCLProgram.makeSourceForMIP(nChannels, true));
-		setKernel(OpenCLProgram.makeSource(nChannels, true, false, false));
-	}
-
-	public void setBackground(Color c) {
-		this.bg = c;
+		setKernel(OpenCLProgram.makeSource(nChannels, true, combinedAlpha, mip, useLights));
 	}
 
 	// TODO take a RenderingState object as an argument

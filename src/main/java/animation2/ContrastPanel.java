@@ -27,8 +27,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import renderer3d.ExtendedRenderingState;
 import renderer3d.RenderingAlgorithm;
@@ -73,12 +71,14 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 	private JComboBox<String> channelChoice;
 
+	final JComboBox<String> renderingAlgorithm;
+
 	private DoubleSliderCanvas slider;
 
 	private SingleSlider[] weightSliders;
 
 	public static interface Listener {
-		public void renderingSettingsChanged();
+		public void renderingSettingsChanged(boolean lightsChanged);
 		public void channelChanged();
 		public void renderingSettingsReset();
 		public void renderingAlgorithmChanged(RenderingAlgorithm algorithm);
@@ -245,10 +245,12 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		add(lightPanel, c);
 		lightPanel.setVisible(useLightCB.isSelected());
 
-		useLightCB.addChangeListener(new ChangeListener() {
+		useLightCB.addItemListener(new ItemListener() {
 			@Override
-			public void stateChanged(ChangeEvent e) {
+			public void itemStateChanged(ItemEvent e) {
 				lightPanel.setVisible(useLightCB.isSelected());
+				r[channel][ExtendedRenderingState.USE_LIGHT] = useLightCB.isSelected() ? 1 : 0;
+				fireRenderingSettingsChanged(true);
 			}
 		});
 
@@ -275,7 +277,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				@Override
 				public void sliderChanged() {
 					r[ch][ExtendedRenderingState.WEIGHT] = wslider.getMax() / 100f;
-					fireRenderingSettingsChanged();
+					fireRenderingSettingsChanged(false);
 				}
 			});
 
@@ -311,15 +313,15 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		c.weightx = 0;
 		add(new JLabel("Rendering algorithm"), c);
 
-		final JComboBox<String> algo = new JComboBox<String>();
-		algo.addItem("Independent transparency");
-		algo.addItem("Combined transparency");
-		algo.addItem("Maximum intensity projection");
-		algo.addItemListener(new ItemListener() {
+		renderingAlgorithm = new JComboBox<String>();
+		renderingAlgorithm.addItem("Independent transparency");
+		renderingAlgorithm.addItem("Combined transparency");
+		renderingAlgorithm.addItem("Maximum intensity projection");
+		renderingAlgorithm.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					switch(algo.getSelectedIndex()) {
+					switch(renderingAlgorithm.getSelectedIndex()) {
 					case 0: fireRenderingAlgorithmChanged(RenderingAlgorithm.INDEPENDENT_TRANSPARENCY); break;
 					case 1: fireRenderingAlgorithmChanged(RenderingAlgorithm.COMBINED_TRANSPARENCY); break;
 					case 2: fireRenderingAlgorithmChanged(RenderingAlgorithm.MAXIMUM_INTENSITY); break;
@@ -330,7 +332,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		c.gridx++;
 		c.weightx = 1.0;
 		c.gridwidth = GridBagConstraints.REMAINDER;
-		add(algo, c);
+		add(renderingAlgorithm, c);
 
 		updateTextfieldsFromSliders();
 	}
@@ -352,6 +354,15 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			SingleSlider wslider = weightSliders[i];
 			wslider.set(100, (int)Math.round(100 * weight), color);
 		}
+	}
+
+	public RenderingAlgorithm getRenderingAlgorithm() {
+		switch(renderingAlgorithm.getSelectedIndex()) {
+		case 0: return RenderingAlgorithm.INDEPENDENT_TRANSPARENCY;
+		case 1: return RenderingAlgorithm.COMBINED_TRANSPARENCY;
+		case 2: return RenderingAlgorithm.MAXIMUM_INTENSITY;
+		}
+		return null;
 	}
 
 	private SingleSlider addSingleSlider(String label, int realMax, int setMax, Color color, GridBagConstraints c) {
@@ -402,9 +413,9 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
         listeners.add(l);
     }
 
-	private void fireRenderingSettingsChanged() {
+	private void fireRenderingSettingsChanged(boolean lightsChanged) {
 		for(Listener l : listeners)
-			l.renderingSettingsChanged();
+			l.renderingSettingsChanged(lightsChanged);
 	}
 
 	private void fireRenderingSettingsReset() {
@@ -447,7 +458,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_SPECULAR] = (float)Double.parseDouble(ksTF.getText());
 			slider.renderingSettings[ExtendedRenderingState.LIGHT_SHININESS]  = (float)Double.parseDouble(shininessTF.getText());
 			slider.update();
-			fireRenderingSettingsChanged();
+			fireRenderingSettingsChanged(false);
 		} catch(Exception ex) {
 		}
 	}
@@ -457,7 +468,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		maxCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.INTENSITY_MAX], 1));
 		minATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.ALPHA_MIN], 1));
 		maxATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.ALPHA_MAX], 1));
-		fireRenderingSettingsChanged();
+		fireRenderingSettingsChanged(false);
 	}
 
 	private static class DoubleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {

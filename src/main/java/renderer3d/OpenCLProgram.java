@@ -2,7 +2,7 @@ package renderer3d;
 
 public class OpenCLProgram {
 
-	public static final boolean useLights = true;
+//	public static final boolean useLights = false;
 
 	public static final int GRADIENT_MODE_ONTHEFLY            = 0;
 	public static final int GRADIENT_MODE_TEXTURE             = 1;
@@ -11,7 +11,7 @@ public class OpenCLProgram {
 	public static final int GRADIENT_MODE = GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
 
 	public static void main(String[] args) {
-		System.out.println(makeSource(2, false, true, false));
+		System.out.println(makeSource(2, false, true, false, new boolean[] {true, true}));
 //		System.out.println(makeSourceForMIP(2, false));
 	}
 
@@ -125,7 +125,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 		return source;
 	}
 
-	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip) {
+	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip, boolean[] useLights) {
 		String source = makeCommonSource(channels) +
 		    /* ****************************************************************
 			 * sample()
@@ -312,7 +312,14 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"		float2 dAlphaColor" + c + "     = maxAlphaColor" + c + " - minAlphaColor" + c + ";\n" +
 			"\n";
 		}
-		if(useLights) {
+		boolean useAnyLight = false;
+		for(int c = 0; c < channels; c++) {
+			if(useLights[c]) {
+				useAnyLight = true;
+				break;
+			}
+		}
+		if(useAnyLight) {
 			source = source +
 			"		float4 li = (float4)(" + light[0] + ", " + light[1] + ", " + light[2] + ", 0);\n" +
 			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
@@ -353,7 +360,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"\n";
 				continue;
 			}
-			if(useLights) {
+			if(useLights[c]) {
 			source = source +
 			"				ko = light" + c + ".x;\n" +
 			"				kd = light" + c + ".y;\n" +
@@ -390,7 +397,7 @@ else {
 			source = source + "\n";
 			if(combinedAlpha) {
 				source = source +
-			"				float a" + c + " = (" + sum("alpha", channels) + ");\n";
+			"				float a" + c + " = (" + sum("alpha", channels) + ") / " + 1 + ";\n";
 			} else {
 				source = source +
 			"				float a" + c + " = alpha" + c + ";\n";

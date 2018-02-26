@@ -220,8 +220,29 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
-			public void renderingSettingsChanged() {
-				push();
+			public void renderingSettingsChanged(boolean lightsChanged) {
+				if(lightsChanged) {
+					int nChannels = renderer.getNChannels();
+					ExtendedRenderingState kf = renderer.getRenderingState().clone();
+					boolean[] useLights = kf.useLights();
+
+					RenderingAlgorithm algorithm = contrastPanel.getRenderingAlgorithm();
+					String program = null;
+					switch(algorithm) {
+					case INDEPENDENT_TRANSPARENCY:
+						program = OpenCLProgram.makeSource(nChannels, false, false, false, useLights);
+						break;
+					case COMBINED_TRANSPARENCY:
+						program = OpenCLProgram.makeSource(nChannels, false, true, false, useLights);
+						break;
+					case MAXIMUM_INTENSITY:
+						program = OpenCLProgram.makeSource(nChannels, false, false, true, useLights);
+						break;
+					}
+					push(program);
+				} else {
+					push();
+				}
 			}
 
 			@Override
@@ -248,15 +269,18 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void renderingAlgorithmChanged(RenderingAlgorithm algorithm) {
 				int nChannels = renderer.getNChannels();
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				boolean[] useLights = kf.useLights();
+
 				switch(algorithm) {
 				case INDEPENDENT_TRANSPARENCY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false));
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false, useLights));
 					break;
 				case COMBINED_TRANSPARENCY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false));
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false, useLights));
 					break;
 				case MAXIMUM_INTENSITY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true));
+					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true, useLights));
 					break;
 				}
 				push();
@@ -392,7 +416,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private void push(ExtendedRenderingState rs, int w, int h) {
-		worker.push(rs, w, h, -1);
+		worker.push(rs, w, h, -1, null);
+	}
+
+	private void push(String program) {
+		worker.push(renderer.getRenderingState(), -1, -1, -1, program);
 	}
 
 	public void setOutputSize(int tgtW, int tgtH) {

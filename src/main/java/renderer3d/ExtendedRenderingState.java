@@ -93,6 +93,13 @@ public class ExtendedRenderingState extends RenderingState {
 		return c;
 	}
 
+	public boolean[] useLights() {
+		boolean[] useLights = new boolean[channelProperties.length];
+		for(int c = 0; c < channelProperties.length; c++)
+			useLights[c] = channelProperties[c][USE_LIGHT] > 0;
+		return useLights;
+	}
+
 	@Override
 	public ExtendedRenderingState clone() {
 		ExtendedRenderingState kf = new ExtendedRenderingState(0, null, channelProperties.length);

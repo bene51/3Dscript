@@ -22,6 +22,7 @@ public class RenderingThread {
 		private ExtendedRenderingState rs;
 		private int tgtW = -1;
 		private int tgtH = -1;
+		private String program = null;
 		private int imaget = -1;
 		private boolean valid;
 
@@ -65,12 +66,13 @@ public class RenderingThread {
 		OpenCLRaycaster.close();
 	}
 
-	public synchronized void push(ExtendedRenderingState rs, int w, int h, int imaget) {
+	public synchronized void push(ExtendedRenderingState rs, int w, int h, int imaget, String program) {
 			event.rs.setFrom(rs);
 			event.valid = true;
 			event.tgtW = w;
 			event.tgtH = h;
 			event.imaget = imaget;
+			event.program = program;
 			notifyAll();
 	}
 
@@ -86,6 +88,7 @@ public class RenderingThread {
 		ret.tgtW = event.tgtW;
 		ret.tgtH = event.tgtH;
 		ret.imaget = event.imaget;
+		ret.program = event.program;
 		event.valid = false;
 		return ret;
 	}
@@ -106,8 +109,10 @@ public class RenderingThread {
 		if(e.tgtW != -1 && e.tgtH != -1) {
 			raycaster.setTgtSize(e.tgtW, e.tgtH);
 			e.tgtW = e.tgtH = -1;
-
 		}
+		if(e.program != null)
+			raycaster.setProgram(e.program);
+
 		ImagePlus input = raycaster.getImage();
 		int before = input.getT();
 		if(e.imaget != -1) {
