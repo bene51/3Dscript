@@ -1,13 +1,11 @@
 package povray;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import parser.Keyword;
 import textanim.CombinedTransform;
@@ -135,14 +133,6 @@ public class PovrayRenderer implements IRenderer3D {
 
 	@Override
 	public void setTimelapseIndex(int t) {
-	}
-
-	@Override
-	public void setBackground(Color bg) {
-	}
-
-	@Override
-	public void setBackground(ColorProcessor bg) {
 	}
 
 	private String createPovrayVolume(CombinedTransform transform) {

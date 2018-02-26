@@ -16,7 +16,6 @@ import org.scijava.java3d.TransformGroup;
 import org.scijava.vecmath.Color3f;
 
 import ij.ImagePlus;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij3d.Content;
 import ij3d.Image3DUniverse;
@@ -195,13 +194,5 @@ public class IJ3DRenderer implements IRenderer3D {
 
 	@Override
 	public void setTimelapseIndex(int t) {
-	}
-
-	@Override
-	public void setBackground(Color bg) {
-	}
-
-	@Override
-	public void setBackground(ColorProcessor bg) {
 	}
 }

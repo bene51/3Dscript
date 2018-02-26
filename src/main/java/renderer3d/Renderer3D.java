@@ -5,7 +5,6 @@ import java.awt.Color;
 import ij.CompositeImage;
 import ij.ImagePlus;
 import ij.measure.Calibration;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
 import textanim.CombinedTransform;
@@ -142,17 +141,6 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			if(image.getT() != before)
 				super.setImage(image);
 		}
-	}
-
-	@Override
-	public void setBackground(Color bg) {
-		super.setBackground(bg);
-	}
-
-	@Override
-	public void setBackground(ColorProcessor bg) {
-		super.setBackground(bg);
-
 	}
 
 	public int getNChannels() {
