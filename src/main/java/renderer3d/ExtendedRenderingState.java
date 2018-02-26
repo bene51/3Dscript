@@ -31,10 +31,14 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int LIGHT_K_SPECULAR    = 21;
 	public static final int LIGHT_SHININESS     = 22;
 
+	public static final int BG_COLOR_RED    = 0;
+	public static final int BG_COLOR_GREEN  = 1;
+	public static final int BG_COLOR_BLUE   = 2;
+
 
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
-		nonChannelProperties = new double[0];
+		nonChannelProperties = new double[3];
 		channelProperties = new double[nChannels][23];
 	}
 
@@ -42,8 +46,13 @@ public class ExtendedRenderingState extends RenderingState {
 			int frame,
 			RenderingSettings[] renderingSettings,
 			Color[] channelColors,
+			Color bgColor,
 			CombinedTransform fwdTransform) {
 		this(frame, fwdTransform, renderingSettings.length);
+
+		nonChannelProperties[BG_COLOR_RED]    = bgColor.getRed();
+		nonChannelProperties[BG_COLOR_GREEN]  = bgColor.getGreen();
+		nonChannelProperties[BG_COLOR_BLUE]   = bgColor.getBlue();
 
 		for(int c = 0; c < renderingSettings.length; c++) {
 			Color cC = channelColors[c];
@@ -82,6 +91,10 @@ public class ExtendedRenderingState extends RenderingState {
 		return channelProperties;
 	}
 
+	public double[] getNonChannelProperties() {
+		return nonChannelProperties;
+	}
+
 	public Color[] getChannelColors() {
 		Color[] c  = new Color[channelProperties.length];
 		for(int i = 0; i < c.length; i++) {
@@ -91,6 +104,13 @@ public class ExtendedRenderingState extends RenderingState {
 					(int)channelProperties[i][CHANNEL_COLOR_BLUE]);
 		}
 		return c;
+	}
+
+	public Color getBackgroundColor() {
+		int r = (int)nonChannelProperties[BG_COLOR_RED];
+		int g = (int)nonChannelProperties[BG_COLOR_GREEN];
+		int b = (int)nonChannelProperties[BG_COLOR_BLUE];
+		return new Color(r, g, b);
 	}
 
 	public boolean[] useLights() {

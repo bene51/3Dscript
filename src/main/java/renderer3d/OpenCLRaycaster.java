@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Toolbar;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
@@ -64,7 +63,6 @@ public class OpenCLRaycaster {
 	protected int wIn, hIn, dIn, nChannels;
 	protected BoundingBox bbox;
 	protected Scalebar sbar;
-	protected Color bg = Toolbar.getBackgroundColor();
 
 	public OpenCLRaycaster(ImagePlus imp, int wOut, int hOut) {
 		wIn = imp.getWidth();
@@ -168,6 +166,7 @@ public class OpenCLRaycaster {
 			float[] fwdTransform,
 			float[] invTransform,
 			double[][] channelProperties,
+			double[] nonChannelProperties,
 			float alphacorr,
 			float pwOut) {
 
@@ -200,7 +199,11 @@ public class OpenCLRaycaster {
 			};
 		}
 		// TODO remove this line and set from GUI
-		Color bg = Toolbar.getBackgroundColor();
+//		Color bg = Toolbar.getBackgroundColor();
+		Color bg = new Color(
+				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_RED],
+				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_GREEN],
+				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_BLUE]);
 		int[] result = cast(invTransform, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);

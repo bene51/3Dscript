@@ -62,6 +62,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		this.rs = new ExtendedRenderingState(0,
 				renderingSettings,
 				channelColors,
+				Color.BLACK,
 				transformation);
 	}
 
@@ -116,7 +117,9 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		float alphacorr = len / pdIn[0];
 
 		rs.setFrom(kf);
-		return super.project(fwd, inv, kf.getChannelProperties(),
+		return super.project(fwd, inv,
+				kf.getChannelProperties(),
+				kf.getNonChannelProperties(),
 				alphacorr,
 				transform.getOutputSpacing()[0] / transform.getScale());
 	}

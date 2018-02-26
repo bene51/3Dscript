@@ -96,6 +96,7 @@ public class KeywordFactory implements IKeywordFactory {
 
 	public static enum NonChannelKeyword implements Keyword {
 
+		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
