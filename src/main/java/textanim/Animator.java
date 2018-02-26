@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
@@ -145,7 +144,7 @@ public class Animator {
 			kf.setFrame(t);
 			float[] fwd = Transform.fromIdentity(null);
 			for(Animation a : animations) {
-				a.adjustRenderingState(kf, renderingStates);
+				a.adjustRenderingState(kf, renderingStates, renderer.getImage().getNChannels());
 
 				if(a instanceof TransformationAnimation) {
 					float[] x = new float[12];

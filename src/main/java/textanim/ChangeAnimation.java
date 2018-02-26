@@ -6,6 +6,8 @@ import parser.NumberOrMacro;
 
 public class ChangeAnimation extends Animation {
 
+	public static final int ALL_CHANNELS = 1000;
+
 	private int[] timelineIndices;
 	private NumberOrMacro[] vTos;
 	private int channel;
@@ -47,33 +49,43 @@ public class ChangeAnimation extends Animation {
 	 *              where vFrom is the value at fromFrame.
 	 */
 	@Override
-	public void adjustRenderingState(RenderingState current, List<RenderingState> previous) {
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {
 		int t = current.getFrame();
 		if(t < fromFrame || t > toFrame)
 			return;
-		for(int i = 0; i < timelineIndices.length; i++) {
-			int timelineIdx = timelineIndices[i];
-			NumberOrMacro vTo = vTos[i];
 
-			// if it's a macro, just set the value to the macro evaluation
-			if(vTo.isMacro()) {
-				setRenderingStateProperty(current, timelineIdx, channel, vTo.evaluateMacro(t, fromFrame, toFrame));
-				return;
+		int[] channels = new int[] {channel};
+		if(channel == ALL_CHANNELS) {
+			channels = new int[nChannels];
+			for(int c = 0; c < nChannels; c++)
+				channels[c] = c;
+		}
+
+		for(int ch : channels) {
+			for(int i = 0; i < timelineIndices.length; i++) {
+				int timelineIdx = timelineIndices[i];
+				NumberOrMacro vTo = vTos[i];
+
+				// if it's a macro, just set the value to the macro evaluation
+				if(vTo.isMacro()) {
+					setRenderingStateProperty(current, timelineIdx, ch, vTo.evaluateMacro(t, fromFrame, toFrame));
+					continue;
+				}
+
+				double valFrom = -1;
+				double valTo = vTo.getValue();
+				// otherwise, let's see if there exists a value at fromFrame; if not
+				// just use the same value as the target value, unless it's t = fromFrame
+				if(t == fromFrame)
+					valFrom = getRenderingStateProperty(current, timelineIdx, ch);
+				else {
+					RenderingState kfFrom = previous.get(fromFrame);
+					valFrom = getRenderingStateProperty(kfFrom, timelineIdx, ch);
+				}
+
+				// gives precedence to valTo
+				setRenderingStateProperty(current, timelineIdx, ch, super.interpolate(current.getFrame(), valFrom, valTo));
 			}
-
-			double valFrom = -1;
-			double valTo = vTo.getValue();
-			// otherwise, let's see if there exists a value at fromFrame; if not
-			// just use the same value as the target value, unless it's t = fromFrame
-			if(t == fromFrame)
-				valFrom = getRenderingStateProperty(current, timelineIdx, channel);
-			else {
-				RenderingState kfFrom = previous.get(fromFrame);
-				valFrom = getRenderingStateProperty(kfFrom, timelineIdx, channel);
-			}
-
-			// gives precedence to valTo
-			setRenderingStateProperty(current, timelineIdx, channel, super.interpolate(current.getFrame(), valFrom, valTo));
 		}
 	}
 

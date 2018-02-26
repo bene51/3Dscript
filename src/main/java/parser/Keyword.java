@@ -45,6 +45,7 @@ public interface Keyword {
 		ZOOM("zoom by a factor of"),
 		CHANGE("change"),
 		CHANNEL("channel"),
+		ALL_CHANNELS("all channels'"),
 		FROM("from"),
 		TO("to"),
 		HORIZONTALLY("horizontally"),

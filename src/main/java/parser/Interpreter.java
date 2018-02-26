@@ -375,9 +375,10 @@ public class Interpreter {
 		space(result, false);
 
 		Keyword[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
-		Keyword[] choice = new Keyword[nonChannelKeywords.length + 1];
+		Keyword[] choice = new Keyword[nonChannelKeywords.length + 2];
 		int i = 0;
 		choice[i++] = GeneralKeyword.CHANNEL;
+		choice[i++] = GeneralKeyword.ALL_CHANNELS;
 		for(Keyword rp : nonChannelKeywords)
 			choice[i++] = rp;
 		result.setAutocompletion(new ChoiceAutocompletion(
@@ -392,6 +393,13 @@ public class Interpreter {
 			space(result, false);
 			result.setAutocompletion(new IntegerAutocompletion("<channel>"));
 			channel = integer() - 1;
+			space(result, false);
+			Keyword cp = channelproperty(result, cursorpos);
+			timelineIdcs = cp.getRenderingStateProperties();
+			autocompletionDescriptions = cp.getAutocompletionDescriptions();
+			replacements = cp.getReplacementMap();
+		} else if(keyword(GeneralKeyword.ALL_CHANNELS, true) != null) {
+			channel = ChangeAnimation.ALL_CHANNELS;
 			space(result, false);
 			Keyword cp = channelproperty(result, cursorpos);
 			timelineIdcs = cp.getRenderingStateProperties();
