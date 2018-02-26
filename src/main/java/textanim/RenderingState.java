@@ -32,7 +32,7 @@ public class RenderingState implements Comparable<RenderingState> {
 		return channelProperties[channel][channelProperty];
 	}
 
-	public double getNonchannelProperty(int nonchannelProperty) {
+	public double getNonChannelProperty(int nonchannelProperty) {
 		return nonChannelProperties[nonchannelProperty];
 	}
 
@@ -40,7 +40,7 @@ public class RenderingState implements Comparable<RenderingState> {
 		channelProperties[channel][channelProperty] = v;
 	}
 
-	public void setNonchannelProperty(int nonchannelProperty, double v) {
+	public void setNonChannelProperty(int nonchannelProperty, double v) {
 		nonChannelProperties[nonchannelProperty] = v;
 	}
 

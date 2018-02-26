@@ -79,13 +79,13 @@ public class ChangeAnimation extends Animation {
 
 	private double getRenderingStateProperty(RenderingState rs, int property, int channel) {
 		if(channel < 0)
-			return rs.getNonchannelProperty(property);
+			return rs.getNonChannelProperty(property);
 		return rs.getChannelProperty(channel, property);
 	}
 
 	private void setRenderingStateProperty(RenderingState rs, int property, int channel, double v) {
 		if(channel < 0)
-			rs.setNonchannelProperty(property, v);
+			rs.setNonChannelProperty(property, v);
 		else
 			rs.setChannelProperty(channel, property, v);
 	}

@@ -93,9 +93,9 @@ public class PovrayRenderer implements IRenderer3D {
 		out = new PrintStream(povrayFile);
 		out.println(PovrayTemplate.text);
 		out.println(PovrayTemplate.getMagnifierAt(
-				(float)kf.getNonchannelProperty(PovrayRenderingState.LENS_X),
-				(float)kf.getNonchannelProperty(PovrayRenderingState.LENS_Y),
-				(float)kf.getNonchannelProperty(PovrayRenderingState.LENS_Z)));
+				(float)kf.getNonChannelProperty(PovrayRenderingState.LENS_X),
+				(float)kf.getNonChannelProperty(PovrayRenderingState.LENS_Y),
+				(float)kf.getNonChannelProperty(PovrayRenderingState.LENS_Z)));
 		out.println(createPovrayVolume(kf.getFwdTransform()));
 		out.close();
 

@@ -70,8 +70,8 @@ public class BatchRaycaster implements PlugInFilter {
 		}
 		ExtendedRenderingState rs = renderer.getRenderingState();
 
-		rs.setNonchannelProperty(ExtendedRenderingState.NEAR, -10e5); // CroppingPanel.getNear(image));
-		rs.setNonchannelProperty(ExtendedRenderingState.FAR,   10e5); // CroppingPanel.getFar(image));
+		rs.setNonChannelProperty(ExtendedRenderingState.NEAR, -10e5); // CroppingPanel.getNear(image));
+		rs.setNonChannelProperty(ExtendedRenderingState.FAR,   10e5); // CroppingPanel.getFar(image));
 
 //		Dimension outsize = new Dimension(image.getWidth(), image.getHeight());
 //		double mag = image.getCanvas().getMagnification();

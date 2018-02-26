@@ -97,12 +97,12 @@ public class IJ3DRenderer implements IRenderer3D {
 
 	@Override
 	public ImageProcessor render(RenderingState kf) {
-		int displayMode    =   (int)kf.getNonchannelProperty(IJ3DRenderingState.DISPLAY_MODE);
-		int red            =   (int)kf.getNonchannelProperty(IJ3DRenderingState.COLOR_RED);
-		int green          =   (int)kf.getNonchannelProperty(IJ3DRenderingState.COLOR_GREEN);
-		int blue           =   (int)kf.getNonchannelProperty(IJ3DRenderingState.COLOR_BLUE);
-		float transparency = (float)kf.getNonchannelProperty(IJ3DRenderingState.TRANSPARENCY);
-		int threshold      =   (int)kf.getNonchannelProperty(IJ3DRenderingState.THRESHOLD);
+		int displayMode    =   (int)kf.getNonChannelProperty(IJ3DRenderingState.DISPLAY_MODE);
+		int red            =   (int)kf.getNonChannelProperty(IJ3DRenderingState.COLOR_RED);
+		int green          =   (int)kf.getNonChannelProperty(IJ3DRenderingState.COLOR_GREEN);
+		int blue           =   (int)kf.getNonChannelProperty(IJ3DRenderingState.COLOR_BLUE);
+		float transparency = (float)kf.getNonChannelProperty(IJ3DRenderingState.TRANSPARENCY);
+		int threshold      =   (int)kf.getNonChannelProperty(IJ3DRenderingState.THRESHOLD);
 
 		Color3f color = (red < 0 || green < 0 || blue < 0) ? null : new Color3f(red / 255f, green / 255f, blue / 255f);
 
