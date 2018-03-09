@@ -15,10 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.util.Set;
 
-import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -220,10 +218,10 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 //		iconGroup = new IconGroup("bullets", "images/", null, "png", null);
 //		gutter.setBookmarkIcon(iconGroup.getIcon("var"));
 
-		URL url = ClassLoader.getSystemClassLoader().getResource("eye.png");
-		ImageIcon icon = new ImageIcon(url);
-		gutter.setBookmarkIcon(icon);
-		gutter.setBookmarkingEnabled(true);
+//		URL url = ClassLoader.getSystemClassLoader().getResource("eye.png");
+//		ImageIcon icon = new ImageIcon(url);
+//		gutter.setBookmarkIcon(icon);
+//		gutter.setBookmarkingEnabled(true);
 
 		return sp;
 	}
