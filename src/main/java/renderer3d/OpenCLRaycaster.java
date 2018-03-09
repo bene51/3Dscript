@@ -61,6 +61,7 @@ public class OpenCLRaycaster {
 	protected int wOut;
 	protected int hOut;
 	protected int wIn, hIn, dIn, nChannels;
+	protected int tIndex;
 	protected BoundingBox bbox;
 	protected Scalebar sbar;
 
@@ -120,6 +121,7 @@ public class OpenCLRaycaster {
 		int h = imp.getHeight();
 		int d = imp.getNSlices();
 		int nChannels = imp.getNChannels();
+		tIndex = imp.getT();
 
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
@@ -204,6 +206,13 @@ public class OpenCLRaycaster {
 				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_RED],
 				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_GREEN],
 				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_BLUE]);
+		int t = (int)nonChannelProperties[ExtendedRenderingState.TIMEPOINT];
+		t = Math.max(1, Math.min(image.getNFrames(), t));
+		if(t != tIndex) {
+			tIndex = t;
+			image.setT(tIndex);
+			setImage(image);
+		}
 		int[] result = cast(invTransform, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);

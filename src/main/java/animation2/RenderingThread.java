@@ -23,7 +23,6 @@ public class RenderingThread {
 		private int tgtW = -1;
 		private int tgtH = -1;
 		private String program = null;
-		private int imaget = -1;
 		private boolean valid;
 
 		Event(ExtendedRenderingState rs) {
@@ -35,6 +34,7 @@ public class RenderingThread {
 	public RenderingThread(Renderer3D raycaster) {
 		this.raycaster = raycaster;
 		final ExtendedRenderingState rs = raycaster.getRenderingState();
+		rs.setNonChannelProperty(ExtendedRenderingState.TIMEPOINT, raycaster.getImage().getT() - 1);
 		this.event = new Event(rs);
 		out = new ImagePlus("3D Animation", raycaster.render(rs));
 		// TODO
@@ -66,12 +66,11 @@ public class RenderingThread {
 		OpenCLRaycaster.close();
 	}
 
-	public synchronized void push(ExtendedRenderingState rs, int w, int h, int imaget, String program) {
+	public synchronized void push(ExtendedRenderingState rs, int w, int h, String program) {
 			event.rs.setFrom(rs);
 			event.valid = true;
 			event.tgtW = w;
 			event.tgtH = h;
-			event.imaget = imaget;
 			event.program = program;
 			notifyAll();
 	}
@@ -87,7 +86,6 @@ public class RenderingThread {
 		ret.rs.setFrom(event.rs);
 		ret.tgtW = event.tgtW;
 		ret.tgtH = event.tgtH;
-		ret.imaget = event.imaget;
 		ret.program = event.program;
 		event.valid = false;
 		return ret;
@@ -113,13 +111,6 @@ public class RenderingThread {
 		if(e.program != null)
 			raycaster.setProgram(e.program);
 
-		ImagePlus input = raycaster.getImage();
-		int before = input.getT();
-		if(e.imaget != -1) {
-			input.setT(e.imaget);
-			if(input.getT() != before)
-				raycaster.setImage(input);
-		}
 		out.setProcessor(raycaster.render(e.rs));
 	}
 }

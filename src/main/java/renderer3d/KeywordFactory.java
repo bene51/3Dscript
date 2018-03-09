@@ -96,7 +96,8 @@ public class KeywordFactory implements IKeywordFactory {
 
 	public static enum NonChannelKeyword implements Keyword {
 
-		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE);
+		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE),
+		TIMEPOINT("timepoint", new String[] {"<timepoint>"}, ExtendedRenderingState.TIMEPOINT);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;

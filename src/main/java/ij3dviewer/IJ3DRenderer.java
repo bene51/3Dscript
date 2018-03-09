@@ -191,8 +191,4 @@ public class IJ3DRenderer implements IRenderer3D {
 	public int getTargetHeight() {
 		return tgtH;
 	}
-
-	@Override
-	public void setTimelapseIndex(int t) {
-	}
 }

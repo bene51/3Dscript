@@ -131,10 +131,6 @@ public class PovrayRenderer implements IRenderer3D {
 		return tgtH;
 	}
 
-	@Override
-	public void setTimelapseIndex(int t) {
-	}
-
 	private String createPovrayVolume(CombinedTransform transform) {
 		int w = input.getWidth();
 		int h = input.getHeight();

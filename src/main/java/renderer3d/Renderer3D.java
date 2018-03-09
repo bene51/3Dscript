@@ -136,16 +136,6 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		rs.getFwdTransform().setOutputSpacing(p);
 	}
 
-	@Override
-	public void setTimelapseIndex(int t) {
-		if(image.getNFrames() > 1) {
-			int before = image.getT();
-			image.setT(t + 1);
-			if(image.getT() != before)
-				super.setImage(image);
-		}
-	}
-
 	public int getNChannels() {
 		return image.getNChannels();
 	}

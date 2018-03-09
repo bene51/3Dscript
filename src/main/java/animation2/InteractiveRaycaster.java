@@ -416,11 +416,17 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private void push(ExtendedRenderingState rs, int w, int h) {
-		worker.push(rs, w, h, -1, null);
+		push(rs, w, h, null);
 	}
 
 	private void push(String program) {
-		worker.push(renderer.getRenderingState(), -1, -1, -1, program);
+		push(renderer.getRenderingState(), -1, -1, program);
+	}
+
+	private void push(ExtendedRenderingState rs, int w, int h, String program) {
+		int t = image.getT();
+		rs.setNonChannelProperty(ExtendedRenderingState.TIMEPOINT, t);
+		worker.push(rs, w, h, program);
 	}
 
 	public void setOutputSize(int tgtW, int tgtH) {

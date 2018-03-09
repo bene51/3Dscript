@@ -19,5 +19,4 @@ public interface IRenderer3D {
 
 	public int getTargetHeight();
 
-	public void setTimelapseIndex(int t);
 }
