@@ -45,6 +45,7 @@ public class ExtendedRenderingState extends RenderingState {
 
 	public ExtendedRenderingState(
 			int frame,
+			int timepoint,
 			RenderingSettings[] renderingSettings,
 			Color[] channelColors,
 			Color bgColor,
@@ -54,7 +55,7 @@ public class ExtendedRenderingState extends RenderingState {
 		nonChannelProperties[BG_COLOR_RED]    = bgColor.getRed();
 		nonChannelProperties[BG_COLOR_GREEN]  = bgColor.getGreen();
 		nonChannelProperties[BG_COLOR_BLUE]   = bgColor.getBlue();
-		nonChannelProperties[TIMEPOINT]       = 0;
+		nonChannelProperties[TIMEPOINT]       = timepoint;
 
 		for(int c = 0; c < renderingSettings.length; c++) {
 			Color cC = channelColors[c];

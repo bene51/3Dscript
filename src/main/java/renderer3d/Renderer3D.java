@@ -2,6 +2,7 @@ package renderer3d;
 
 import java.awt.Color;
 
+import animation2.CroppingPanel;
 import ij.CompositeImage;
 import ij.ImagePlus;
 import ij.measure.Calibration;
@@ -38,8 +39,8 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		float[] pdOut = new float[] {pdIn[0], pdIn[1], pdIn[2]};
 
 
-		near = 0;
-		far = 0;
+		near = (float)CroppingPanel.getNear(image);
+		far  = (float)CroppingPanel.getFar(image);
 		float[] rotcenter = new float[] {
 				image.getWidth()   * pdIn[0] / 2,
 				image.getHeight()  * pdIn[1] / 2,
@@ -60,6 +61,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
 
 		this.rs = new ExtendedRenderingState(0,
+				image.getT(),
 				renderingSettings,
 				channelColors,
 				Color.BLACK,
