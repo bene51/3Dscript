@@ -12,6 +12,7 @@ import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import textanim.CombinedTransform;
 
 /*
  * TODOs
@@ -164,13 +165,35 @@ public class OpenCLRaycaster {
 	}
 
 	// TODO take a RenderingState object as an argument
-	public ImageProcessor project(
-			float[] fwdTransform,
-			float[] invTransform,
-			double[][] channelProperties,
-			double[] nonChannelProperties,
-			float alphacorr,
-			float pwOut) {
+	public ImageProcessor project(ExtendedRenderingState kf) {
+
+		CombinedTransform transform = kf.getFwdTransform();
+		float[] fwdTransform = transform.calculateForwardTransform();
+		float[] invTransform = CombinedTransform.calculateInverseTransform(fwdTransform);
+
+		// calculate an opacity correction factor
+		// https://stackoverflow.com/questions/12494439/opacity-correction-in-raycasting-volume-rendering
+		// - reference sample spacing (dx on the website) is pw
+		// - real sample spacing depends on the angle and the zStep, which in turn influences the transform's pdOut
+		// - real sample spacing in pixel coordinates is (inv[2], inv[6], inv[10])
+		// - multiplied with the input pixel spacings, this is a vector whose length is \tilde{dx} (on the website)
+		// - the correction factor is then \tilde{dx} / dx.
+		float[] pdIn = transform.getInputSpacing();
+		float dx = pdIn[0] * invTransform[2];
+		float dy = pdIn[1] * invTransform[6];
+		float dz = pdIn[2] * invTransform[10];
+		float len = (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
+		float alphacorr = len / pdIn[0];
+
+		double[][] channelProperties = kf.getChannelProperties();
+		double[] nonChannelProperties = kf.getNonChannelProperties();
+
+		float l = (float)Math.sqrt(invTransform[2] * invTransform[2] + invTransform[6] * invTransform[6] + invTransform[10] * invTransform[10]);
+
+		float[] center = transform.getCenter();
+		float cz = fwdTransform[8] * center[0] / pdIn[0] +
+				fwdTransform[9] * center[1] / pdIn[1] +
+				fwdTransform[10] * center[2] / pdIn[2] + fwdTransform[11];
 
 		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
@@ -191,8 +214,8 @@ public class OpenCLRaycaster {
 					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMAX]),
 					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMAX]),
 					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMAX]),
-					(float)(channelProperties[c][ExtendedRenderingState.NEAR]),
-					(float)(channelProperties[c][ExtendedRenderingState.FAR]),
+					(float)(cz * l + channelProperties[c][ExtendedRenderingState.NEAR]),
+					(float)(cz * l + channelProperties[c][ExtendedRenderingState.FAR]),
 					(int)(channelProperties[c][ExtendedRenderingState.USE_LIGHT]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_OBJECT]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE]),
@@ -217,13 +240,12 @@ public class OpenCLRaycaster {
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
-		sbar.drawScalebar(ret, fwdTransform, invTransform, pwOut);
+		sbar.drawScalebar(ret, fwdTransform, invTransform, transform.getOutputSpacing()[0] / transform.getScale());
 
-		float len = (float)Math.sqrt(invTransform[2] * invTransform[2] + invTransform[6] * invTransform[6] + invTransform[10] * invTransform[10]);
 
 		for(int c = 0; c < channelSettings.length; c++)
 			bbox.drawFrontClippingPlane(ret, fwdTransform, invTransform,
-					(float)channelProperties[c][ExtendedRenderingState.NEAR] / len);
+					(cz * l + (float)channelProperties[c][ExtendedRenderingState.NEAR]) / l);
 		return ret;
 	}
 

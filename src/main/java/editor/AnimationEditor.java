@@ -47,6 +47,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import ij.ImagePlus;
 import ij.Prefs;
+import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import parser.Keyword.GeneralKeyword;
 import renderer3d.Transform;
@@ -728,6 +729,16 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	}
 
 	public void recordTransitionEnd() {
+		GenericDialog gd = new GenericDialog("");
+		gd.addNumericField("Transition_start", 0, 0);
+		gd.addNumericField("Transition_end", 20, 0);
+		gd.showDialog();
+		if(gd.wasCanceled())
+			return;
+
+		int tStart = (int)gd.getNextNumber();
+		int tEnd   = (int)gd.getNextNumber();
+
 		ImagePlus imp = renderer.getImage();
 		float[] rotcenter = new float[] {
 				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
@@ -744,9 +755,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 		// T0 * M = T1  =>  M = T0^{-1} * T1
 		Transform.invert(t0);
-		System.out.println("t0 = \n" + Transform.toString(t0));
-		System.out.println("t1 = \n" + Transform.toString(t1));
-		float[] m = Transform.mul(t0, t1);
+		System.out.println("t0^(-1) = \n" + Transform.toString(t0));
+		System.out.println("t1      = \n" + Transform.toString(t1));
+//		float[] m = Transform.mul(t0, t1);
+		float[] m = Transform.mul(t1, t0);
 		System.out.println("m = \n" + Transform.toString(m));
 
 		// M = T * C^{-1} * S * R * C
@@ -754,25 +766,30 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		Transform.applyTranslation(-rotcenter[0], -rotcenter[1], -rotcenter[2], m);
 		Transform.applyTranslation(m, rotcenter[0], rotcenter[1], rotcenter[2]);
 
+		System.out.println("m(1) = \n" + Transform.toString(m));
+
 		// extract scale
 		float scale = (float)Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+		System.out.println("scale = " + scale);
 
 		// extract translation
 		float dx = m[3];
 		float dy = m[7];
 		float dz = m[11];
+		System.out.println("translation = [" + dx + ", " + dy + ", " + dz + "]");
 
 		m[3] = m[7] = m[11] = 0;
 		for(int i = 0; i < 12; i++)
 			m[i] *= 1f / scale;
+		System.out.println("m(2) = \n" + Transform.toString(m));
 
 		// extract rotation
 		float[] euler = new float[3];
 		Transform.guessEulerAngles(m, euler);
 
+		StringBuffer text = new StringBuffer(recordTransformation(rsRecordStart, Integer.toString(tStart)));
 
-		final TextEditorTab tab = getTab();
-		StringBuffer text = new StringBuffer("From frame X to frame Y:\n");
+		text.append("From frame " + tStart + " to frame " + tEnd + ":\n");
 		// rotate around x-axis (vertically)
 		text.append("- ")
 			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
@@ -811,6 +828,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			.append(CustomDecimalFormat.format(dz, 1))
 			.append(")\n");
 
+		final TextEditorTab tab = getTab();
 		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
 		int lineOfCursor = tab.editorPane.getCaretLineNumber();
 		int offset = tab.editorPane.getText().length();
@@ -859,6 +877,27 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	}
 
 	public void recordTransformation() {
+		String text = recordTransformation(renderer.getRenderingState().clone(), "X");
+
+		final TextEditorTab tab = getTab();
+		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
+		int lineOfCursor = tab.editorPane.getCaretLineNumber();
+		int offset = tab.editorPane.getText().length();
+		try {
+			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
+		} catch(Exception e) {}
+		originalText.insert(offset, text);
+
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
+		tab.editorPane.setText(originalText.toString());
+		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
+
+		int xStart = text.indexOf("X") + offset;
+		tab.editorPane.setSelectionStart(xStart);
+		tab.editorPane.setSelectionEnd(xStart + 1);
+	}
+
+	public String recordTransformation(RenderingState rs, String tStart) {
 		ImagePlus imp = renderer.getImage();
 		float[] rotcenter = new float[] {
 				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
@@ -866,9 +905,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 
-		RenderingState rsRecordEnd = renderer.getRenderingState().clone();
-
-		float[] m = rsRecordEnd.getFwdTransform().calculateForwardTransformWithoutCalibration();
+		float[] m = rs.getFwdTransform().calculateForwardTransformWithoutCalibration();
 
 		// M = T * C^{-1} * S * R * C
 		// T * S * R = C * M * C^{-1}
@@ -891,8 +928,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		float[] euler = new float[3];
 		Transform.guessEulerAngles(m, euler);
 
-		final TextEditorTab tab = getTab();
-		StringBuffer text = new StringBuffer("At frame X:\n");
+		StringBuffer text = new StringBuffer("At frame " + tStart + ":\n");
 		// rotate around x-axis (vertically)
 		text.append("- ")
 			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
@@ -933,21 +969,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			.append(CustomDecimalFormat.format(dz, 1))
 			.append(")\n");
 
-		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
-		int lineOfCursor = tab.editorPane.getCaretLineNumber();
-		int offset = tab.editorPane.getText().length();
-		try {
-			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
-		} catch(Exception e) {}
-		originalText.insert(offset, text.toString());
-
-		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
-		tab.editorPane.setText(originalText.toString());
-		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
-
-		int xStart = text.indexOf("X") + offset;
-		tab.editorPane.setSelectionStart(xStart);
-		tab.editorPane.setSelectionEnd(xStart + 1);
+		return text.toString();
 	}
 
 	// TODO respect selection

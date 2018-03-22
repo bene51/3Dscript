@@ -97,31 +97,8 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 	@Override
 	public ImageProcessor render(RenderingState kf2) {
 		ExtendedRenderingState kf = (ExtendedRenderingState)kf2;
-
-		CombinedTransform transform = kf.getFwdTransform();
-		float[] fwd = transform.calculateForwardTransform();
-		float[] inv = CombinedTransform.calculateInverseTransform(fwd);
-
-		// calculate an opacity correction factor
-		// https://stackoverflow.com/questions/12494439/opacity-correction-in-raycasting-volume-rendering
-		// - reference sample spacing (dx on the website) is pw
-		// - real sample spacing depends on the angle and the zStep, which in turn influences the transform's pdOut
-		// - real sample spacing in pixel coordinates is (inv[2], inv[6], inv[10])
-		// - multiplied with the input pixel spacings, this is a vector whose length is \tilde{dx} (on the website)
-		// - the correction factor is then \tilde{dx} / dx.
-		float[] pdIn = transform.getInputSpacing();
-		float dx = pdIn[0] * inv[2];
-		float dy = pdIn[1] * inv[6];
-		float dz = pdIn[2] * inv[10];
-		float len = (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
-		float alphacorr = len / pdIn[0];
-
 		rs.setFrom(kf);
-		return super.project(fwd, inv,
-				kf.getChannelProperties(),
-				kf.getNonChannelProperties(),
-				alphacorr,
-				transform.getOutputSpacing()[0] / transform.getScale());
+		return super.project(kf);
 	}
 
 	@Override

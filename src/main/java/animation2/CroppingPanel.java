@@ -72,16 +72,11 @@ public class CroppingPanel extends JPanel {
 		int w = image.getWidth();
 		int h = image.getHeight();
 		int d = image.getNSlices();
-		int max = Math.max(w, Math.max(h, d));
-		return -2 * max;
+		return -0.5 * Math.sqrt(w * w + h * h + d * d);
 	}
 
 	public static double getFar(ImagePlus image) {
-		int w = image.getWidth();
-		int h = image.getHeight();
-		int d = image.getNSlices();
-		int max = Math.max(w, Math.max(h, d));
-		return 2 * max;
+		return -getNear(image);
 	}
 
 	public CroppingPanel(ImagePlus image) {
@@ -90,16 +85,14 @@ public class CroppingPanel extends JPanel {
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridbag);
 
-		int w = image.getWidth();
-		int h = image.getHeight();
-		int d = image.getNSlices();
-		int max = Math.max(w, Math.max(h, d));
+		int near = (int)Math.floor(getNear(image));
+		int far = (int)Math.ceil(getFar(image));
 
 		c.gridy = 0;
 		nearfar = addDoubleSlider(
 				"near/far",
-				new int[] {-2 * max, 2 * max},
-				new int[] {-2 * max, 2 * max},
+				new int[] {near, far},
+				new int[] {near, far},
 				new Color(255, 0, 0, 100),
 				c);
 
