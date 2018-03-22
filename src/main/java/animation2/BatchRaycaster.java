@@ -10,7 +10,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
-import renderer3d.ExtendedRenderingState;
 import renderer3d.Renderer3D;
 import textanim.Animator;
 
@@ -68,10 +67,10 @@ public class BatchRaycaster implements PlugInFilter {
 					+ "the newest drivers for your card and try again.");
 			return;
 		}
-		ExtendedRenderingState rs = renderer.getRenderingState();
+//		ExtendedRenderingState rs = renderer.getRenderingState();
 
-		rs.setNonChannelProperty(ExtendedRenderingState.NEAR, -10e5); // CroppingPanel.getNear(image));
-		rs.setNonChannelProperty(ExtendedRenderingState.FAR,   10e5); // CroppingPanel.getFar(image));
+//		rs.setChannelProperty(0, ExtendedRenderingState.NEAR, -10e5); // CroppingPanel.getNear(image));
+//		rs.setChannelProperty(0, ExtendedRenderingState.FAR,   10e5); // CroppingPanel.getFar(image));
 
 //		Dimension outsize = new Dimension(image.getWidth(), image.getHeight());
 //		double mag = image.getCanvas().getMagnification();
@@ -79,6 +78,9 @@ public class BatchRaycaster implements PlugInFilter {
 //		outsize.height = (int)Math.round(outsize.height * mag);
 //
 //		setOutputSize(outsize.width, outsize.height);
+
+		renderer.getBoundingBox().setVisible(false);
+		renderer.getScalebar().setLength(200);
 
 		Animator animator = new Animator(renderer);
 		AtomicBoolean finished = new AtomicBoolean(false);
