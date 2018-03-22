@@ -276,6 +276,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 //			"			printf(\"bb1" + c + " = %d, %d, %d\\n\", bb1" + c + ".x, bb1" + c + ".y, bb1" + c + ".z);\n" +
 //			"			printf(\"inear" + c + " = %f\\n\", inear" + c + ");\n" +
 //			"			printf(\"ifar" + c + " = %f\\n\", ifar" + c + ");\n" +
+//			"			printf(\"inc = (%f, %f, %f)\\n\", inc.x, inc.y, inc.z);\n" +
 //			"		}\n" +
 			"\n";
 		}
