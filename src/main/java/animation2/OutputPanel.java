@@ -33,7 +33,7 @@ import renderer3d.BoundingBox;
 import renderer3d.Scalebar;
 import renderer3d.Scalebar.Position;
 
-public class OutputPanel extends JPanel implements FocusListener, NumberField.Listener {
+public class OutputPanel extends JPanel {
 
 	public static void main(String...strings) {
 		JFrame f = new JFrame("");
@@ -51,7 +51,8 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 	private NumberField widthTF, heightTF; // , zStepTF;
 
 	public static interface Listener {
-		public void outputSizeChanged(int w, int h);
+		public void outputWidthChanged(int w);
+		public void outputHeightChanged(int h);
 		public void boundingBoxChanged();
 		public void scalebarChanged();
 	}
@@ -86,10 +87,32 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 
 		add(sizePanel);
 
-		widthTF.addListener(this);
-		widthTF.addNumberFieldFocusListener(this);
-		heightTF.addListener(this);
-		heightTF.addNumberFieldFocusListener(this);
+		widthTF.addListener((v) -> fireOutputWidthChanged((int)v));
+		heightTF.addListener((v) -> fireOutputHeightChanged((int)v));
+		widthTF.addNumberFieldFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				JTextField tf = (JTextField)e.getSource();
+				tf.selectAll();
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				fireOutputWidthChanged((int)Double.parseDouble(widthTF.getText()));
+			}
+		});
+		heightTF.addNumberFieldFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				JTextField tf = (JTextField)e.getSource();
+				tf.selectAll();
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				fireOutputHeightChanged((int)Double.parseDouble(heightTF.getText()));
+			}
+		});
 
 		JPanel propertiesPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -277,30 +300,6 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
 		});
 	}
 
-	@Override
-	public void focusGained(FocusEvent e) {
-		JTextField tf = (JTextField)e.getSource();
-		tf.selectAll();
-	}
-
-	@Override
-	public void focusLost(FocusEvent e) {
-		fireOutputSizeChanged();
-	}
-
-	@Override
-	public void valueChanged(double v) {
-		fireOutputSizeChanged();
-	}
-
-	public int getOutputWidth() {
-		return (int)Double.parseDouble(widthTF.getText());
-	}
-
-	public int getOutputHeight() {
-		return (int)Double.parseDouble(heightTF.getText());
-	}
-
 	public void setOutputSize(int width, int height) {
 		widthTF.setText(Integer.toString(width));
 		heightTF.setText(Integer.toString(height));
@@ -310,9 +309,14 @@ public class OutputPanel extends JPanel implements FocusListener, NumberField.Li
         listeners.add(l);
     }
 
-	private void fireOutputSizeChanged() {
+	private void fireOutputWidthChanged(int w) {
 		for(Listener l : listeners)
-			l.outputSizeChanged(getOutputWidth(), getOutputHeight());
+			l.outputWidthChanged(w);
+	}
+
+	private void fireOutputHeightChanged(int h) {
+		for(Listener l : listeners)
+			l.outputHeightChanged(h);
 	}
 
 	private void fireBoundingBoxChanged() {

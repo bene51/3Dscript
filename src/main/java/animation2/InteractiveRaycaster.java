@@ -349,8 +349,17 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		outputPanel.addOutputPanelListener(new OutputPanel.Listener() {
 			@Override
-			public void outputSizeChanged(int tgtW, int tgtH) {
+			public void outputWidthChanged(int tgtW) {
+				int tgtH = image.getHeight() / image.getWidth() * tgtW;
 				setOutputSize(tgtW, tgtH);
+				outputPanel.setOutputSize(tgtW, tgtH);
+			}
+
+			@Override
+			public void outputHeightChanged(int tgtH) {
+				int tgtW = image.getWidth() / image.getHeight() * tgtH;
+				setOutputSize(tgtW, tgtH);
+				outputPanel.setOutputSize(tgtW, tgtH);
 			}
 
 			@Override
