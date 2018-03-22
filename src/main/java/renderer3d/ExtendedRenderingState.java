@@ -116,6 +116,12 @@ public class ExtendedRenderingState extends RenderingState {
 		return new Color(r, g, b);
 	}
 
+	public void setBackgroundColor(int r, int g, int b) {
+		nonChannelProperties[ExtendedRenderingState.BG_COLOR_RED]   = r;
+		nonChannelProperties[ExtendedRenderingState.BG_COLOR_GREEN] = g;
+		nonChannelProperties[ExtendedRenderingState.BG_COLOR_BLUE]  = b;
+	}
+
 	public boolean[] useLights() {
 		boolean[] useLights = new boolean[channelProperties.length];
 		for(int c = 0; c < channelProperties.length; c++)

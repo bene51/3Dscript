@@ -64,8 +64,8 @@ public class AnimatorDialog extends JDialog {
 		setLocation(screenSize.width - scnMax.right - 400, scnMax.top);
 	}
 
-	public ContrastPanel addContrastPanel(int[][] histo8, double min[], double max[], double[][] channelProperties) {
-		ContrastPanel slider = new ContrastPanel(histo8, min, max, channelProperties);
+	public ContrastPanel addContrastPanel(int[][] histo8, double min[], double max[], double[][] channelProperties, Color bg) {
+		ContrastPanel slider = new ContrastPanel(histo8, min, max, channelProperties, bg);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1.0;

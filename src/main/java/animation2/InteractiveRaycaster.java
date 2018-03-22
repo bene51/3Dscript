@@ -1,5 +1,6 @@
 package animation2;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -93,7 +94,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel = dialog.addContrastPanel(
 				histo8,
 				min, max,
-				renderer.getRenderingState().getChannelProperties());
+				renderer.getRenderingState().getChannelProperties(),
+				Color.BLACK);
 
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
 
@@ -285,6 +287,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 				}
 				push();
 			}
+
+			@Override
+			public void backgroundChanged(Color bg) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setBackgroundColor(bg.getRed(), bg.getGreen(), bg.getBlue());
+				push(kf);
+			}
 		});
 
 		transformationPanel.addTransformationPanelListener(new TransformationPanel.Listener() {
@@ -472,6 +481,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	public void setGUIFromRenderingState(ExtendedRenderingState rs) {
 		// Contrast Panel
 		this.contrastPanel.setRenderingSettings(rs.getChannelProperties());
+		this.contrastPanel.setBackground(rs.getBackgroundColor());
 
 		// Transformation Panel
 		CombinedTransform t = rs.getFwdTransform();

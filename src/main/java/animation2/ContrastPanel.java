@@ -43,7 +43,8 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				new int[][] { histo },
 				new double[] { 0 }, // min
 				new double[] { 255 }, // max
-				new double[][] { { 0, 255, 1, 0, 255, 2, 1, 255, 0, 0 } });
+				new double[][] { { 0, 255, 1, 0, 255, 2, 1, 255, 0, 0 } },
+				Color.BLACK);
 		frame.getContentPane().add(slider);
 		frame.setSize(600, 400);
 		frame.setVisible(true);
@@ -79,6 +80,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 	public static interface Listener {
 		public void renderingSettingsChanged(boolean lightsChanged);
+		public void backgroundChanged(Color bg);
 		public void channelChanged();
 		public void renderingSettingsReset();
 		public void renderingAlgorithmChanged(RenderingAlgorithm algorithm);
@@ -88,14 +90,17 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	private double[] min;
 	private double[] max;
 	private double[][] renderingSettings;
+	private Color background;
 
 	private int channel = 0;
 
 	private ArrayList<Listener> listeners =
 			new ArrayList<Listener>();
 
-	public ContrastPanel(int[][] histogram, double[] min, double max[], final double[][] r) {
+	public ContrastPanel(int[][] histogram, double[] min, double max[], final double[][] r, final Color background) {
 		super();
+
+		this.background = background;
 
 		this.histogram = histogram;
 		this.min = min;
@@ -286,18 +291,34 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				public void mouseClicked(MouseEvent e) {
 					if(e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 2)
 						return;
-					Color c = ColorPicker.pick();
-					int red   = c.getRed();
-					int green = c.getGreen();
-					int blue  = c.getBlue();
-					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = red;
-					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = green;
-					renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = blue;
-					if(red < 100 || green < 100 || blue < 100)
-						wslider.setColor(c);
-					else
-						wslider.setColor(Color.BLACK);
-					setChannel(channel);
+					// Color c = ColorPicker.pick();
+					Color fg = new Color(
+							(int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED],
+							(int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN],
+							(int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]
+							);
+					ColorPicker cp = new ColorPicker(fg, ContrastPanel.this.background);
+					cp.addForegroundColorListener(c -> {
+						int red   = c.getRed();
+						int green = c.getGreen();
+						int blue  = c.getBlue();
+						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = red;
+						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = green;
+						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = blue;
+						if(red < 100 || green < 100 || blue < 100)
+							wslider.setColor(c);
+						else
+							wslider.setColor(Color.BLACK);
+						setChannel(channel);
+					});
+					cp.addBackgroundColorListener(c -> {
+						int red   = c.getRed();
+						int green = c.getGreen();
+						int blue  = c.getBlue();
+						Color bg = new Color(red, green, blue);
+						fireBackgroundColorChanged(bg);
+						ContrastPanel.this.background = bg;
+					});
 				}
 			});
 
@@ -335,6 +356,11 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		add(renderingAlgorithm, c);
 
 		updateTextfieldsFromSliders();
+	}
+
+	@Override
+	public void setBackground(Color bg) {
+		this.background = bg;
 	}
 
 	public void setRenderingSettings(double[][] rs) {
@@ -421,6 +447,11 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	private void fireRenderingSettingsReset() {
 		for(Listener l : listeners)
 			l.renderingSettingsReset();
+	}
+
+	private void fireBackgroundColorChanged(Color bg) {
+		for(Listener l : listeners)
+			l.backgroundChanged(bg);
 	}
 
 	private void fireChannelChanged() {
