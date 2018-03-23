@@ -8,6 +8,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
+import textanim.Default3DRecordingProvider;
 
 public class Main implements PlugInFilter {
 
@@ -42,7 +43,7 @@ public class Main implements PlugInFilter {
 		if(!outdir.exists())
 			outdir.mkdirs();
 		PovrayRenderer renderer = new PovrayRenderer(image, outdir, tgtW, tgtH);
-		AnimationEditor editor = new AnimationEditor(renderer, null);
+		AnimationEditor editor = new AnimationEditor(renderer, Default3DRecordingProvider.getInstance());
 		editor.setVisible(true);
 	}
 

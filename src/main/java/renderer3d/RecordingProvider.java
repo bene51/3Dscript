@@ -1,20 +1,18 @@
 package renderer3d;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import textanim.IRecordingProvider;
+import textanim.Default3DRecordingProvider;
 import textanim.RenderingState;
 
-public class RecordingProvider implements IRecordingProvider {
+public class RecordingProvider extends Default3DRecordingProvider {
 
-	private static RecordingProvider instance;
-
-	private final List<RecordingItem> recordingItems = new ArrayList<RecordingItem>();
+	public static Default3DRecordingProvider getInstance() {
+		if(instance == null)
+			instance = new RecordingProvider();
+		return instance;
+	}
 
 	private RecordingProvider() {
-		recordingItems.add(new RecordingItem() {
+		add(new RecordingItem() {
 			@Override
 			public String getCommand() {
 				return "Record contrast";
@@ -64,7 +62,7 @@ public class RecordingProvider implements IRecordingProvider {
 			}
 		});
 
-		recordingItems.add(new RecordingItem() {
+		add(new RecordingItem() {
 			@Override
 			public String getCommand() {
 				return "Record cropping";
@@ -115,21 +113,5 @@ public class RecordingProvider implements IRecordingProvider {
 				return text.toString();
 			}
 		});
-	}
-
-	public static RecordingProvider getInstance() {
-		if(instance == null)
-			instance = new RecordingProvider();
-		return instance;
-	}
-
-	@Override
-	public Iterator<RecordingItem> iterator() {
-		return recordingItems.iterator();
-	}
-
-	@Override
-	public RecordingItem get(int i) {
-		return recordingItems.get(i);
 	}
 }

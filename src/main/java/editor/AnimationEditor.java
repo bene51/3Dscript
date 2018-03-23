@@ -249,7 +249,6 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 
 		recordMenu = new JMenu("Record");
-		recordTransformation = addToMenu(recordMenu, "Record transformation", 0, 0);
 		if(recordingProvider != null) {
 			for(RecordingItem item : recordingProvider)
 				customRecording.add(addToMenu(recordMenu, item.getCommand(), 0, 0));

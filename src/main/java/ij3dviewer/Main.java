@@ -4,6 +4,7 @@ import editor.AnimationEditor;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
+import textanim.Default3DRecordingProvider;
 
 public class Main implements PlugInFilter {
 
@@ -22,7 +23,7 @@ public class Main implements PlugInFilter {
 
 	public static void run(ImagePlus image) {
 		IJ3DRenderer renderer = new IJ3DRenderer(image);
-		AnimationEditor editor = new AnimationEditor(renderer, null);
+		AnimationEditor editor = new AnimationEditor(renderer, Default3DRecordingProvider.getInstance());
 		editor.setVisible(true);
 	}
 
