@@ -46,6 +46,15 @@ public class RecordingProvider implements IRecordingProvider {
 					text.append("- change channel ")
 						.append(c + 1)
 						.append(" ")
+						.append(KeywordFactory.ChannelKeyword.COLOR.getKeyword())
+						.append(" to (")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_RED)).append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_GREEN)).append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_BLUE))
+						.append(")\n");
+					text.append("- change channel ")
+						.append(c + 1)
+						.append(" ")
 						.append(KeywordFactory.ChannelKeyword.WEIGHT.getKeyword())
 						.append(" to ")
 						.append(kf.getChannelProperty(c, ExtendedRenderingState.WEIGHT))
@@ -92,6 +101,15 @@ public class RecordingProvider implements IRecordingProvider {
 						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMIN))
 						.append(", ")
 						.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMAX))
+						.append(")\n");
+					text.append("- change channel ")
+						.append(c + 1)
+						.append(" ")
+						.append(KeywordFactory.ChannelKeyword.FRONT_BACK_CLIPPING.getKeyword())
+						.append(" to (")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.NEAR))
+						.append(", ")
+						.append(kf.getChannelProperty(c, ExtendedRenderingState.FAR))
 						.append(")\n");
 				}
 				return text.toString();
