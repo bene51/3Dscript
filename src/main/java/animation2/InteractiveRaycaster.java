@@ -14,6 +14,9 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import editor.AnimationEditor;
 import ij.IJ;
 import ij.ImagePlus;
@@ -74,8 +77,35 @@ public class InteractiveRaycaster implements PlugInFilter {
 		return DOES_8G | DOES_16;
 	}
 
+	private void setLookAndFeel() {
+		if ( IJ.isMacOSX() || IJ.isWindows() )
+		{
+			try
+			{
+				UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+			}
+			catch ( final ClassNotFoundException e )
+			{
+				e.printStackTrace();
+			}
+			catch ( final InstantiationException e )
+			{
+				e.printStackTrace();
+			}
+			catch ( final IllegalAccessException e )
+			{
+				e.printStackTrace();
+			}
+			catch ( final UnsupportedLookAndFeelException e )
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@Override
 	public void run(ImageProcessor ip) {
+		setLookAndFeel();
 		calculateChannelMinAndMax();
 
 		try {
