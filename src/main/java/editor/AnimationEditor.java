@@ -878,23 +878,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	public void recordTransformation() {
 		String text = recordTransformation(renderer.getRenderingState().clone(), "X");
-
-		final TextEditorTab tab = getTab();
-		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
-		int lineOfCursor = tab.editorPane.getCaretLineNumber();
-		int offset = tab.editorPane.getText().length();
-		try {
-			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
-		} catch(Exception e) {}
-		originalText.insert(offset, text);
-
-		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
-		tab.editorPane.setText(originalText.toString());
-		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
-
-		int xStart = text.indexOf("X") + offset;
-		tab.editorPane.setSelectionStart(xStart);
-		tab.editorPane.setSelectionEnd(xStart + 1);
+		addRecording(text);
 	}
 
 	public String recordTransformation(RenderingState rs, String tStart) {
