@@ -141,18 +141,10 @@ public class Animator {
 		RenderingState previous = renderer.getRenderingState();
 		for(int t = from; t <= to; t++) {
 			RenderingState kf = previous.clone();
+			kf.getFwdTransform().setTransformation(Transform.fromIdentity(null));
 			kf.setFrame(t);
-			float[] fwd = Transform.fromIdentity(null);
-			for(Animation a : animations) {
+			for(Animation a : animations)
 				a.adjustRenderingState(kf, renderingStates, renderer.getImage().getNChannels());
-
-				if(a instanceof TransformationAnimation) {
-					float[] x = new float[12];
-					((TransformationAnimation)a).getTransformationAt(t, x);
-					fwd = Transform.mul(x, fwd);
-				}
-			}
-			kf.getFwdTransform().setTransformation(fwd);
 			renderingStates.add(kf);
 			previous = kf;
 		}

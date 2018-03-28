@@ -24,7 +24,9 @@ public class TranslationAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {}
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {
+		super.adjustRenderingState(current, previous, nChannels);
+	}
 
 	private float evalOrInterpolate(int frame, NumberOrMacro n) {
 		return n.isMacro() ? (float)n.evaluateMacro(frame, fromFrame, toFrame) : (float)interpolate(frame, 0, n.getValue());

@@ -25,8 +25,9 @@ public class RotationAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {}
-
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {
+		super.adjustRenderingState(current, previous, nChannels);
+	}
 
 	@Override
 	public void getTransformationAt(int frame, float[] matrix) {

@@ -1,5 +1,9 @@
 package textanim;
 
+import java.util.List;
+
+import renderer3d.Transform;
+
 public abstract class TransformationAnimation extends Animation {
 
 	public static final int X_AXIS = 0;
@@ -14,6 +18,17 @@ public abstract class TransformationAnimation extends Animation {
 
 	public TransformationAnimation(int fromFrame, int toFrame) {
 		super(fromFrame, toFrame);
+	}
+
+	@Override
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {
+		int frame = current.getFrame();
+		float[] x = new float[12];
+		getTransformationAt(frame, x);
+
+		float[] fwd = current.getFwdTransform().calculateForwardTransformWithoutCalibration();
+		fwd = Transform.mul(x, fwd);
+		current.getFwdTransform().setTransformation(fwd);
 	}
 
 	public abstract void getTransformationAt(int frame, float[] matrix);

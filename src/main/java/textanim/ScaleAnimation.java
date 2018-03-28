@@ -23,7 +23,9 @@ public class ScaleAnimation extends TransformationAnimation {
 	}
 
 	@Override
-	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {}
+	public void adjustRenderingState(RenderingState current, List<RenderingState> previous, int nChannels) {
+		super.adjustRenderingState(current, previous, nChannels);
+	}
 
 
 	private float evalOrInterpolate(int frame, NumberOrMacro n) {
