@@ -15,6 +15,7 @@ import parser.Keyword.Transition;
 import textanim.Animation;
 import textanim.ChangeAnimation;
 import textanim.IKeywordFactory;
+import textanim.ResetTransformAnimation;
 import textanim.RotationAnimation;
 import textanim.ScaleAnimation;
 import textanim.TranslationAnimation;
@@ -261,6 +262,13 @@ public class Interpreter {
 
 		RotationAnimation ra = new RotationAnimation(from, to, axis, degrees, center);
 		return ra;
+	}
+
+	ResetTransformAnimation resetTransform(int from, int to, ParsingResult result, int cursorpos) {
+		if(keyword(GeneralKeyword.RESET_TRANSFORM, true) == null)
+			return null;
+
+		return new ResetTransformAnimation(from, to, center);
 	}
 
 	/**
@@ -520,7 +528,7 @@ public class Interpreter {
 	void action(int from, int to, ParsingResult result, int cursorpos) {
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
-				lexer.getAutocompletionList(cursorpos, GeneralKeyword.ROTATE, GeneralKeyword.TRANSLATE, GeneralKeyword.ZOOM, GeneralKeyword.CHANGE)));
+				lexer.getAutocompletionList(cursorpos, GeneralKeyword.ROTATE, GeneralKeyword.TRANSLATE, GeneralKeyword.ZOOM, GeneralKeyword.RESET_TRANSFORM, GeneralKeyword.CHANGE)));
 		Animation ta = null;
 
 		ta = rotation(from, to, result, cursorpos);
@@ -528,6 +536,8 @@ public class Interpreter {
 			ta = translation(from, to, result, cursorpos);
 		if(ta == null)
 			ta = zoom(from, to, result);
+		if(ta == null)
+			ta = resetTransform(from, to, result, cursorpos);
 		if(ta == null)
 			ta = change(from, to, result, cursorpos);
 

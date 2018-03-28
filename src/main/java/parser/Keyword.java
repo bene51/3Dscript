@@ -43,6 +43,7 @@ public interface Keyword {
 		TRANSLATE("translate"),
 		BY("by"),
 		ZOOM("zoom by a factor of"),
+		RESET_TRANSFORM("reset transformation"),
 		CHANGE("change"),
 		CHANNEL("channel"),
 		ALL_CHANNELS("all channels'"),
