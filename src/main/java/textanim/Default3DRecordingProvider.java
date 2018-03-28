@@ -50,6 +50,7 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 
 				StringBuffer text = new StringBuffer("At frame X:\n");
 				// rotate around x-axis (vertically)
+				text.append("- reset transformation\n");
 				text.append("- ")
 					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
 					.append(CustomDecimalFormat.format(euler[0] * 180 / (float)Math.PI, 1)).append(" ")

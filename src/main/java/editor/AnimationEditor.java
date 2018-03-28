@@ -912,6 +912,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		Transform.guessEulerAngles(m, euler);
 
 		StringBuffer text = new StringBuffer("At frame " + tStart + ":\n");
+		text.append("- reset transformation\n");
 		// rotate around x-axis (vertically)
 		text.append("- ")
 			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
