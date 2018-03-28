@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 
 import ij.ImagePlus;
 import renderer3d.BoundingBox;
+import renderer3d.Renderer3D;
 import renderer3d.Scalebar;
 
 
@@ -86,6 +87,17 @@ public class AnimatorDialog extends JDialog {
 		sp.switchOff();
 		contents.add(sp, c);
 		return slider;
+	}
+
+	public BookmarkPanel addBookmarkPanel(Renderer3D renderer) {
+		BookmarkPanel bookmarks = new BookmarkPanel(renderer);
+		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.0;
+		c.gridy++;
+		SwitchablePanel sp = new SwitchablePanel("Bookmarks", bookmarks);
+		sp.switchOff();
+		contents.add(sp, c);
+		return bookmarks;
 	}
 
 	public OutputPanel addOutputPanel(int width, int height, float zStep, BoundingBox bb, Scalebar sb) {

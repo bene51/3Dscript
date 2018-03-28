@@ -61,6 +61,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private ContrastPanel contrastPanel;
 	private TransformationPanel transformationPanel;
 	private CroppingPanel croppingPanel;
+	private BookmarkPanel bookmarkPanel;
 	private OutputPanel outputPanel;
 	private AnimationPanel animationPanel;
 
@@ -134,6 +135,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 			rs.setChannelProperty(c, ExtendedRenderingState.NEAR, croppingPanel.getNear());
 			rs.setChannelProperty(c, ExtendedRenderingState.FAR,  croppingPanel.getFar());
 		}
+
+		bookmarkPanel = dialog.addBookmarkPanel(renderer);
 
 		outputPanel = dialog.addOutputPanel(
 				worker.out.getWidth(), worker.out.getHeight(), 1,
@@ -383,6 +386,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 				else {
 					IJ.error("Selection required");
 				}
+			}
+		});
+
+		bookmarkPanel.addBookmarkPanelListener(new BookmarkPanel.Listener() {
+			@Override
+			public void gotoBookmark(Bookmark bookmark) {
+				push(bookmark.getRenderingState());
 			}
 		});
 
