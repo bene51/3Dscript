@@ -3,6 +3,7 @@ package animation2;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -12,8 +13,13 @@ import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -553,6 +559,51 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 		AnimationEditor editor = new AnimationEditor(renderer, animator, RecordingProvider.getInstance());
+		JMenuBar mbar = editor.getJMenuBar();
+		JMenu extrasMenu = new JMenu("Extras");
+		extrasMenu.setMnemonic(KeyEvent.VK_E);
+		JMenuItem createIJ1Macro = new JMenuItem("Create IJ1 Macro");
+		createIJ1Macro.addActionListener(e -> {
+			int ow = renderer.getTargetWidth();
+			int oh = renderer.getTargetHeight();
+			float scalebar = renderer.getScalebar().isVisible() ? renderer.getScalebar().getLength() : 0;
+			String boundingbox = renderer.getBoundingBox().isVisible() ? "bounding_box" : "";
+			RenderingAlgorithm ra = contrastPanel.getRenderingAlgorithm();
+			String algo = null;
+			switch(ra) {
+			case COMBINED_TRANSPARENCY:    algo = "Combined transparency"; break;
+			case INDEPENDENT_TRANSPARENCY: algo = "Independent transparency"; break;
+			default: algo = "Maximum intensity projection"; break;
+			}
+
+			String text = editor.getTab().getEditorPane().getText();
+			String[] lines = text.split("\\r?\\n");
+			String macro =
+"function makeAnimation() {\n" +
+"	return \"\"";
+for(String line : lines) {
+	macro = macro + " +\n\"\t" + line + "\\n\"";
+}
+macro = macro +
+";\n}\n" +
+"path = getDirectory(\"temp\") + \"xyz.animation.txt\";\n" +
+"File.saveString(makeAnimation(), path);\n" +
+"run(\"Batch Animation\",\n" +
+"	\"animation=\" + path + \" \" +\n" +
+"	\"output_width=" + ow + " output_height=" + oh + " scalebar=" + scalebar + " rendering_algorithm=[" + algo + "] " + boundingbox + "\");";
+			Path tmp = null;
+			try {
+				tmp = Files.createTempFile("ijmacro", ".ijm");
+				Files.write(tmp, macro.getBytes());
+			} catch(Exception ex) {
+				IJ.handleException(ex);
+				return;
+			}
+			IJ.open(tmp.toString());
+		});
+
+		extrasMenu.add(createIJ1Macro);
+		mbar.add(extrasMenu);
 		editor.setVisible(true);
 	}
 
