@@ -36,8 +36,11 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 				(float)image.getCalibration().pixelDepth
 		};
 
-		float[] pdOut = new float[] {pdIn[0], pdIn[1], pdIn[2]};
-
+		Calibration cal = image.getCalibration();
+		float pwOut = (float)(image.getWidth()  * cal.pixelWidth  / wOut);
+		float phOut = (float)(image.getHeight() * cal.pixelHeight / hOut);
+		float pdOut = pdIn[2];
+		float[] p = new float[] {pwOut, phOut, pdOut};
 
 		near = (float)CroppingPanel.getNear(image);
 		far  = (float)CroppingPanel.getFar(image);
@@ -58,7 +61,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		}
 		Color[] channelColors = calculateChannelColors();
 
-		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
+		CombinedTransform transformation = new CombinedTransform(pdIn, p, rotcenter);
 
 		this.rs = new ExtendedRenderingState(0,
 				image.getT(),
