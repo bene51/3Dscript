@@ -1,6 +1,7 @@
 package animation2;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -19,7 +21,7 @@ import ij.ImagePlus;
 public class CroppingPanel extends JPanel {
 
 	public static void main(String[] args) {
-		ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
+		ImagePlus imp = IJ.openImage("d:/flybrain.tif");
 		JFrame frame = new JFrame();
 
 		CroppingPanel slider = new CroppingPanel(imp);
@@ -35,6 +37,7 @@ public class CroppingPanel extends JPanel {
 	private DoubleSlider bbX;
 	private DoubleSlider bbY;
 	private DoubleSlider bbZ;
+	private JCheckBox allChannels;
 
 	public static interface Listener {
 		public void nearFarChanged(int near, int far);
@@ -66,6 +69,10 @@ public class CroppingPanel extends JPanel {
 		add(slider);
 		c.gridy++;
 		return slider;
+	}
+
+	public boolean applyToAllChannels() {
+		return allChannels.isSelected();
 	}
 
 	public static double getNear(ImagePlus image) {
@@ -122,14 +129,20 @@ public class CroppingPanel extends JPanel {
 			}
 		});
 
+		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+		allChannels = new JCheckBox("Apply to all channels", true);
+		buttons.add(allChannels);
+
 		JButton b = new JButton("Cut off ROI");
+		buttons.add(b);
+
 		c.gridx = 0;
 		c.insets = new Insets(7, 0, 0, 0);
 		c.fill = GridBagConstraints.NONE;
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = GridBagConstraints.REMAINDER;
-		gridbag.setConstraints(b, c);
-		add(b);
+		gridbag.setConstraints(buttons, c);
+		add(buttons);
 		b.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

@@ -313,25 +313,38 @@ public class InteractiveRaycaster implements PlugInFilter {
 		});
 
 		croppingPanel.addCroppingPanelListener(new CroppingPanel.Listener() {
+			private int[] getChannels() {
+				boolean allChannels = croppingPanel.applyToAllChannels();
+				if(!allChannels)
+					return new int[] {contrastPanel.getChannel()};
+
+				int[] channels = new int[image.getNChannels()];
+				for(int i = 0; i < channels.length; i++)
+					channels[i] = i;
+				return channels;
+			}
+
 			@Override
 			public void nearFarChanged(int near, int far) {
-				int channel = contrastPanel.getChannel();
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
-				kf.setChannelProperty(channel, ExtendedRenderingState.NEAR, near);
-				kf.setChannelProperty(channel, ExtendedRenderingState.FAR,  far);
+				for(int channel : getChannels()) {
+					kf.setChannelProperty(channel, ExtendedRenderingState.NEAR, near);
+					kf.setChannelProperty(channel, ExtendedRenderingState.FAR,  far);
+				}
 				push(kf);
 			}
 
 			@Override
 			public void boundingBoxChanged(int bbx0, int bby0, int bbz0, int bbx1, int bby1, int bbz1) {
-				int channel = contrastPanel.getChannel();
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
-				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMIN, bbx0);
-				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMIN, bby0);
-				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMIN, bbz0);
-				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMAX, bbx1);
-				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMAX, bby1);
-				kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMAX, bbz1);
+				for(int channel : getChannels()) {
+					kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMIN, bbx0);
+					kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMIN, bby0);
+					kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMIN, bbz0);
+					kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_XMAX, bbx1);
+					kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_YMAX, bby1);
+					kf.setChannelProperty(channel, ExtendedRenderingState.BOUNDINGBOX_ZMAX, bbz1);
+				}
 				push(kf);
 			}
 
@@ -339,6 +352,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void cutOffROI() {
 				Roi roi = worker.out.getRoi();
 				if(roi != null) {
+					boolean allChannels = croppingPanel.applyToAllChannels();
 					ByteProcessor mask = new ByteProcessor(worker.out.getWidth(), worker.out.getHeight());
 					mask.setValue(255);
 					if(roi instanceof TextRoi)
@@ -350,7 +364,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 					ExtendedRenderingState kf = renderer.getRenderingState();
 					float[] fwd = kf.getFwdTransform().calculateForwardTransform();
-					renderer.crop(image, contrastPanel.getChannel(), mask, fwd);
+					if(allChannels) {
+						for(int c = 0; c < image.getNChannels(); c++)
+							renderer.crop(image, c, mask, fwd);
+					}
+					else
+						renderer.crop(image, contrastPanel.getChannel(), mask, fwd);
 
 					push(kf);
 				}
