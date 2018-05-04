@@ -12,6 +12,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 import renderer3d.ExtendedRenderingState;
 import renderer3d.OpenCLProgram;
+import renderer3d.OpenCLRaycaster;
 import renderer3d.Renderer3D;
 import renderer3d.RenderingAlgorithm;
 import textanim.Animator;
@@ -138,6 +139,7 @@ public class BatchRaycaster implements PlugInFilter {
 				e.printStackTrace();
 			}
 		}
+		OpenCLRaycaster.close();
 	}
 
 	public static void main(String... args) throws IOException {
