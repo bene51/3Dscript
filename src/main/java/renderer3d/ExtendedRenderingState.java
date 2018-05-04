@@ -31,15 +31,16 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int LIGHT_K_SPECULAR    = 21;
 	public static final int LIGHT_SHININESS     = 22;
 
-	public static final int BG_COLOR_RED    = 0;
-	public static final int BG_COLOR_GREEN  = 1;
-	public static final int BG_COLOR_BLUE   = 2;
-	public static final int TIMEPOINT       = 3;
+	public static final int BG_COLOR_RED        = 0;
+	public static final int BG_COLOR_GREEN      = 1;
+	public static final int BG_COLOR_BLUE       = 2;
+	public static final int TIMEPOINT           = 3;
+	public static final int RENDERING_ALGORITHM = 4;
 
 
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
-		nonChannelProperties = new double[4];
+		nonChannelProperties = new double[5];
 		channelProperties = new double[nChannels][23];
 	}
 
@@ -49,6 +50,7 @@ public class ExtendedRenderingState extends RenderingState {
 			RenderingSettings[] renderingSettings,
 			Color[] channelColors,
 			Color bgColor,
+			RenderingAlgorithm algorithm,
 			CombinedTransform fwdTransform) {
 		this(frame, fwdTransform, renderingSettings.length);
 
@@ -56,6 +58,7 @@ public class ExtendedRenderingState extends RenderingState {
 		nonChannelProperties[BG_COLOR_GREEN]  = bgColor.getGreen();
 		nonChannelProperties[BG_COLOR_BLUE]   = bgColor.getBlue();
 		nonChannelProperties[TIMEPOINT]       = timepoint;
+		nonChannelProperties[RENDERING_ALGORITHM] = algorithm.ordinal();
 
 		for(int c = 0; c < renderingSettings.length; c++) {
 			Color cC = channelColors[c];
@@ -117,9 +120,18 @@ public class ExtendedRenderingState extends RenderingState {
 	}
 
 	public void setBackgroundColor(int r, int g, int b) {
-		nonChannelProperties[ExtendedRenderingState.BG_COLOR_RED]   = r;
-		nonChannelProperties[ExtendedRenderingState.BG_COLOR_GREEN] = g;
-		nonChannelProperties[ExtendedRenderingState.BG_COLOR_BLUE]  = b;
+		nonChannelProperties[BG_COLOR_RED]   = r;
+		nonChannelProperties[BG_COLOR_GREEN] = g;
+		nonChannelProperties[BG_COLOR_BLUE]  = b;
+	}
+
+	public RenderingAlgorithm getRenderingAlgorithm() {
+		int algo = (int)nonChannelProperties[RENDERING_ALGORITHM];
+		return RenderingAlgorithm.values()[algo];
+	}
+
+	public void setRenderingAlgorithm(RenderingAlgorithm algorithm) {
+		nonChannelProperties[RENDERING_ALGORITHM] = algorithm.ordinal();
 	}
 
 	public boolean[] useLights() {

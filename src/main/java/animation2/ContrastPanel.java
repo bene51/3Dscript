@@ -380,6 +380,13 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			SingleSlider wslider = weightSliders[i];
 			wslider.set(100, (int)Math.round(100 * weight), color);
 		}
+		koTF.setText(CustomDecimalFormat.format(rs[channel][ExtendedRenderingState.LIGHT_K_OBJECT], 1));
+		kdTF.setText(CustomDecimalFormat.format(rs[channel][ExtendedRenderingState.LIGHT_K_DIFFUSE], 1));
+		ksTF.setText(CustomDecimalFormat.format(rs[channel][ExtendedRenderingState.LIGHT_K_SPECULAR], 1));
+		shininessTF.setText(CustomDecimalFormat.format(rs[channel][ExtendedRenderingState.LIGHT_SHININESS], 1));
+		boolean useLight = rs[channel][ExtendedRenderingState.USE_LIGHT] > 0;
+		lightPanel.setVisible(useLight);
+		useLightCB.setSelected(useLight);
 	}
 
 	public RenderingAlgorithm getRenderingAlgorithm() {
@@ -389,6 +396,10 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		case 2: return RenderingAlgorithm.MAXIMUM_INTENSITY;
 		}
 		return null;
+	}
+
+	public void setRenderingAlgorithm(RenderingAlgorithm algo) {
+		renderingAlgorithm.setSelectedIndex(algo.ordinal());
 	}
 
 	private SingleSlider addSingleSlider(String label, int realMax, int setMax, Color color, GridBagConstraints c) {
@@ -499,7 +510,6 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		maxCTF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.INTENSITY_MAX], 1));
 		minATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.ALPHA_MIN], 1));
 		maxATF.setText(CustomDecimalFormat.format(slider.renderingSettings[ExtendedRenderingState.ALPHA_MAX], 1));
-		fireRenderingSettingsChanged(false);
 	}
 
 	private static class DoubleSliderCanvas extends DoubleBuffer implements MouseMotionListener, MouseListener {
@@ -583,6 +593,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.ALPHA_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
+						slider.fireRenderingSettingsChanged(false);
 					}
 					break;
 				case DRAGGING_ALPHA_RIGHT:
@@ -599,6 +610,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.INTENSITY_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
+						slider.fireRenderingSettingsChanged(false);
 					}
 					break;
 				case DRAGGING_COLOR_RIGHT:
@@ -607,6 +619,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.INTENSITY_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
+						slider.fireRenderingSettingsChanged(false);
 					}
 					break;
 			}

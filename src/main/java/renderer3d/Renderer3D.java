@@ -1,6 +1,7 @@
 package renderer3d;
 
 import java.awt.Color;
+import java.util.Arrays;
 
 import animation2.CroppingPanel;
 import ij.CompositeImage;
@@ -68,10 +69,11 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 				renderingSettings,
 				channelColors,
 				Color.BLACK,
+				RenderingAlgorithm.INDEPENDENT_TRANSPARENCY,
 				transformation);
 	}
 
-	public void resetRenderingSettings() {
+	public void resetRenderingSettings(ExtendedRenderingState rs) {
 		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
 		Color[] channelColors = calculateChannelColors();
@@ -86,7 +88,13 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			rs.setChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_RED,   channelColors[c].getRed());
 			rs.setChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_GREEN, channelColors[c].getGreen());
 			rs.setChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_BLUE,  channelColors[c].getBlue());
+			rs.setChannelProperty(c, ExtendedRenderingState.USE_LIGHT, 0);
+			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_OBJECT,   1);
+			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_DIFFUSE,  0);
+			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_SPECULAR, 0);
+			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_SHININESS,  0);
 		}
+		rs.setNonChannelProperty(ExtendedRenderingState.RENDERING_ALGORITHM, RenderingAlgorithm.INDEPENDENT_TRANSPARENCY.ordinal());
 	}
 
 	@Override
@@ -101,9 +109,40 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 
 	@Override
 	public ImageProcessor render(RenderingState kf2) {
+		return render(kf2, false);
+	}
+
+	public ImageProcessor render(RenderingState kf2, boolean forceUpdateProgram) {
 		ExtendedRenderingState kf = (ExtendedRenderingState)kf2;
+		adjustProgram(kf, forceUpdateProgram);
 		rs.setFrom(kf);
 		return super.project(kf);
+	}
+
+	private void adjustProgram(ExtendedRenderingState next, boolean forceUpdateProgram) {
+		int nChannels = getNChannels();
+		boolean[] pUseLights = rs.useLights();
+		RenderingAlgorithm pAlgorithm = rs.getRenderingAlgorithm();
+		boolean[] nUseLights = next.useLights();
+		RenderingAlgorithm nAlgorithm = next.getRenderingAlgorithm();
+
+		if(!forceUpdateProgram && Arrays.equals(pUseLights, nUseLights) && pAlgorithm.equals(nAlgorithm))
+			return;
+
+		String program = null;
+		switch(nAlgorithm) {
+		case INDEPENDENT_TRANSPARENCY:
+			program = OpenCLProgram.makeSource(nChannels, false, false, false, nUseLights);
+			break;
+		case COMBINED_TRANSPARENCY:
+			program = OpenCLProgram.makeSource(nChannels, false, true, false, nUseLights);
+			break;
+		case MAXIMUM_INTENSITY:
+			program = OpenCLProgram.makeSource(nChannels, false, false, true, nUseLights);
+			break;
+		}
+
+		setProgram(program);
 	}
 
 	@Override

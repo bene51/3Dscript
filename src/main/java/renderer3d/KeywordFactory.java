@@ -35,6 +35,12 @@ public class KeywordFactory implements IKeywordFactory {
 
 		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT),
 
+		OBJECT_LIGHT_WEIGHT(  "object light",   new String[] {"<weight>"},    ExtendedRenderingState.LIGHT_K_OBJECT),
+		DIFFUSE_LIGHT_WEIGHT( "diffuse light",  new String[] {"<weight>"},    ExtendedRenderingState.LIGHT_K_DIFFUSE),
+		SPECULAR_LIGHT_WEIGHT("specular light", new String[] {"<weight>"},    ExtendedRenderingState.LIGHT_K_SPECULAR),
+		SHININESS(            "shininess",      new String[] {"<shininess>"}, ExtendedRenderingState.LIGHT_SHININESS),
+		USE_LIGHT(            "lighting",       new String[] {"<on/off>"},    makeOnOffMap(), ExtendedRenderingState.USE_LIGHT),
+
 		BOUNDING_BOX_X_MIN("bounding box min x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN),
 		BOUNDING_BOX_Y_MIN("bounding box min y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN),
 		BOUNDING_BOX_Z_MIN("bounding box min z", new String[] {"<z>"}, ExtendedRenderingState.BOUNDINGBOX_ZMIN),
@@ -97,7 +103,8 @@ public class KeywordFactory implements IKeywordFactory {
 	public static enum NonChannelKeyword implements Keyword {
 
 		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE),
-		TIMEPOINT("timepoint", new String[] {"<timepoint>"}, ExtendedRenderingState.TIMEPOINT);
+		TIMEPOINT("timepoint", new String[] {"<timepoint>"}, ExtendedRenderingState.TIMEPOINT),
+		RENDERING_ALGORITHM("rendering algorithm", new String[] {"<algorithm>"}, makeRenderingAlgorithmMap(), ExtendedRenderingState.RENDERING_ALGORITHM);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
@@ -150,5 +157,22 @@ public class KeywordFactory implements IKeywordFactory {
 		map.put("cyan",    new double[] {0.0, 255.0, 255.0});
 		map.put("magenta", new double[] {255.0, 0.0, 255.0});
 		return map;
+	}
+
+	private static Map<String, double[]> makeOnOffMap() {
+		HashMap<String, double[]> map = new HashMap<String, double[]>();
+		map.put("on",     new double[] {1.0});
+		map.put("off",    new double[] {0.0});
+		return map;
+	}
+
+	private static Map<String, double[]> makeRenderingAlgorithmMap() {
+		HashMap<String, double[]> map = new HashMap<String, double[]>();
+		for(RenderingAlgorithm algo : RenderingAlgorithm.values()) {
+			String name = algo.toString().toLowerCase().replace('_', ' ');
+			map.put(name, new double[] {algo.ordinal()});
+		}
+		return map;
+
 	}
 }

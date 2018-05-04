@@ -36,7 +36,6 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import renderer3d.ExtendedRenderingState;
-import renderer3d.OpenCLProgram;
 import renderer3d.RecordingProvider;
 import renderer3d.Renderer3D;
 import renderer3d.RenderingAlgorithm;
@@ -262,28 +261,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
 			public void renderingSettingsChanged(boolean lightsChanged) {
-				if(lightsChanged) {
-					int nChannels = renderer.getNChannels();
-					ExtendedRenderingState kf = renderer.getRenderingState().clone();
-					boolean[] useLights = kf.useLights();
-
-					RenderingAlgorithm algorithm = contrastPanel.getRenderingAlgorithm();
-					String program = null;
-					switch(algorithm) {
-					case INDEPENDENT_TRANSPARENCY:
-						program = OpenCLProgram.makeSource(nChannels, false, false, false, useLights);
-						break;
-					case COMBINED_TRANSPARENCY:
-						program = OpenCLProgram.makeSource(nChannels, false, true, false, useLights);
-						break;
-					case MAXIMUM_INTENSITY:
-						program = OpenCLProgram.makeSource(nChannels, false, false, true, useLights);
-						break;
-					}
-					push(program);
-				} else {
-					push();
-				}
+				push(renderer.getRenderingState(), -1, -1, lightsChanged);
 			}
 
 			@Override
@@ -309,22 +287,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void renderingAlgorithmChanged(RenderingAlgorithm algorithm) {
-				int nChannels = renderer.getNChannels();
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
-				boolean[] useLights = kf.useLights();
-
-				switch(algorithm) {
-				case INDEPENDENT_TRANSPARENCY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false, useLights));
-					break;
-				case COMBINED_TRANSPARENCY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false, useLights));
-					break;
-				case MAXIMUM_INTENSITY:
-					renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true, useLights));
-					break;
-				}
-				push();
+				kf.setRenderingAlgorithm(algorithm);
+				push(kf);
 			}
 
 			@Override
@@ -480,17 +445,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private void push(ExtendedRenderingState rs, int w, int h) {
-		push(rs, w, h, null);
+		push(rs, w, h, false);
 	}
 
-	private void push(String program) {
-		push(renderer.getRenderingState(), -1, -1, program);
-	}
-
-	private void push(ExtendedRenderingState rs, int w, int h, String program) {
-		int t = image.getT();
-		rs.setNonChannelProperty(ExtendedRenderingState.TIMEPOINT, t);
-		worker.push(rs, w, h, program);
+	private void push(ExtendedRenderingState rs, int w, int h, boolean forceUpdateProgram) {
+		worker.push(rs, w, h, forceUpdateProgram);
 	}
 
 	public void setOutputSize(int tgtW, int tgtH) {
@@ -508,9 +467,11 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	public void resetRenderingSettings() {
-		renderer.resetRenderingSettings();
-		push();
+		ExtendedRenderingState rs = renderer.getRenderingState();
+		renderer.resetRenderingSettings(rs);
+		push(rs, 1, -1, true);
 		contrastPanel.setChannel(contrastPanel.getChannel());
+		contrastPanel.setRenderingAlgorithm(rs.getRenderingAlgorithm());
 	}
 
 	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
@@ -528,6 +489,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		// Contrast Panel
 		this.contrastPanel.setRenderingSettings(rs.getChannelProperties());
 		this.contrastPanel.setBackground(rs.getBackgroundColor());
+		this.contrastPanel.setRenderingAlgorithm(rs.getRenderingAlgorithm());
 
 		// Transformation Panel
 		CombinedTransform t = rs.getFwdTransform();
