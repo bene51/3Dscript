@@ -37,7 +37,6 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int TIMEPOINT           = 3;
 	public static final int RENDERING_ALGORITHM = 4;
 
-
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[5];
