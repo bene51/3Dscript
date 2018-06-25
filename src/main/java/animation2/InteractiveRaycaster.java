@@ -671,16 +671,8 @@ macro = macro +
 			p[i] = 180 * p[i] / Math.PI;
 		System.out.println(Arrays.toString(p));
 		new ij.ImageJ();
-		String dir = "D:\\VLanger\\20161205-Intravital-Darm\\";
-		String name = "cy5-shg-2p-maus3919-gecleart-20x-big-stack1.resampled.tif";
-		// ImagePlus imp = IJ.openImage(dir + name);
 		ImagePlus imp = null;
-		// imp = IJ.openImage("/Users/bene/flybrain.tif");
-		// imp = IJ.openImage("D:\\PTripal\\20161109\\wonderbear_C7-wt-PBS-Axiocam_2.background.resampled.8-bit.tif");
-		// imp = IJ.openImage("D:\\CKersten\\20170714\\J936 Composite.resampled.resampled.tif");
-		imp = IJ.openImage("D:\\aklingberg\\170828_testpfote_063zoom_10z_14-35-29.resampled.tif");
-		// ImagePlus imp = IJ.openImage("D:\\MHoffmann\\20160126-Markus2.small.tif");
-		// ImagePlus imp = IJ.openImage("/Users/bene/flybrain.tif");
+		imp = IJ.openImage("d:\\flybrain.tif");
 		imp.show();
 
 		InteractiveRaycaster cr = new InteractiveRaycaster();
