@@ -165,7 +165,7 @@ public class OpenCLRaycaster {
 	}
 
 	// TODO take a RenderingState object as an argument
-	public ImageProcessor project(ExtendedRenderingState kf) {
+	public synchronized ImageProcessor project(ExtendedRenderingState kf) {
 
 		CombinedTransform transform = kf.getFwdTransform();
 		float[] fwdTransform = transform.calculateForwardTransform();
@@ -253,7 +253,7 @@ public class OpenCLRaycaster {
 		white(channel);
 	}
 
-	public void setTgtSize(int w, int h) {
+	public synchronized void setTgtSize(int w, int h) {
 		wOut = w;
 		hOut = h;
 		setTargetSize(w, h);
