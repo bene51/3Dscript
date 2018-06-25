@@ -28,7 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import fiji.util.gui.GenericDialogPlus;
+import ij.gui.GenericDialog;
 import renderer3d.BoundingBox;
 import renderer3d.Scalebar;
 import renderer3d.Scalebar.Position;
@@ -156,7 +156,7 @@ public class OutputPanel extends JPanel {
 				Color color = boundingBox.getColor();
 				float width = boundingBox.getWidth();
 
-				final GenericDialogPlus gd = new GenericDialogPlus("");
+				final GenericDialog gd = new GenericDialog("");
 				gd.addNumericField("line width", width, 2);
 				final TextField lwTF = (TextField)gd.getNumericFields().lastElement();
 				gd.addSlider("red", 0, 255, color.getRed());
@@ -218,7 +218,7 @@ public class OutputPanel extends JPanel {
 
 				String[] positions = Scalebar.Position.getNames();
 
-				final GenericDialogPlus gd = new GenericDialogPlus("");
+				final GenericDialog gd = new GenericDialog("");
 				gd.addChoice("Position", positions, position.toString());
 				final Choice pChoice = (Choice)gd.getChoices().lastElement();
 				gd.addNumericField("length", length, 0);
