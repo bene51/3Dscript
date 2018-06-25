@@ -26,6 +26,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import editor.AnimationEditor;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.Roi;
 import ij.gui.TextRoi;
@@ -127,6 +128,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		worker = new RenderingThread(renderer);
 
 		dialog = new AnimatorDialog("Interactive Raycaster", worker.out.getWindow());
+		WindowManager.addWindow(dialog);
 		contrastPanel = dialog.addContrastPanel(
 				histo8,
 				min, max,
@@ -420,6 +422,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				canvas.removeMouseListener(mouseListener);
 				canvas.removeMouseMotionListener(mouseMotionListener);
 				canvas.removeMouseWheelListener(mouseWheelListener);
+				WindowManager.removeWindow(dialog);
 			}
 		});
 
