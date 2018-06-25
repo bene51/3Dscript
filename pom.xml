@@ -12,12 +12,12 @@
 		<relativePath />
 	</parent>
 
-	<groupId>bla</groupId>
-	<artifactId>Animation2_</artifactId>
+	<groupId>sc.fiji</groupId>
+	<artifactId>3D_Animation</artifactId>
+	<version>0.1</version>
 
-	<name>Animation2_.jar</name>
-	
-	<description>TODO</description>
+	<name>3D Animation</name>
+	<description>Animate image stacks three-dimensionally by a natural language based animation description</description>
 	
 	<url>TODO</url>
 	
