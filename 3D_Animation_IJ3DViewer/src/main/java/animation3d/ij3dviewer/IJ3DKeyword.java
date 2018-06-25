@@ -1,4 +1,4 @@
-package ij3dviewer;
+package animation3d.ij3dviewer;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package ij3dviewer;
+package animation3d.ij3dviewer;
 
 import editor.AnimationEditor;
 import ij.ImagePlus;

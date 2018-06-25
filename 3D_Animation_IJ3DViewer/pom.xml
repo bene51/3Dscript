@@ -13,11 +13,11 @@
 	</parent>
 
 	<groupId>sc.fiji</groupId>
-	<artifactId>3D_Animation</artifactId>
+	<artifactId>3D_Animation_IJ3DViewer</artifactId>
 	<version>0.1</version>
 
-	<name>3D Animation</name>
-	<description>Animate image stacks three-dimensionally by a natural language based animation description</description>
+	<name>3D Animation IJ3D Viewer</name>
+	<description>Adapter to use ImageJ's 3D Viewer with the textbased animation plugin 3D_Animation.</description>
 	
 	<url>TODO</url>
 	
@@ -90,16 +90,13 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.fifesoft</groupId>
-			<artifactId>rsyntaxtextarea</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fifesoft</groupId>
-			<artifactId>autocomplete</artifactId>
+			<groupId>sc.fiji</groupId>
+			<artifactId>3D_Animation</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
-			<artifactId>fiji-lib</artifactId>
+			<artifactId>3D_Viewer</artifactId>
 		</dependency>
 	</dependencies>
 
