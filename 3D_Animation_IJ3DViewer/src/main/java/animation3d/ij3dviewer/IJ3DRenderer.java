@@ -15,15 +15,15 @@ import org.scijava.java3d.Transform3D;
 import org.scijava.java3d.TransformGroup;
 import org.scijava.vecmath.Color3f;
 
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.IKeywordFactory;
+import animation3d.textanim.IRenderer3D;
+import animation3d.textanim.RenderingState;
+import animation3d.util.Transform;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import ij3d.Content;
 import ij3d.Image3DUniverse;
-import renderer3d.Transform;
-import textanim.CombinedTransform;
-import textanim.IKeywordFactory;
-import textanim.IRenderer3D;
-import textanim.RenderingState;
 
 public class IJ3DRenderer implements IRenderer3D {
 

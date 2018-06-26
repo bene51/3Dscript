@@ -23,7 +23,10 @@ import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import editor.AnimationEditor;
+import animation3d.editor.AnimationEditor;
+import animation3d.textanim.Animator;
+import animation3d.textanim.CombinedTransform;
+import animation3d.util.Transform;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -40,9 +43,6 @@ import renderer3d.ExtendedRenderingState;
 import renderer3d.RecordingProvider;
 import renderer3d.Renderer3D;
 import renderer3d.RenderingAlgorithm;
-import renderer3d.Transform;
-import textanim.Animator;
-import textanim.CombinedTransform;
 
 /*
  * TODOs

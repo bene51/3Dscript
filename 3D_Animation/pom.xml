@@ -90,12 +90,9 @@
 			<artifactId>ij</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.fifesoft</groupId>
-			<artifactId>rsyntaxtextarea</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fifesoft</groupId>
-			<artifactId>autocomplete</artifactId>
+			<groupId>sc.fiji</groupId>
+			<artifactId>3D_Animation_Language</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>

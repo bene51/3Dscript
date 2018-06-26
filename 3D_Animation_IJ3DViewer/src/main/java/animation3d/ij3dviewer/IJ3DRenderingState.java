@@ -2,8 +2,8 @@ package animation3d.ij3dviewer;
 
 import java.awt.Color;
 
-import textanim.CombinedTransform;
-import textanim.RenderingState;
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.RenderingState;
 
 public class IJ3DRenderingState extends RenderingState {
 

@@ -1,10 +1,10 @@
 package animation3d.ij3dviewer;
 
-import editor.AnimationEditor;
+import animation3d.editor.AnimationEditor;
+import animation3d.textanim.Default3DRecordingProvider;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
-import textanim.Default3DRecordingProvider;
 
 public class Main implements PlugInFilter {
 

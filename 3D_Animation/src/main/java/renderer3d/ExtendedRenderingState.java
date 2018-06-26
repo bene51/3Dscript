@@ -2,8 +2,8 @@ package renderer3d;
 
 import java.awt.Color;
 
-import textanim.CombinedTransform;
-import textanim.RenderingState;
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.RenderingState;
 
 public class ExtendedRenderingState extends RenderingState {
 

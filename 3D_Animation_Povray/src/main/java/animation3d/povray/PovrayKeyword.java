@@ -3,7 +3,7 @@ package animation3d.povray;
 import java.util.HashMap;
 import java.util.Map;
 
-import parser.Keyword;
+import animation3d.parser.Keyword;
 
 public enum PovrayKeyword implements Keyword {
 

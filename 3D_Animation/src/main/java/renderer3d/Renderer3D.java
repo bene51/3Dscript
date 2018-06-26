@@ -4,15 +4,15 @@ import java.awt.Color;
 import java.util.Arrays;
 
 import animation2.CroppingPanel;
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.IKeywordFactory;
+import animation3d.textanim.IRenderer3D;
+import animation3d.textanim.RenderingState;
 import ij.CompositeImage;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
-import textanim.CombinedTransform;
-import textanim.IKeywordFactory;
-import textanim.IRenderer3D;
-import textanim.RenderingState;
 
 public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 

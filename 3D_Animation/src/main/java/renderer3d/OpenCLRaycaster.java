@@ -6,13 +6,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import animation3d.textanim.CombinedTransform;
+import animation3d.util.Transform;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import textanim.CombinedTransform;
 
 /*
  * TODOs

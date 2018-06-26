@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import textanim.CustomDecimalFormat;
+import animation3d.textanim.CustomDecimalFormat;
 
 public class TransformationPanel extends JPanel implements FocusListener, NumberField.Listener {
 

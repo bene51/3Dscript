@@ -91,7 +91,7 @@
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
-			<artifactId>3D_Animation</artifactId>
+			<artifactId>3D_Animation_Language</artifactId>
 			<version>0.1</version>
 		</dependency>
 		<dependency>

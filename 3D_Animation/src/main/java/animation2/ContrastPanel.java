@@ -28,9 +28,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import animation3d.textanim.CustomDecimalFormat;
 import renderer3d.ExtendedRenderingState;
 import renderer3d.RenderingAlgorithm;
-import textanim.CustomDecimalFormat;
 
 public class ContrastPanel extends JPanel implements NumberField.Listener, FocusListener {
 

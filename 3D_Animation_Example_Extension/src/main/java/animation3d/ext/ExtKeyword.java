@@ -3,7 +3,7 @@ package animation3d.ext;
 import java.util.HashMap;
 import java.util.Map;
 
-import parser.Keyword;
+import animation3d.parser.Keyword;
 
 public enum ExtKeyword implements Keyword {
 

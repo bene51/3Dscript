@@ -1,7 +1,7 @@
 package animation3d.ext;
 
-import textanim.CombinedTransform;
-import textanim.RenderingState;
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.RenderingState;
 
 public class ExtRenderingState extends RenderingState {
 

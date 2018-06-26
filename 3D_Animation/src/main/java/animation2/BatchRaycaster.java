@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import animation3d.textanim.Animator;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
@@ -16,7 +17,6 @@ import renderer3d.OpenCLRaycaster;
 import renderer3d.Renderer3D;
 import renderer3d.RenderingAlgorithm;
 import renderer3d.Scalebar;
-import textanim.Animator;
 
 
 public class BatchRaycaster implements PlugInFilter {

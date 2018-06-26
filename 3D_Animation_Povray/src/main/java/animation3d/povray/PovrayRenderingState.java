@@ -1,7 +1,7 @@
 package animation3d.povray;
 
-import textanim.CombinedTransform;
-import textanim.RenderingState;
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.RenderingState;
 
 public class PovrayRenderingState extends RenderingState {
 

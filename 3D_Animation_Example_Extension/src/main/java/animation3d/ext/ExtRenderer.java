@@ -1,11 +1,11 @@
 package animation3d.ext;
 
+import animation3d.textanim.CombinedTransform;
+import animation3d.textanim.IKeywordFactory;
+import animation3d.textanim.IRenderer3D;
+import animation3d.textanim.RenderingState;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
-import textanim.CombinedTransform;
-import textanim.IKeywordFactory;
-import textanim.IRenderer3D;
-import textanim.RenderingState;
 
 public class ExtRenderer implements IRenderer3D{
 

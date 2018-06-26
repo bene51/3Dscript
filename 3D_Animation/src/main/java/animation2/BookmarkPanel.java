@@ -34,20 +34,21 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.JTextComponent;
 
+import animation3d.parser.Interpreter;
+import animation3d.parser.NoSuchMacroException;
+import animation3d.parser.ParsingResult;
+import animation3d.parser.Preprocessor;
+import animation3d.parser.Preprocessor.PreprocessingException;
+import animation3d.textanim.Animation;
+import animation3d.textanim.IRecordingProvider.RecordingItem;
+import animation3d.textanim.RenderingState;
+import animation3d.util.Transform;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.io.OpenDialog;
-import parser.NoSuchMacroException;
-import parser.ParsingResult;
-import parser.Preprocessor;
-import parser.Preprocessor.PreprocessingException;
 import renderer3d.ExtendedRenderingState;
 import renderer3d.RecordingProvider;
 import renderer3d.Renderer3D;
-import renderer3d.Transform;
-import textanim.Animation;
-import textanim.IRecordingProvider.RecordingItem;
-import textanim.RenderingState;
 
 @SuppressWarnings("serial")
 public class BookmarkPanel extends JPanel {
@@ -307,7 +308,7 @@ public class BookmarkPanel extends JPanel {
 		List<Animation> animations = new ArrayList<Animation>();
 		for(String line : lines) {
 			ParsingResult pr = new ParsingResult();
-			parser.Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
+			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
 			Animation ta = pr.getResult();
 			if(ta != null) {
 				ta.pickScripts(macros);

@@ -1,7 +1,7 @@
 package animation3d.ext;
 
-import parser.Keyword;
-import textanim.IKeywordFactory;
+import animation3d.parser.Keyword;
+import animation3d.textanim.IKeywordFactory;
 
 public class ExtKeywordFactory implements IKeywordFactory {
 

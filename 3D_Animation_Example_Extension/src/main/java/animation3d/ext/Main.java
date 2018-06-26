@@ -1,6 +1,6 @@
 package animation3d.ext;
 
-import editor.AnimationEditor;
+import animation3d.editor.AnimationEditor;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;

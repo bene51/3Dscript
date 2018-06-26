@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
+import animation3d.util.Transform;
 import ij.process.ImageProcessor;
 
 public class Scalebar {

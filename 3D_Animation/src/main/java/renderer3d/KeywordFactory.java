@@ -3,8 +3,8 @@ package renderer3d;
 import java.util.HashMap;
 import java.util.Map;
 
-import parser.Keyword;
-import textanim.IKeywordFactory;
+import animation3d.parser.Keyword;
+import animation3d.textanim.IKeywordFactory;
 
 public class KeywordFactory implements IKeywordFactory {
 

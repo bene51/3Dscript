@@ -2,13 +2,13 @@ package animation3d.povray;
 
 import java.io.File;
 
-import editor.AnimationEditor;
+import animation3d.editor.AnimationEditor;
+import animation3d.textanim.Default3DRecordingProvider;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
-import textanim.Default3DRecordingProvider;
 
 public class Main implements PlugInFilter {
 

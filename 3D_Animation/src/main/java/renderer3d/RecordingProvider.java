@@ -1,7 +1,7 @@
 package renderer3d;
 
-import textanim.Default3DRecordingProvider;
-import textanim.RenderingState;
+import animation3d.textanim.Default3DRecordingProvider;
+import animation3d.textanim.RenderingState;
 
 public class RecordingProvider extends Default3DRecordingProvider {
 
