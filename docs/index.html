@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="stylesheet" type="text/css" href="style.css"></link>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script type="text/javascript">
+    function resizeit() {
+      $("img").each(function() {
+        if($(this).parent().parent().is(("div .video"))) {
+          console.debug("parent is div .video");
+	  $(this)[0].onload = function() {
+            console.debug($(this));
+            var iframeW = $(this)[0].naturalWidth;
+            var iframeH = $(this)[0].naturalHeight;
+            console.debug("iframeW = " + iframeW);
+            console.debug("iframeH = " + iframeH);
+            var oHeight = $(this).outerWidth() * iframeH / iframeW;
+            console.debug("oHeight = " + oHeight);
+            $(this).outerHeight(oHeight);
+            $(this).parent().parent().prev().outerHeight(oHeight);
+          }
+	}
+      });
+      $("iframe").each(function() {
+	// console.debug($(this));
+	var iframeW = $(this)[0].width;
+	var iframeH = $(this)[0].height;
+	var oHeight = $(this).outerWidth() * iframeH / iframeW;
+	$(this).outerHeight(oHeight);
+	$(this).parent().prev().outerHeight(oHeight);
+      });
+
+      $("video").each(function() {
+        $(this).bind("loadedmetadata", function() {
+          var h = $(this).height();
+          $(this).parent().prev().outerHeight(h);
+        });
+        $(this).parent().prev().outerHeight($(this).height());
+      });
+    }
+
+    $(document).ready(function() {
+      resizeit();
+    });
+    window.onresize=resizeit;
+  </script>
+</head>
+
+
+
+<body>
+
+<div id="header">
+	<h1>3D Animation</h1>
+	<p>Language-based animationdescription</p>
+</div>
+
+<div class="container">
+
+  <h2>Introduction</h2>
+<p>3D Animation is a plugin for <a target="_blank" href="http://fiji.sc">Fiji</a>/<a target="_blank" href="http://imagej.net">ImageJ</a> for creating 3D and 4D animations of microscope data. In contrast to existing 3D visualization packages, animations are not keyframe-based, but are described by a natural language-based syntax. Some illustrative examples are shown below:</p>
+
+  <h2>Installation</h2>
+<p>To install the 3D Animation plugin, use the Fiji updater and activate the <i>3D Animation</i> update site, according to the description in the <a target="_blank" href="https://imagej.net/Following_an_update_site">Fiji wiki</a>.</p>
+In short:
+<ul>
+<li>Click on Help&gt;Update...
+<li>Click on <i>Manage update sites</i>
+<li>Check the <i>3D Animation</i> site</i>
+<li>Click on <i>Close</i>
+<li>Click on <i>Apply changes</i>
+<li>Restart Fiji
+</ul>
+<p>The source code for the 3D Animation plugin can be found on <a target="_blank" href="TODO">GitHub</a>.</p>
+
+  <h2>Usage</h2>
+<p>There is a detailed manual available in PDF format <a target="_blank" href="Manual.pdf">here</a>. Additionally, there are a number of illustrative videos in the <a href="gallery.html">Gallery</a></p>
+
+  <h2>Gallery</h2>
+<p>Please visit the <a href="gallery.html">Gallery</a> for a number of illustrative videos.</p>
+
+  <div class="item">
+    <textarea class="script" readonly wrap="off">
+At frame 0:
+- change front clipping to 0
+
+At frame 0:
+- rotate by 20 degrees around (0, 0, 1)
+
+From frame 0 to frame 400:
+- rotate by 360 degrees horizontally
+- rotate by 60 degrees vertically
+- change front clipping to 200
+
+
+From frame 400 to frame 600:
+- change front clipping to 600
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-1.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+    <a href="gallery.html"><img width="536" height="800" src="images/SupplementaryMovie01.png"/></a>
+    <!--iframe width="536" height="800" src="https://www.youtube.com/embed/d6iKLSN9ohQ?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe-->
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Simultaneous rotation around multiple axes. 3D animation of a mouse small intestine seized with a tumor, imaged on a LaVision BioTec lightsheet UltraMicroscope II (see also Figure 1). The image volume is rotated around its y-axis (with a higher speed) and around the x-axis of the view (with a lower speed). Only a couple of text lines are required to describe an animation which is hard to achieve with key frame-based animation.
+    </div>
+  </div> <!-- item -->
+
+
+
+
+
+
+  <div id="footer">
+    <p>Benjamin Schmid, <a target="_blank" href="http://oice.uni-erlangen.de">Optical Imaging Centre Erlangen</a></p>
+  </div>
+</div> <!-- container -->
+
+</body>
+</html>
+	        
+

@@ -1,0 +1,161 @@
+html, body {
+height: 100%;
+width: 100%;
+margin: 0px;
+padding: 0px;
+border: 0px;
+/*
+background: url('https://dl.dropboxusercontent.com/s/7qx7r5lzchvjevl/background.jpg');
+background-size: cover;
+*/
+}
+
+#header {
+/* position: fixed; */
+margin-top: 0px;
+display: block;
+padding: 0px;
+border: 0px;
+border-top: white solid 30px;
+/* border-bottom: gray solid 2px; */
+top: 0px;
+height: 250px;
+width: 100%;
+background-image: url('banner.jpg');
+background-size: contain;
+background-repeat: no-repeat;
+background-color: #fff;
+background-position: center;
+text-align: center;
+z-index: 1;
+}
+
+#header h1 {
+position: relative;
+top: 20px;
+margin: 0px;
+margin-top: 50px;
+padding: 0;
+border: 0;
+color: #333;
+}
+
+#header p {
+position: relative;
+top: 5px;
+color: #333;
+font-size: medium;
+}
+
+#header a {
+color: #333;
+}
+
+#footer {
+position: relative;
+bottom: 0px;
+display: block;
+margin: 0px;
+padding: 0px;
+width: 100%;
+height: 80px;
+background: none;
+text-align: center;
+}
+
+.caption {
+margin-top: 2px;
+color: #333;
+text-align: justify;
+position: relative;
+font-size: 1.0em;
+width: 100%;
+}
+
+#footer p {
+margin: 0px;
+padding: 0px;
+border: 0px;
+position: absolute;
+bottom: 5px;
+color: #333;
+font-size: small;
+width: 100%;
+border-top: #333 solid 1px;
+}
+
+#footer a {
+color: #333;
+}
+
+.container {
+display: block;
+position: relative;
+max-width: 850px;
+background: none;
+margin: auto;
+margin-top: 100px;
+padding-left: 30px;
+padding-right: 30px;
+}
+
+.item {
+display: block;
+position: relative;
+margin-bottom: 100px;
+}
+
+.video {
+display: block;
+position: relative;
+background: #eee;
+left: 0px;
+top: 0px;
+width: 40%;
+}
+
+.video video {
+padding: 0px;
+margin: 0px;
+border: none;
+display: block;
+width: 100%;
+height: 100%;
+}
+
+.video iframe {
+padding: 0px;
+margin: 0px;
+border: none;
+display: block;
+width: 100%;
+height: 100%;
+}
+
+.video img {
+padding: 0px;
+margin: 0px;
+border: none;
+display: block;
+width: 100%;
+height: 100%;
+}
+
+.script {
+margin: 0px;
+padding: 0px;
+float: right;
+display: block;
+position: relative;
+background: none;
+top: 0px;
+height: 100px;
+width: calc(60% - 8px);
+}
+
+textarea {
+resize: none;
+border: 1px solid black;
+font-size: 0.9em;
+}
+

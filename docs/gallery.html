@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"> 
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="stylesheet" type="text/css" href="style.css"></link>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script type="text/javascript">
+    function resizeit() {
+      $("img").each(function() {
+        if($(this).parent().parent().is(("div .video"))) {
+          console.debug("parent is div .video");
+	  $(this)[0].onload = function() {
+            console.debug($(this));
+            var iframeW = $(this)[0].naturalWidth;
+            var iframeH = $(this)[0].naturalHeight;
+            console.debug("iframeW = " + iframeW);
+            console.debug("iframeH = " + iframeH);
+            var oHeight = $(this).outerWidth() * iframeH / iframeW;
+            console.debug("oHeight = " + oHeight);
+            $(this).outerHeight(oHeight);
+            $(this).parent().parent().prev().outerHeight(oHeight);
+          }
+	}
+      });
+      $("iframe").each(function() {
+	// console.debug($(this));
+	var iframeW = $(this)[0].width;
+	var iframeH = $(this)[0].height;
+	var oHeight = $(this).outerWidth() * iframeH / iframeW;
+	$(this).outerHeight(oHeight);
+	$(this).parent().prev().outerHeight(oHeight);
+      });
+
+      $("video").each(function() {
+        $(this).bind("loadedmetadata", function() {
+          var h = $(this).height();
+          $(this).parent().prev().outerHeight(h);
+        });
+        $(this).parent().prev().outerHeight($(this).height());
+      });
+    }
+
+    $(document).ready(function() {
+      resizeit();
+    });
+    window.onresize=resizeit;
+  </script>
+</head>
+
+
+
+<body>
+
+<div id="header">
+	<h1>3D Animation</h1>
+	<p>Language-based animationdescription</p>
+</div>
+
+<div class="container">
+
+  <h2>Gallery</h2>
+
+  <div class="item">
+    <textarea class="script" readonly wrap="off">
+At frame 0:
+- change front clipping to 0
+
+At frame 0:
+- rotate by 20 degrees around (0, 0, 1)
+
+From frame 0 to frame 400:
+- rotate by 360 degrees horizontally
+- rotate by 60 degrees vertically
+- change front clipping to 200
+
+
+From frame 400 to frame 600:
+- change front clipping to 600
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-1.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+    <iframe width="536" height="800" src="https://www.youtube.com/embed/d6iKLSN9ohQ?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Simultaneous rotation around multiple axes. 3D animation of a mouse small intestine seized with a tumor, imaged on a LaVision BioTec lightsheet UltraMicroscope II (see also Figure 1). The image volume is rotated around its y-axis (with a higher speed) and around the x-axis of the view (with a lower speed). Only a couple of text lines are required to describe an animation which is hard to achieve with key frame-based animation.
+    </div>
+  </div> <!-- item -->
+
+  <div class="item">
+    <!--h1>Title</h1-->
+    <textarea class="script" readonly wrap="off">
+At frame 0:
+- zoom by a factor of 0.6
+- rotate by 180 degrees around (0, 0, 1)
+- change all channels' front clipping to -1000
+
+From frame 20 to frame 260 rotate by sin degrees horizontally 
+
+From frame 0 to frame 260 zoom by a factor of 2 ease-out 
+From frame 0 to frame 20 rotate by -60 degrees vertically ease-out
+
+From frame 80 to frame 90:
+- change channel 2 weight to 0
+- change channel 3 weight to 0
+
+From frame 140 to frame 150:
+- change channel 1 weight to 0
+- change channel 2 weight to 1
+
+From frame 200 to frame 210:
+- change channel 2 weight to 0
+- change channel 3 weight to 1
+
+From frame 260 to frame 270:
+- change channel 1 weight to 1
+- change channel 2 weight to 1
+
+script
+function sin(t) {
+    return 180 * abs(sin(2 * PI * (t-80) / 120));
+}
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-2.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+      <iframe width="380" height="560" src="https://www.youtube.com/embed/4dX8pX79vN8?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Simultaneous pivoting and channel switching. Animation of a mouse paw, imaged on a LaVision BioTec lightsheet UltraMicroscope II. Pivoting is implemented using a macro.
+    </div>
+  </div> <!-- item -->
+
+  <div class="item">
+    <!--h1>Title</h1-->
+    <textarea class="script" readonly wrap="off">
+At frame 0:
+- reset transformation 
+- change all channels' front clipping to -1000
+
+// first position
+From frame 0 to frame 40:
+- zoom by a factor of 3.4
+- translate by (-806.5, -159.2, 0.0)
+
+At frame 40:
+- change all channels' front clipping to -130
+From frame 40 to frame 80:
+- change all channels' front clipping to 100
+From frame 80 to frame 120:
+- change all channels' front clipping to -130
+At frame 120:
+- change all channels' front clipping to -1000
+
+From frame 120 to frame 160:
+- zoom by a factor of 0.3
+- translate by (234.5, 46.3, 0.0)
+
+
+// second position
+From frame 160 to frame 200:
+- zoom by a factor of 3.6
+- translate by (888.6, -1082.0, -0.0)
+
+At frame 200:
+- change all channels' front clipping to -130
+From frame 200 to frame 240:
+- change all channels' front clipping to 0
+From frame 240 to frame 280:
+- change all channels' front clipping to -130
+At frame 280:
+- change all channels' front clipping to -1000
+
+From frame 280 to frame 320:
+- zoom by a factor of 0.3
+- translate by (-235.8, 297.5, -0.0)
+
+
+// third position
+From frame 320 to frame 360:
+- zoom by a factor of 3.0
+- translate by (-454.4, 2248.4, -0.0)
+
+At frame 360:
+- change all channels' front clipping to -80
+From frame 360 to frame 400:
+- change all channels' front clipping to 80
+From frame 400 to frame 440:
+- change all channels' front clipping to -80
+At frame 440:
+- change all channels' front clipping to -1000
+
+From frame 440 to frame 480:
+- zoom by a factor of 0.3
+- translate by (117.0, -655.3, -0.0)
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-3.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+      <iframe width="576" height="1202" src="https://www.youtube.com/embed/ZANYO5NeOrE?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Consecutive zoom-in and scroll-through at different positions. Animation of a mouse paw, imaged on a LaVision BioTec lightsheet UltraMicroscope II.
+    </div>
+  </div> <!-- item -->
+
+  <div class="item">
+    <!--h1>Title</h1-->
+    <textarea class="script" readonly wrap="off">
+From frame 90 to frame 450:
+- rotate by 360 degrees around (0, 0, 1)
+
+At frame 0:
+- rotate by 10 degrees vertically
+- rotate by 10 degrees horizontally
+- change all channels' front clipping to -5000
+- change all channels' bounding box max z to 500
+
+From frame 0 to frame 90:
+- rotate by 180 degrees vertically
+- zoom by a factor of zoomf
+
+
+From frame 90 to frame 450:
+- change all channels' bounding box max z to 0
+
+script
+function zoomf(t) {
+    return 0.6 - 0.3 * abs(sin(2 * PI * t / 180));
+}
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-4.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+      <iframe width="750" height="750" src="https://www.youtube.com/embed/BBkxofiVFxk?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Macro for parameterized zooming. Animation of a human cornea, imaged on a Zeiss LSM880 NLO 2-photon microscope. The data set is elongated in one dimension. Instead of zooming out during the entire animation, the zoom is adjusted to the rotation to always fill the available movie canvas optimally, using a macro.
+    </div>
+  </div> <!-- item -->
+
+  <div class="item">
+    <!--h1>Title</h1-->
+    <textarea class="script" readonly wrap="off">
+At frame 0 change lens to (1.4, 1, -3)
+From frame 170 to frame 190 change lens to (0.6, 1.8, 0) ease-out
+From frame 340 to frame 360 change lens to (1.4, 1, -3) ease-out
+
+From frame 0 to frame 360 rotate by rot degrees horizontally
+
+
+script
+function rot(t) {
+    return 30 * sin(2 * PI * t / 120);
+}
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-6.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+      <iframe width="800" height="600" src="https://www.youtube.com/embed/ISGNinY4aOM?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Rendering of an organoid from the mouse intestine in an artificial laboratory environment. To demonstrate extendibility of our framework, we wrote an adapter that uses Povray, a software for photorealistic rendering, instead of the integrated 3D renderer.
+    </div>
+  </div> <!-- item -->
+
+
+  <div id="footer">
+    <p>Benjamin Schmid, <a target="_blank" href="http://oice.uni-erlangen.de">Optical Imaging Centre Erlangen</a></p>
+  </div>
+</div> <!-- container -->
+
+</body>
+</html>
+	        
+
