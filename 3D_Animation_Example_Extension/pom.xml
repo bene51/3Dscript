@@ -30,8 +30,7 @@
 	
 	<licenses>
 		<license>
-			<name>GNU General Public License v3+</name>
-			<url>https://www.gnu.org/licenses/gpl.html</url>
+			<name>Simplified BSD License</name>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -79,7 +78,7 @@
 	</ciManagement>
 	
 	<properties>
-		<license.licenseName>gpl_v3</license.licenseName>
+		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Benjamin Schmid</license.copyrightOwners>
 	</properties>
 
