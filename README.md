@@ -15,10 +15,12 @@ Installation:
 -------------
 * Start Fiji
 * Click on Help>Update...
-* Click on Manage update sites
-* Check the 3D Animation site
-* Click on Close
-* Click on Apply changes
+* Click on "Manage update sites"
+* Click on "Add update site"
+* Enter Name: 3DAnimationComposer
+* Enter URL: https://romulus.oice.uni-erlangen.de/updatesite/
+* Click on "Close"
+* Click on "Apply changes"
 * Restart Fiji
 * Installation typically takes not longer than a couple of minutes
 
@@ -26,7 +28,7 @@ Demo:
 -----
 * Start Fiji
 * Click on File>Open Samples>T1 Head
-* Click on Plugins>3D Animation>3D Animation
+* Click on Plugins>3DAnimationComposer>Interactive Animation
 * In the "Interactive Raycaster" window, click on "show" next to "Animation"
 * Click on "Start text-based animation editor"
 * In the editor window, type the following text:
