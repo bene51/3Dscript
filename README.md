@@ -37,7 +37,7 @@ Demo:
 Rendering of 200 frames of this data set will typically take less than a minute on an OpenCL-enabled Graphics Card.
 The resulting stack can be saved as a video file using Fiji's File>Save As>AVI... command.
 
-To run the software on another data set, open a different image stack (instead of the T1 Head sample data).
+To run the software on another data set, open a different image stack (instead of the T1 Head sample data) before starting 3D Animation.
 
 More information is available at https://bene51.github.io/3D_Animation
 
