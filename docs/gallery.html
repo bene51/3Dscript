@@ -25,11 +25,20 @@
       });
       $("iframe").each(function() {
 	// console.debug($(this));
-	var iframeW = $(this)[0].width;
-	var iframeH = $(this)[0].height;
-	var oHeight = $(this).outerWidth() * iframeH / iframeW;
-	$(this).outerHeight(oHeight);
-	$(this).parent().prev().outerHeight(oHeight);
+	if($(this).parent().prev().is("textarea")) {
+		var iframeW = $(this)[0].width;
+		var iframeH = $(this)[0].height;
+		var oHeight = $(this).outerWidth() * iframeH / iframeW;
+		$(this).outerHeight(oHeight);
+		$(this).parent().prev().outerHeight(oHeight);
+	} else{
+		var iframeW = $(this)[0].width;
+		var iframeH = $(this)[0].height;
+		var oWidth  = $(this).parent().parent().outerWidth();
+		var oHeight = oWidth * iframeH / iframeW;
+		$(this).outerWidth(oWidth);
+		$(this).outerHeight(oHeight);
+	}
       });
 
       $("video").each(function() {
