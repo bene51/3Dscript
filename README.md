@@ -1,8 +1,8 @@
-3D AnimationComposer
-====================
-3D AnimationComposer is a plugin for Fiji/ImageJ for creating 3D and 4D animations of microscope data. In contrast to existing 3D visualization packages, animations are not keyframe-based, but are described by a natural language-based syntax.
+3Dscript
+========
+3Dscript is a plugin for Fiji/ImageJ for creating 3D and 4D animations of microscope data. In contrast to existing 3D visualization packages, animations are not keyframe-based, but are described by a natural language-based syntax.
 
-Find more information at https://bene51.github.io/3D_Animation
+Find more information at https://bene51.github.io/3Dscript
 
 Requirements:
 -------------
@@ -16,7 +16,7 @@ Installation:
 * Click on Help>Update...
 * Click on "Manage update sites"
 * Click on "Add update site"
-* Enter Name: 3D AnimationComposer
+* Enter Name: 3Dscript
 * Enter URL: https://romulus.oice.uni-erlangen.de/updatesite/
 * Click on "Close"
 * Click on "Apply changes"
@@ -27,7 +27,7 @@ Demo:
 -----
 * Start Fiji
 * Click on File>Open Samples>T1 Head
-* Click on Plugins>3D AnimationComposer>Interactive Animation
+* Click on Plugins>3D script>Interactive Animation
 * In the "Interactive Raycaster" window, click on "show" next to "Animation"
 * Click on "Start text-based animation editor"
 * In the editor window, type the following text:
@@ -38,7 +38,7 @@ Demo:
 Rendering of 200 frames of this data set will typically take less than a minute on an OpenCL-enabled Graphics Card.
 The resulting stack can be saved as a video file using Fiji's File>Save As>AVI... command.
 
-To run the software on another data set, open a different image stack (instead of the T1 Head sample data) before starting 3D AnimationComposer.
+To run the software on another data set, open a different image stack (instead of the T1 Head sample data) before running 3Dscript.
 
-More information is available at https://bene51.github.io/3D_Animation
+More information is available at https://bene51.github.io/3Dscript
 
