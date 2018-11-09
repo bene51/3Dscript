@@ -192,8 +192,8 @@ Raycaster<T>::Raycaster(
 	// initialize gradient textures
 #if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
 	chtype = CL_SIGNED_INT8;
-	format = {CL_RGBA, chtype};
-	desc = {
+	cl_image_format gformat = {CL_RGBA, chtype};
+	cl_image_desc gdesc = {
 		CL_MEM_OBJECT_IMAGE3D,
 #if GRADIENT_MODE == GRADIENT_MODE_TEXTURE
 		(size_t)(dataWidth_), (size_t)(dataHeight_), (size_t)(dataDepth_),
@@ -207,7 +207,7 @@ Raycaster<T>::Raycaster(
 		0, // num_samples
 		NULL}; // buffer (must be NULL)
 	for(int channel = 0; channel < nChannels; channel++) {
-		gradients_[channel] = clCreateImage(context, CL_MEM_READ_WRITE, &format, &desc, NULL, &err);
+		gradients_[channel] = clCreateImage(context, CL_MEM_READ_WRITE, &gformat, &gdesc, NULL, &err);
 		checkOpenCLErrors(err);
 	}
 #endif
