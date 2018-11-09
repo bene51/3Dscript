@@ -145,7 +145,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 	        "	        gammaAlphaColor);\n" +
 	        "\n" +
 	        "	// Opacity correction:\n" +
-	        "	rAlphaColor.x = 1 - pow(1 - rAlphaColor.x, alphacorr);\n" +
+	        "	rAlphaColor.x = 1 - pow(clamp(1 - rAlphaColor.x, 0.0f, 1.0f), alphacorr);\n" +
 	        "	return rAlphaColor;\n" +
 	        "}\n" +
 	        "\n";
