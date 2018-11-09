@@ -140,7 +140,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		outputImage = worker.getOutputImage();
 
-		dialog = new AnimatorDialog("Interactive Raycaster", outputImage.getWindow());
+		dialog = new AnimatorDialog("Interactive Raycaster", null);
 		WindowManager.addWindow(dialog);
 		contrastPanel = dialog.addContrastPanel(
 				histo8,
