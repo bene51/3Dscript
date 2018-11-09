@@ -2,7 +2,9 @@ Building:
 =========
 
 Go to <src>/build
-cmake .. -G "Visual Studio 14 2015 Win64"
+On Windows:  cmake .. -G "Visual Studio 14 2015 Win64"
+On Mac OS X: cmake .. -G "Unix Makefiles"
+On Linux:    cmake .. -G "Unix Makefiles" -DOpenCL_INCLUDE_DIR=/usr/local/cuda/include/ -DOpenCL_LIBRARY=/usr/local/cuda/lib64/libOpenCL.so
 
 Note:
 If running on Win10 on a Samba share, there seems to be an issue with cmake:
@@ -10,7 +12,6 @@ https://gitlab.kitware.com/cmake/cmake/issues/18086
 
 As a workaround, run the following command before cmake .. -G ...:
 mkdir -p CMakeFiles/CMakeTmp/CMakeFiles && (cd CMakeFiles/CMakeTmp/CMakeFiles && start cmd //c "pause")
-
 
 
 cmake --build . --config Release
