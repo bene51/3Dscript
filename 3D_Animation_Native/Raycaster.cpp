@@ -116,11 +116,7 @@ Raycaster<T>::init_opencl()
         // create command queue using the context and device
         command_queue = clCreateCommandQueue(context, device_id, 0, &err);
 
-        // create a program from the kernel source code
-	const char *programSource = loadText("kernel.cl");
 	program = NULL;
-	setKernel(programSource);
-	delete programSource;
 }
 
 template<typename T>
