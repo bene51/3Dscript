@@ -15,6 +15,7 @@
 
 // #include "RaycasterKernels.h"
 #include "OpenCLUtils.h"
+#include "OpenCLInfo.h"
 
 #define GRADIENT_MODE_ONTHEFLY           0
 #define GRADIENT_MODE_TEXTURE            1
@@ -112,6 +113,10 @@ Raycaster<T>::init_opencl()
 
         // create a context with the GPU device
         context = clCreateContext(properties, 1, &device_id, NULL, NULL, &err);
+
+	OpenCLInfo info;
+	info.printInfo(context, device_id);
+
 
         // create command queue using the context and device
         command_queue = clCreateCommandQueue(context, device_id, 0, &err);
