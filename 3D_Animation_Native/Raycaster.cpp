@@ -150,7 +150,7 @@ Raycaster<T>::Raycaster(
 
 	// initialize textures
 	cl_channel_type chtype = sizeof(T) == 1 ? CL_UNORM_INT8 : CL_UNORM_INT16;
-	cl_image_format format = {CL_INTENSITY, chtype};
+	cl_image_format format = {CL_R, chtype};
 	cl_image_desc desc = {
 			CL_MEM_OBJECT_IMAGE3D,
 			dataWidth_, dataHeight_, dataDepth_,
