@@ -10,6 +10,19 @@ Requirements:
 * Up-to-date Fiji installation (http://www.fiji.sc)
 * OpenCL 1.2-capable Graphics Card or better
 
+Tested hardware:
+----------------
+Graphics card | Operating system
+------------- | -------------
+NVIDIA Quadro M4000 | Windows 10
+NVIDIA Quadro M2000 | Windows 10
+NVIDIA Quadro K620  | Windows 10
+NVIDIA Quadro K600  | Windows 10
+NVIDIA Quadro K420  | Windows 7
+NVIDIA GeForce GTX760 | Windows 7
+AMD FirePro W5100   | Windows 7
+Intel HD Graphics 4600 | Windows 7
+
 Installation:
 -------------
 * Start Fiji
