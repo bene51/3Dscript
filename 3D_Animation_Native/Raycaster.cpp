@@ -244,40 +244,40 @@ template<typename T>
 void
 Raycaster<T>::setBackground(const unsigned int * const data, int w, int h)
 {
-	cl_int err = 0;
-	if(background_ != NULL)
-		clearBackground();
-
-	cl_channel_type chtype = CL_UNSIGNED_INT8; // CL_UNORM_INT8;
-
-	cl_image_format format = {CL_RGBA, chtype};
-	cl_image_desc desc = {
-			CL_MEM_OBJECT_IMAGE2D,
-			w, h, 1,
-			0, // image_array_size
-			0, // image_row_pitch
-			0, // image_slice_pitch
-			0, // num_mip_levels
-			0, // num_samples
-			NULL}; // buffer (must be NULL)
-	background_ = clCreateImage(context, CL_MEM_READ_ONLY, &format, &desc, NULL, &err);
-	checkOpenCLErrors(err);
-
-	// copy data to 2D array
-	size_t origin[3] = {0, 0, 0};
-	size_t region[3] = {w, h, 1};
-	checkOpenCLErrors(clEnqueueWriteImage(
-		command_queue,
-		background_,
-		CL_TRUE, // blocking
-		origin,
-		region,
-		0, // input_row_pitch
-		0, // input_slice_pitch
-		data,
-		0,
-		NULL,
-		NULL));
+//	cl_int err = 0;
+//	if(background_ != NULL)
+//		clearBackground();
+//
+//	cl_channel_type chtype = CL_UNSIGNED_INT8; // CL_UNORM_INT8;
+//
+//	cl_image_format format = {CL_RGBA, chtype};
+//	cl_image_desc desc = {
+//			CL_MEM_OBJECT_IMAGE2D,
+//			w, h, 1,
+//			0, // image_array_size
+//			0, // image_row_pitch
+//			0, // image_slice_pitch
+//			0, // num_mip_levels
+//			0, // num_samples
+//			NULL}; // buffer (must be NULL)
+//	background_ = clCreateImage(context, CL_MEM_READ_ONLY, &format, &desc, NULL, &err);
+//	checkOpenCLErrors(err);
+//
+//	// copy data to 2D array
+//	size_t origin[3] = {0, 0, 0};
+//	size_t region[3] = {w, h, 1};
+//	checkOpenCLErrors(clEnqueueWriteImage(
+//		command_queue,
+//		background_,
+//		CL_TRUE, // blocking
+//		origin,
+//		region,
+//		0, // input_row_pitch
+//		0, // input_slice_pitch
+//		data,
+//		0,
+//		NULL,
+//		NULL));
 }
 
 template<typename T>
