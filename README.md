@@ -9,6 +9,7 @@ Requirements:
 * 64-bit Operating System (Linux, Mac OS X or Windows)
 * Up-to-date Fiji installation (http://www.fiji.sc)
 * OpenCL 1.2-capable Graphics Card or better
+* Decent graphics card, preferably from Nvidia or AMD, but newer Intel cards will work also (see below for tested hardware)
 
 Tested hardware:
 ----------------
