@@ -12,6 +12,9 @@ iDivUp(int a, int b);
 void
 __clAssert(unsigned int code, const char *file, int line);
 
+#define clexception(text) {__clexception((text), __FILE__, __LINE__); }
+void
+__clexception(const char *text, const char *file, int line);
 
 
 #endif

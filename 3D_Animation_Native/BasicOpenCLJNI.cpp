@@ -10,10 +10,4 @@ ThrowException(void *env_ptr, const char *message)
 	env->ThrowNew(cl, message);
 }
 
-void
-setOpenCLExceptionHandler(JNIEnv *env)
-{
-	setErrorHandler(ThrowException, env);
-}
-
 

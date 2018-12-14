@@ -65,45 +65,16 @@ template<typename T>
 void
 Raycaster<T>::init_opencl()
 {
-
 	cl_int err;
 	cl_platform_id platform_id;
 
 	// retreive a list of platforms avaible
-        if (clGetPlatformIDs(1, &platform_id, NULL)!= CL_SUCCESS) {
-                printf("Unable to get platform_id\n");
-                return;
-        }
+        if (clGetPlatformIDs(1, &platform_id, NULL)!= CL_SUCCESS)
+		clexception("Unable to get platform id");
 
         // try to get a supported GPU device
-        if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL) != CL_SUCCESS) {
-                printf("Unable to get device_id\n");
-                return;
-        }
-
-	size_t maxWGSize = 0;
-	clGetDeviceInfo(device_id,
-			CL_DEVICE_MAX_WORK_GROUP_SIZE,
-		  	sizeof(size_t),
-			&maxWGSize,
-			NULL);
-	printf("max workgroup size = %d\n", maxWGSize);
-
-	size_t maxImageWidth = 0;
-	clGetDeviceInfo(device_id,
-			CL_DEVICE_IMAGE2D_MAX_WIDTH,
-		  	sizeof(size_t),
-			&maxImageWidth,
-			NULL);
-	printf("max image width = %d\n", maxImageWidth);
-
-	cl_ulong lmem = 0;
-	clGetDeviceInfo(device_id,
-			CL_DEVICE_LOCAL_MEM_SIZE,
-		  	sizeof(cl_ulong),
-			&lmem,
-			NULL);
-	printf("local memory = %d\n", lmem);
+        if (clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, NULL) != CL_SUCCESS)
+		clexception("Cannot find any OpenCL capable GPU. Does your graphics card support OpenCL? You might want to try installing the newest drivers.");
 
         // context properties list - must be terminated with 0
 	cl_context_properties properties[3];
@@ -113,6 +84,7 @@ Raycaster<T>::init_opencl()
 
         // create a context with the GPU device
         context = clCreateContext(properties, 1, &device_id, NULL, NULL, &err);
+	checkOpenCLErrors(err);
 
 	OpenCLInfo info;
 	info.printInfo(context, device_id);
@@ -120,6 +92,7 @@ Raycaster<T>::init_opencl()
 
         // create command queue using the context and device
         command_queue = clCreateCommandQueue(context, device_id, 0, &err);
+	checkOpenCLErrors(err);
 
 	program = NULL;
 }
@@ -371,6 +344,7 @@ Raycaster<T>::setKernel(const char *programSource)
 
 	cl_int err;
         program = clCreateProgramWithSource(context,1,(const char **) &programSource, NULL, &err);
+	checkOpenCLErrors(err);
 
         // compile the program
         err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
@@ -393,36 +367,23 @@ Raycaster<T>::setKernel(const char *programSource)
                 printf("error = %d\n", err);
                 printf("Error building program\n");
 		fflush(stdout);
-                return;
+		clexception("Error building OpenCL kernel. Please start from the command line to see detailed error messages");
 	}
 
         // specify which kernel from the program to execute
         kernel = clCreateKernel(program, "raycastKernel", &err);
-        if (err != CL_SUCCESS) {
-                printf("error = %d\n", err);
-                printf("Error creating kernel\n");
-                return;
-        }
+	checkOpenCLErrors(err);
 	printf("kernel 'raycastKernel' built successfully\n");
 
         clear_kernel = clCreateKernel(program, "white", &err);
-        if (err != CL_SUCCESS) {
-                printf("error = %d\n", err);
-                printf("Error creating kernel\n");
-                return;
-        }
+	checkOpenCLErrors(err);
 	printf("kernel 'white' built successfully\n");
 
 #if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
         grad_kernel = clCreateKernel(program, "calculateGradients", &err);
-        if (err != CL_SUCCESS) {
-                printf("error = %d\n", err);
-                printf("Error creating kernel\n");
-                return;
-        }
+	checkOpenCLErrors(err);
 	printf("kernel 'calculateGradients' built successfully\n");
 #endif
-	fflush(stdout);
 }
 
 template<typename T>
@@ -593,7 +554,6 @@ Raycaster<T>::white(int channel)
 #ifdef _WIN32
 	int end = GetTickCount();
 	printf("needed %d ms\n", (end - start));
-	fflush(stdout);
 #endif
 }
 

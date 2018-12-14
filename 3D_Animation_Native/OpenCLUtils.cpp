@@ -7,30 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept>
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
 #endif
-
-
-static void exit_on_error(void *, const char *)
-{
-	printf("exiting... \n");
-	exit(EXIT_FAILURE);
-}
-
-static void (*bla_on_error)(void *, const char *) = exit_on_error;
-
-static void *hparam = NULL;
-
-void
-setErrorHandler(void (*handler)(void *, const char *), void *param)
-{
-	hparam = param;
-	bla_on_error = handler;
-}
 
 int
 iDivUp(int a, int b)
@@ -120,7 +103,18 @@ __clAssert(unsigned int code, const char *file, int line)
 				file, line);
 		fprintf(stderr, "%s\n", message);
 		fflush(stderr);
-		bla_on_error(hparam, message);
+		throw std::runtime_error(message);
 	}
+}
+
+void
+__clexception(const char *text, const char *file, int line)
+{
+	char message[256];
+	sprintf(message, "Native exception: %s in %s (line %i)",
+			text, file, line);
+	fprintf(stderr, "%s\n", message);
+	fflush(stderr);
+	throw std::runtime_error(message);
 }
 

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #include "BasicOpenCLJNI.h"
 #include "RaycasterJNI.h"
@@ -16,9 +17,12 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster
 		jint w, jint h, jint d,
 		jint wOut, jint hOut)
 {
-	setOpenCLExceptionHandler(env);
-	raycaster8 = new RaycasterJNI<unsigned char>(env,
-			nChannels, w, h, d, wOut, hOut);
+	try {
+		raycaster8 = new RaycasterJNI<unsigned char>(env,
+				nChannels, w, h, d, wOut, hOut);
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
 }
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster16(
@@ -28,9 +32,12 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster
 		jint w, jint h, jint d,
 		jint wOut, jint hOut)
 {
-	setOpenCLExceptionHandler(env);
-	raycaster16 = new RaycasterJNI<unsigned short>(env,
-			nChannels, w, h, d, wOut, hOut);
+	try {
+		raycaster16 = new RaycasterJNI<unsigned short>(env,
+				nChannels, w, h, d, wOut, hOut);
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
 }
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setBackground(
@@ -39,22 +46,30 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setBackground
 		jintArray data,
 		jint w, jint h)
 {
-	if(raycaster8 != NULL)
-		raycaster8->setBackground(env, data, w, h);
-	else if(raycaster16 != NULL)
-		raycaster16->setBackground(env, data, w, h);
-	else
-		ThrowException(env, "No raycaster initialized\n");
+	try {
+		if(raycaster8 != NULL)
+			raycaster8->setBackground(env, data, w, h);
+		else if(raycaster16 != NULL)
+			raycaster16->setBackground(env, data, w, h);
+		else
+			ThrowException(env, "No raycaster initialized\n");
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
 }
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearBackground(JNIEnv *env)
 {
-	if(raycaster8 != NULL)
-		raycaster8->clearBackground(env);
-	else if(raycaster16 != NULL)
-		raycaster16->clearBackground(env);
-	else
-		ThrowException(env, "No raycaster initialized\n");
+	try {
+		if(raycaster8 != NULL)
+			raycaster8->clearBackground(env);
+		else if(raycaster16 != NULL)
+			raycaster16->clearBackground(env);
+		else
+			ThrowException(env, "No raycaster initialized\n");
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
 }
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture8(
@@ -64,7 +79,11 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture8(
 		jobjectArray data)
 {
 	if(raycaster8 != NULL) {
-		raycaster8->setTexture(env, channel, data);
+		try {
+			raycaster8->setTexture(env, channel, data);
+		} catch(std::runtime_error& e) {
+			ThrowException(env, e.what());
+		}
 	} else {
 		ThrowException(env, "No raycaster initialized\n");
 	}
@@ -77,7 +96,11 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture16(
 		jobjectArray data)
 {
 	if(raycaster16 != NULL) {
-		raycaster16->setTexture(env, channel, data);
+		try {
+			raycaster16->setTexture(env, channel, data);
+		} catch(std::runtime_error& e) {
+			ThrowException(env, e.what());
+		}
 	} else {
 		ThrowException(env, "No raycaster initialized\n");
 	}
@@ -89,12 +112,16 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTargetSize
 		jint tgtWidth,
 		jint tgtHeight)
 {
-	if(raycaster8 != NULL) {
-		raycaster8->setTgtDimensions(tgtWidth, tgtHeight);
-	} else if(raycaster16 != NULL) {
-		raycaster16->setTgtDimensions(tgtWidth, tgtHeight);
-	} else {
-		ThrowException(env, "No raycaster initialized\n");
+	try {
+		if(raycaster8 != NULL) {
+			raycaster8->setTgtDimensions(tgtWidth, tgtHeight);
+		} else if(raycaster16 != NULL) {
+			raycaster16->setTgtDimensions(tgtWidth, tgtHeight);
+		} else {
+			ThrowException(env, "No raycaster initialized\n");
+		}
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
 	}
 }
 
@@ -114,12 +141,16 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_white (
 		jclass,
 		jint channel)
 {
-	if(raycaster8 != NULL) {
-		raycaster8->white(env, channel);
-	} else if(raycaster16 != NULL) {
-		raycaster16->white(env, channel);
-	} else {
-		ThrowException(env, "No raycaster initialized\n");
+	try {
+		if(raycaster8 != NULL) {
+			raycaster8->white(env, channel);
+		} else if(raycaster16 != NULL) {
+			raycaster16->white(env, channel);
+		} else {
+			ThrowException(env, "No raycaster initialized\n");
+		}
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
 	}
 }
 
@@ -130,12 +161,17 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setKernel(
 {
 	const char* k = env->GetStringUTFChars(kernel, 0);
 
-	if(raycaster8 != NULL) {
-		raycaster8->setKernel(env, k);
-	} else if(raycaster16 != NULL) {
-		raycaster16->setKernel(env, k);
-	} else {
-		ThrowException(env, "No raycaster initialized\n");
+	try {
+		if(raycaster8 != NULL) {
+			raycaster8->setKernel(env, k);
+		} else if(raycaster16 != NULL) {
+			raycaster16->setKernel(env, k);
+		} else {
+			ThrowException(env, "No raycaster initialized\n");
+		}
+	} catch(std::runtime_error& e) {
+		env->ReleaseStringUTFChars(kernel, k);
+		ThrowException(env, e.what());
 	}
 	env->ReleaseStringUTFChars(kernel, k);
 }
@@ -148,21 +184,26 @@ JNIEXPORT jintArray JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_cast (
 		jobjectArray channelSettings,
 		jint bgr, jint bgg, jint bgb)
 {
-	if(raycaster8 != NULL) {
-		return raycaster8->project(env,
-				inverseTransform,
-				alphacorr,
-				channelSettings,
-				bgr, bgg, bgb);
-	}
-	else if(raycaster16 != NULL) {
-		return raycaster16->project(env,
-				inverseTransform,
-				alphacorr,
-				channelSettings,
-				bgr, bgg, bgb);
-	} else {
-		ThrowException(env, "No raycaster initialized\n");
+	try {
+		if(raycaster8 != NULL) {
+			return raycaster8->project(env,
+					inverseTransform,
+					alphacorr,
+					channelSettings,
+					bgr, bgg, bgb);
+		}
+		else if(raycaster16 != NULL) {
+			return raycaster16->project(env,
+					inverseTransform,
+					alphacorr,
+					channelSettings,
+					bgr, bgg, bgb);
+		} else {
+			ThrowException(env, "No raycaster initialized\n");
+			return NULL;
+		}
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
 		return NULL;
 	}
 }

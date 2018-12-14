@@ -6,8 +6,5 @@
 void
 ThrowException(void *env_ptr, const char *message);
 
-void
-setOpenCLExceptionHandler(JNIEnv *env);
-
 
 #endif
