@@ -22,6 +22,7 @@ NVIDIA Quadro K420  | Windows 7
 NVIDIA GeForce GTX760 | Windows 7
 AMD FirePro W5100   | Windows 7
 Intel HD Graphics 4600 | Windows 7
+Intel HD Graphics 5000 | Mac OS X
 
 Installation:
 -------------
