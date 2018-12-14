@@ -6,8 +6,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <iostream>
 #include <fstream>
+
+#include "OpenCLUtils.h"
 
 using namespace std;
 
@@ -77,12 +80,17 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 		log << "Unable to query CL_DEVICE_AVAILABLE" << endl;
 	else
 		log << "CL_DEVICE_AVAILABLE: " << valueBool << endl;
+	if(valueBool == CL_FALSE)
+		clwarning("\nNo OpenCL enabled GPU device available (CL_DEVICE_AVAILABLE = CL_FALSE)\nPlease make sure the newest graphics drivers are installed.\n");
+
 
 	err = clGetDeviceInfo(device, CL_DEVICE_COMPILER_AVAILABLE, sizeof(valueBool), &valueBool, &size_ret);
 	if(err != CL_SUCCESS)
 		log << "Unable to query CL_DEVICE_COMPILER_AVAILABLE" << endl;
 	else
 		log << "CL_DEVICE_COMPILER_AVAILABLE: " << valueBool << endl;
+	if(valueBool == CL_FALSE)
+		clwarning("\nOpenCL does not support compilation (CL_DEVICE_COMPILER_AVAILABLE = CL_FALSE)\nPlease make sure the newest graphics drivers are installed.\n");
 
 
 	err = clGetDeviceInfo(device, CL_DEVICE_ENDIAN_LITTLE, sizeof(valueBool), &valueBool, &size_ret);
@@ -110,6 +118,8 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 		log << "Unable to query CL_DEVICE_IMAGE_SUPPORT" << endl;
 	else
 		log << "CL_DEVICE_IMAGE_SUPPORT: " << valueBool << endl;
+	if(valueBool == CL_FALSE)
+		clwarning("\nOpenCL does not support images (CL_DEVICE_IMAGE_SUPPORT = CL_FALSE)\nPlease make sure the newest graphics drivers are installed.\n");
 
 
 	err = clGetDeviceInfo(device, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(valueSize), &valueSize, &size_ret);
@@ -218,8 +228,10 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 	else {
 		if(type == CL_DEVICE_TYPE_GPU)
 			log << "CL_DEVICE_TYPE: " << valueString << endl;
-		else
+		else {
 			log << "CL_DEVICE_TYPE is NOT GPU" << endl;
+			clwarning("\nNo GPU device (CL_DEVICE_TYPE != CL_DEVICE_TYPE_GPU)\nPlease make sure the newest graphics drivers are installed.\n");
+		}
 	}
 
 
@@ -236,8 +248,18 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 	err = clGetDeviceInfo(device, CL_DEVICE_VERSION, sizeof(valueString), &valueString, &size_ret);
 	if(err != CL_SUCCESS)
 		log << "Unable to query CL_DEVICE_VERSION" << endl;
-	else
+	else {
 		log << "CL_DEVICE_VERSION: " << valueString << endl;
+		char majorstr[2];
+		char minorstr[2];
+		majorstr[0] = valueString[7]; majorstr[1] = '\0';
+		minorstr[0] = valueString[9]; minorstr[1] = '\0';
+		int major = atoi(majorstr);
+		int minor = atoi(minorstr);
+		if(major < 1 || (major < 2 && minor < 2)) {
+			clwarning("\nAt least OpenCL 1.2 is required.\nPlease make sure the newest graphics drivers are installed.\n");
+		}
+	}
 
 	memset(valueString, 0, 1024);
 	err = clGetDeviceInfo(device, CL_DRIVER_VERSION, sizeof(valueString), &valueString, &size_ret);
@@ -277,16 +299,22 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 		if(f.image_channel_order == CL_RGBA && f.image_channel_data_type == CL_SIGNED_INT8)
 			found = true;
 	}
-	if(!found8)
+	if(!found8) {
 		log << "8-bit image format not supported by your OpenCL implementation" << endl;
+		clwarning("\n8-bit image format is not supported by your OpenCL implementation.\nPlease make sure the newest graphics drivers are installed.\n");
+	}
 	else
 		log << "8-bit image format supported by your OpenCL implementation" << endl;
-	if(!found16)
+	if(!found16) {
 		log << "16-bit image format not supported by your OpenCL implementation" << endl;
+		clwarning("\n16-bit image format is not supported by your OpenCL implementation.\nPlease make sure the newest graphics drivers are installed.\n");
+	}
 	else
 		log << "16-bit image format supported by your OpenCL implementation" << endl;
-	if(!found)
+	if(!found) {
 		log << "Signed int8 RGBA image format not supported by your OpenCL implementation" << endl;
+		clwarning("\nSigned int8 RGBA image format is not supported by your OpenCL implementation.\nPlease make sure the newest graphics drivers are installed.\n");
+	}
 	else
 		log << "Signed int8 RGBA image format supported by your OpenCL implementation" << endl;
 

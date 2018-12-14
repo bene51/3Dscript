@@ -17,6 +17,7 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster
 		jint w, jint h, jint d,
 		jint wOut, jint hOut)
 {
+	setOpenCLWarningHandler(env);
 	try {
 		raycaster8 = new RaycasterJNI<unsigned char>(env,
 				nChannels, w, h, d, wOut, hOut);
@@ -32,6 +33,7 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster
 		jint w, jint h, jint d,
 		jint wOut, jint hOut)
 {
+	setOpenCLWarningHandler(env);
 	try {
 		raycaster16 = new RaycasterJNI<unsigned short>(env,
 				nChannels, w, h, d, wOut, hOut);

@@ -15,6 +15,21 @@
 #include <CL/cl.h>
 #endif
 
+static void defaultWarningHandler(void *, const char *msg)
+{
+	printf("%s\n", msg);
+}
+
+static void (*bla_on_warning)(void *, const char *) = defaultWarningHandler;
+
+static void *hparam = NULL;
+
+void setWarningHandler(void (*handler)(void *, const char *), void *param)
+{
+	hparam = param;
+	bla_on_warning = handler;
+}
+
 int
 iDivUp(int a, int b)
 {
@@ -116,5 +131,16 @@ __clexception(const char *text, const char *file, int line)
 	fprintf(stderr, "%s\n", message);
 	fflush(stderr);
 	throw std::runtime_error(message);
+}
+
+void
+__clwarning(const char *text, const char *file, int line)
+{
+	char message[256];
+	sprintf(message, "Warning: %s in %s (line %i)",
+			text, file, line);
+	fprintf(stderr, "%s\n", message);
+	fflush(stderr);
+	bla_on_warning(hparam, message);
 }
 
