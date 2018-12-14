@@ -132,5 +132,9 @@
 			<id>imagej.public</id>
 			<url>http://maven.imagej.net/content/groups/public</url>
 		</repository>
+		<repository>
+			<id>3dscript.public</id>
+			<url>https://romulus.oice.uni-erlangen.de/maven/repository</url>
+		</repository>
 	</repositories>
 </project>
