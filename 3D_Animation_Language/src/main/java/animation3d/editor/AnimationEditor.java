@@ -53,7 +53,6 @@ import animation3d.textanim.IRecordingProvider.RecordingItem;
 import animation3d.textanim.IRenderer3D;
 import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
-import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
@@ -738,12 +737,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		int tStart = (int)gd.getNextNumber();
 		int tEnd   = (int)gd.getNextNumber();
 
-		ImagePlus imp = renderer.getImage();
-		float[] rotcenter = new float[] {
-				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
-				(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
-				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
-		};
+		float[] rotcenter = renderer.getRotationCenter();
 
 		RenderingState rsRecordEnd = renderer.getRenderingState().clone();
 
@@ -881,12 +875,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 	}
 
 	public String recordTransformation(RenderingState rs, String tStart) {
-		ImagePlus imp = renderer.getImage();
-		float[] rotcenter = new float[] {
-				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
-				(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
-				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
-		};
+		float[] rotcenter = renderer.getRotationCenter();
 
 		float[] m = rs.getFwdTransform().calculateForwardTransformWithoutCalibration();
 

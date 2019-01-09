@@ -73,6 +73,20 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 				transformation);
 	}
 
+	@Override
+	public float[] getRotationCenter() {
+		return new float[] {
+				image.getWidth()   * (float)image.getCalibration().pixelWidth  / 2f,
+				image.getHeight()  * (float)image.getCalibration().pixelHeight / 2f,
+				image.getNSlices() * (float)image.getCalibration().pixelDepth  / 2f
+		};
+	}
+
+	@Override
+	public String getTitle() {
+		return image.getTitle();
+	}
+
 	public void resetRenderingSettings(ExtendedRenderingState rs) {
 		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
@@ -157,6 +171,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		rs.getFwdTransform().setOutputSpacing(p);
 	}
 
+	@Override
 	public int getNChannels() {
 		return image.getNChannels();
 	}

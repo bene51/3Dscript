@@ -62,12 +62,7 @@ public class Animator {
 
 		Preprocessor.preprocess(text, lines, macros);
 
-		ImagePlus imp = renderer.getImage();
-		float[] rotcenter = new float[] {
-				(float)imp.getCalibration().pixelWidth  * imp.getWidth()   / 2,
-				(float)imp.getCalibration().pixelHeight * imp.getHeight()  / 2,
-				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
-		};
+		float[] rotcenter = renderer.getRotationCenter();
 		clearAnimations();
 		int from = Integer.MAX_VALUE;
 		int to = 0;
@@ -113,9 +108,9 @@ public class Animator {
 			stack.addSlice(ip);
 
 			if(stack.size() == 2 || (stack.size() == 1 && frames.size() == 1)) {
-				ret = new ImagePlus(renderer.getImage().getTitle() + ".avi", stack);
-				frames.get(0).getFwdTransform().adjustOutputCalibration(ret.getCalibration());
-				ret.getCalibration().setUnit(renderer.getImage().getCalibration().getUnit());
+				ret = new ImagePlus(renderer.getTitle() + ".avi", stack);
+				// frames.get(0).getFwdTransform().adjustOutputCalibration(ret.getCalibration());
+				// ret.getCalibration().setUnit(renderer.getCalibrationUnit());
 				ret.show();
 			}
 			if(ret != null) {
@@ -145,7 +140,7 @@ public class Animator {
 			kf.getFwdTransform().setTransformation(Transform.fromIdentity(null));
 			kf.setFrame(t);
 			for(Animation a : animations)
-				a.adjustRenderingState(kf, renderingStates, renderer.getImage().getNChannels());
+				a.adjustRenderingState(kf, renderingStates, renderer.getNChannels());
 			renderingStates.add(kf);
 			previous = kf;
 		}

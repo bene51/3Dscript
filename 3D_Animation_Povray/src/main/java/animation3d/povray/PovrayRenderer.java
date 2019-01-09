@@ -111,8 +111,22 @@ public class PovrayRenderer implements IRenderer3D {
 	}
 
 	@Override
-	public ImagePlus getImage() {
-		return input;
+	public float[] getRotationCenter() {
+		return new float[] {
+				input.getWidth()   * (float)input.getCalibration().pixelWidth  / 2f,
+				input.getHeight()  * (float)input.getCalibration().pixelHeight / 2f,
+				input.getNSlices() * (float)input.getCalibration().pixelDepth  / 2f
+		};
+	}
+
+	@Override
+	public String getTitle() {
+		return input.getTitle();
+	}
+
+	@Override
+	public int getNChannels() {
+		return input.getNChannels();
 	}
 
 	@Override

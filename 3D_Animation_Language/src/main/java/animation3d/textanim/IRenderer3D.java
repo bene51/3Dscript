@@ -1,6 +1,5 @@
 package animation3d.textanim;
 
-import ij.ImagePlus;
 import ij.process.ImageProcessor;
 
 public interface IRenderer3D {
@@ -11,7 +10,13 @@ public interface IRenderer3D {
 
 	public ImageProcessor render(RenderingState kf);
 
-	public ImagePlus getImage();
+	// public ImagePlus getImage();
+
+	public float[] getRotationCenter();
+
+	public int getNChannels();
+
+	public String getTitle();
 
 	public void setTargetSize(int w, int h);
 
