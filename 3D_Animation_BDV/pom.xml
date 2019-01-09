@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>17.1.1</version>
+		<relativePath />
+	</parent>
+
+	<groupId>sc.fiji</groupId>
+	<artifactId>3D_Animation_BDV</artifactId>
+	<version>0.1</version>
+
+	<name>3D Animation BDV Viewer</name>
+	<description>Adapter to use the BigDataViewer with the textbased animation plugin 3D_Animation.</description>
+	
+	<url>TODO</url>
+	
+	<inceptionYear>2016</inceptionYear>
+	
+	<organization>
+		<name>OICE</name>
+		<url>http://oice.uni-erlangen.de</url>
+	</organization>
+	
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>bschmid</id>
+			<name>Benjamin Schmid</name>
+			<url>TODO</url>
+			<roles>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+				<role>founder</role>
+			</roles>
+		</developer>
+	</developers>
+	
+	<contributors>
+		<contributor>
+			<name>none</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>none</name>
+		</mailingList>
+	</mailingLists>
+	
+	<scm>
+	<connection>TODO</connection>
+	</scm>
+
+	<issueManagement>
+		<system>TODO</system>
+		<url>TODO</url>
+	</issueManagement>
+
+	<ciManagement>
+		<system>none</system>
+	</ciManagement>
+	
+	<properties>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>Benjamin Schmid</license.copyrightOwners>
+	</properties>
+
+	
+	<dependencies>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>3D_Animation_Language</artifactId>
+			<version>0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-vistools</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer_fiji</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<extensions>
+			<!-- Enabling the use of SSH -->
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh-external</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
+	</build>
+	<distributionManagement>
+		<repository>
+			<id>ssh-repository</id>
+			<url>scpexe://romulus/usr/local/share/maven/repository</url>
+		</repository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>3dscript.public</id>
+			<url>https://romulus.oice.uni-erlangen.de/maven/repository</url>
+		</repository>
+	</repositories>
+</project>
