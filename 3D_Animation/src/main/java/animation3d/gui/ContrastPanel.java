@@ -43,7 +43,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				new int[][] { histo },
 				new double[] { 0 }, // min
 				new double[] { 255 }, // max
-				new double[][] { { 0, 255, 1, 0, 255, 2, 1, 255, 0, 0 } },
+				new double[][] {{0, 255, 1, 0, 255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 				Color.BLACK);
 		frame.getContentPane().add(slider);
 		frame.setSize(600, 400);
