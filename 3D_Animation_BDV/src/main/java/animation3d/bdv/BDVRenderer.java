@@ -4,9 +4,7 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import animation3d.textanim.CombinedTransform;
 import animation3d.textanim.IKeywordFactory;
@@ -15,11 +13,6 @@ import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
 import bdv.BigDataViewer;
 import bdv.ij.util.ProgressWriterIJ;
-import bdv.img.imagestack.ImageStackImageLoader;
-import bdv.img.virtualstack.VirtualStackImageLoader;
-import bdv.spimdata.SequenceDescriptionMinimal;
-import bdv.spimdata.SpimDataMinimal;
-import bdv.spimdata.WrapBasicImgLoader;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.tools.brightness.SetupAssignments;
 import bdv.viewer.DisplayMode;
@@ -32,31 +25,23 @@ import bdv.viewer.state.ViewerState;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.plugin.ScreenGrabber;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
-import mpicbg.spim.data.generic.sequence.BasicImgLoader;
-import mpicbg.spim.data.generic.sequence.BasicViewSetup;
-import mpicbg.spim.data.registration.ViewRegistration;
-import mpicbg.spim.data.registration.ViewRegistrations;
-import mpicbg.spim.data.sequence.Channel;
-import mpicbg.spim.data.sequence.FinalVoxelDimensions;
-import mpicbg.spim.data.sequence.TimePoint;
-import mpicbg.spim.data.sequence.TimePoints;
-import net.imglib2.FinalDimensions;
+import mpicbg.spim.data.SpimDataException;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 
 public class BDVRenderer implements IRenderer3D {
 
-	private ImagePlus input;
 //	private int tgtW;
 //	private int tgtH;
 
 	private BDVRenderingState rs;
 	private BigDataViewer viewer;
 	private ViewerOptions options;
+
+	float[] rotationCenter;
 
 	private static float[] calculateForwardTransform(CombinedTransform ct) {
 		float scale = ct.getScale();
@@ -81,44 +66,18 @@ public class BDVRenderer implements IRenderer3D {
 		return ret;
 	}
 
-	public BDVRenderer(ImagePlus input) {
-		this.input = input;
-	// public BDVRenderer(File xmlFile) throws SpimDataException {
-		openBDV(input);
+	// public BDVRenderer(ImagePlus input) {
+	public BDVRenderer(File xmlFile) throws SpimDataException {
+		openBDV(xmlFile);
 //		this.tgtW = 0; // TODO
 //		this.tgtH = 0; // TODO
 
-		ViewerPanel panel = viewer.getViewer();
-		final RealPoint gPos = new RealPoint( 3 );
-
-		panel.displayToGlobalCoordinates(
-				panel.getWidth() / 2,
-				panel.getHeight() / 2,
-				gPos);
-
-		float x = gPos.getFloatPosition(0);
-		float y = gPos.getFloatPosition(1);
-		float z = gPos.getFloatPosition(2);
-
-		System.out.println("rotc could be " + x + ", "  + y + ", " + z);
-
-
-
-		float[] pdIn = new float[] {
-				(float)input.getCalibration().pixelWidth,
-				(float)input.getCalibration().pixelHeight,
-				(float)input.getCalibration().pixelDepth
-		};
-
-		// float[] pdIn = new float[] {1, 1, (float)(input.getCalibration().pixelDepth / input.getCalibration().pixelWidth)};
-
 		float[] pdOut = new float[] {1, 1, 1};
+		float[] pdIn  = new float[] {1, 1, 1};
 
-		float[] rotcenter = new float[] {
-				input.getWidth() * pdIn[0] / 2f,
-				input.getHeight() * pdIn[1] / 2f,
-				input.getNSlices() * pdIn[2] / 2f
-		};
+		this.rotationCenter = calculateRotationCenter();
+		System.out.println("rotcenter: " + Arrays.toString(rotationCenter));
+		float[] rotcenter = rotationCenter.clone();
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
 		DisplayMode mode = viewer.getViewer().getVisibilityAndGrouping().getDisplayMode();
@@ -171,9 +130,8 @@ public class BDVRenderer implements IRenderer3D {
 		int w = panel.getWidth();
 		int h = panel.getHeight();
 
-		double rw = input.getWidth() * input.getCalibration().pixelWidth;
-		double rh = input.getHeight() * input.getCalibration().pixelHeight;
-		System.out.println("rw = "  + rw + " rh = " + rh);
+		double rw = 2 * rotationCenter[0];
+		double rh = 2 * rotationCenter[1];
 		double scaleX = w / rw;
 		double scaleY = h / rh;
 		double scale = Math.min(scaleX, scaleY);
@@ -194,16 +152,6 @@ public class BDVRenderer implements IRenderer3D {
 		return takeSnapshot().getProcessor();
 	}
 
-	public ImagePlus takeSnapshot2() {
-		viewer.getViewerFrame().toFront();
-		try {
-			Thread.sleep(300);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return new ScreenGrabber().captureScreen();
-	}
-
 	public ImagePlus takeSnapshot() {
 		ViewerFrame win = viewer.getViewerFrame();
 		win.toFront();
@@ -222,16 +170,22 @@ public class BDVRenderer implements IRenderer3D {
 		return imp;
 	}
 
+	private float[] calculateRotationCenter() {
+		ViewerPanel panel = viewer.getViewer();
+		final RealPoint gPos = new RealPoint(3);
+
+		panel.displayToGlobalCoordinates(panel.getWidth() / 2, panel.getHeight() / 2, gPos);
+
+		float[] ret = new float[3];
+		gPos.localize(ret);
+
+		System.out.println("rotc is " + ret[0] + ", " + ret[1] + ", " + ret[2]);
+		return ret;
+	}
+
 	@Override
 	public float[] getRotationCenter() {
-		float[] rotcenter = new float[] {
-				(float)(input.getWidth()   * input.getCalibration().pixelWidth  / 2f),
-				(float)(input.getHeight()  * input.getCalibration().pixelHeight / 2f),
-				(float)(input.getNSlices() * input.getCalibration().pixelDepth  / 2f)
-		};
-
-		System.out.println("rotc is " + Arrays.toString(rotcenter));
-		return rotcenter;
+		return rotationCenter;
 	}
 
 	@Override
@@ -263,131 +217,136 @@ public class BDVRenderer implements IRenderer3D {
 		return viewer.getViewer().getHeight();
 	}
 
-	public void openBDV(ImagePlus imp) {
-		if (ij.Prefs.setIJMenuBar)
-			System.setProperty("apple.laf.useScreenMenuBar", "true");
-
-		// make sure there is one
-		if (imp == null) {
-			IJ.showMessage("Please open an image first.");
-			return;
-		}
-
-		// check the image type
-		switch (imp.getType()) {
-		case ImagePlus.GRAY8:
-		case ImagePlus.GRAY16:
-		case ImagePlus.GRAY32:
-		case ImagePlus.COLOR_RGB:
-			break;
-		default:
-			IJ.showMessage("Only 8, 16, 32-bit images and RGB images are supported currently!");
-			return;
-		}
-
-		// check the image dimensionality
-		if (imp.getNDimensions() < 3) {
-			IJ.showMessage("Image must be at least 3-dimensional!");
-			return;
-		}
-
-		// get calibration and image size
-		final double pw = imp.getCalibration().pixelWidth;
-		final double ph = imp.getCalibration().pixelHeight;
-		final double pd = imp.getCalibration().pixelDepth;
-		String punit = imp.getCalibration().getUnit();
-		if (punit == null || punit.isEmpty())
-			punit = "px";
-		final FinalVoxelDimensions voxelSize = new FinalVoxelDimensions(punit, pw, ph, pd);
-		final int w = imp.getWidth();
-		final int h = imp.getHeight();
-		final int d = imp.getNSlices();
-		final FinalDimensions size = new FinalDimensions(new int[] { w, h, d });
-
-		// propose reasonable mipmap settings
-		// final ExportMipmapInfo autoMipmapSettings =
-		// ProposeMipmaps.proposeMipmaps( new BasicViewSetup( 0, "", size,
-		// voxelSize ) );
-
-		// imp.getDisplayRangeMin();
-		// imp.getDisplayRangeMax();
-
-		// create ImgLoader wrapping the image
-		final BasicImgLoader imgLoader;
-		if (imp.getStack().isVirtual()) {
-			switch (imp.getType()) {
-			case ImagePlus.GRAY8:
-				imgLoader = VirtualStackImageLoader.createUnsignedByteInstance(imp);
-				break;
-			case ImagePlus.GRAY16:
-				imgLoader = VirtualStackImageLoader.createUnsignedShortInstance(imp);
-				break;
-			case ImagePlus.GRAY32:
-				imgLoader = VirtualStackImageLoader.createFloatInstance(imp);
-				break;
-			case ImagePlus.COLOR_RGB:
-			default:
-				imgLoader = VirtualStackImageLoader.createARGBInstance(imp);
-				break;
-			}
-		} else {
-			switch (imp.getType()) {
-			case ImagePlus.GRAY8:
-				imgLoader = ImageStackImageLoader.createUnsignedByteInstance(imp);
-				break;
-			case ImagePlus.GRAY16:
-				imgLoader = ImageStackImageLoader.createUnsignedShortInstance(imp);
-				break;
-			case ImagePlus.GRAY32:
-				imgLoader = ImageStackImageLoader.createFloatInstance(imp);
-				break;
-			case ImagePlus.COLOR_RGB:
-			default:
-				imgLoader = ImageStackImageLoader.createARGBInstance(imp);
-				break;
-			}
-		}
-
-		final int numTimepoints = imp.getNFrames();
-		final int numSetups = imp.getNChannels();
-
-		// create setups from channels
-		final HashMap<Integer, BasicViewSetup> setups = new HashMap<>(numSetups);
-		for (int s = 0; s < numSetups; ++s) {
-			final BasicViewSetup setup = new BasicViewSetup(s, String.format("channel %d", s + 1), size, voxelSize);
-			setup.setAttribute(new Channel(s + 1));
-			setups.put(s, setup);
-		}
-
-		// create timepoints
-		final ArrayList<TimePoint> timepoints = new ArrayList<>(numTimepoints);
-		for (int t = 0; t < numTimepoints; ++t)
-			timepoints.add(new TimePoint(t));
-		final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal(new TimePoints(timepoints), setups,
-				imgLoader, null);
-
-		// create ViewRegistrations from the images calibration
-		final AffineTransform3D sourceTransform = new AffineTransform3D();
-		sourceTransform.set(pw, 0, 0, 0, 0, ph, 0, 0, 0, 0, pd, 0);
-		final ArrayList<ViewRegistration> registrations = new ArrayList<>();
-		for (int t = 0; t < numTimepoints; ++t)
-			for (int s = 0; s < numSetups; ++s)
-				registrations.add(new ViewRegistration(t, s, sourceTransform));
-
-		final File basePath = new File(".");
-		final SpimDataMinimal spimData = new SpimDataMinimal(basePath, seq, new ViewRegistrations(registrations));
-		WrapBasicImgLoader.wrapImgLoaderIfNecessary(spimData);
-
+	public void openBDV(File xmlFile) throws SpimDataException {
 		options = ViewerOptions.options();
-		viewer = BigDataViewer.open(spimData, "BigDataViewer", new ProgressWriterIJ(),
-				options);
-		final SetupAssignments sa = viewer.getSetupAssignments();
-		final VisibilityAndGrouping vg = viewer.getViewer().getVisibilityAndGrouping();
-		if (imp.isComposite())
-			transferChannelSettings((CompositeImage) imp, sa, vg);
-		else
-			transferImpSettings(imp, sa);
+		viewer = BigDataViewer.open(xmlFile.getAbsolutePath(), xmlFile.getName(), new ProgressWriterIJ(), options);
 	}
+
+//	public void openBDV(ImagePlus imp) {
+//		if (ij.Prefs.setIJMenuBar)
+//			System.setProperty("apple.laf.useScreenMenuBar", "true");
+//
+//		// make sure there is one
+//		if (imp == null) {
+//			IJ.showMessage("Please open an image first.");
+//			return;
+//		}
+//
+//		// check the image type
+//		switch (imp.getType()) {
+//		case ImagePlus.GRAY8:
+//		case ImagePlus.GRAY16:
+//		case ImagePlus.GRAY32:
+//		case ImagePlus.COLOR_RGB:
+//			break;
+//		default:
+//			IJ.showMessage("Only 8, 16, 32-bit images and RGB images are supported currently!");
+//			return;
+//		}
+//
+//		// check the image dimensionality
+//		if (imp.getNDimensions() < 3) {
+//			IJ.showMessage("Image must be at least 3-dimensional!");
+//			return;
+//		}
+//
+//		// get calibration and image size
+//		final double pw = imp.getCalibration().pixelWidth;
+//		final double ph = imp.getCalibration().pixelHeight;
+//		final double pd = imp.getCalibration().pixelDepth;
+//		String punit = imp.getCalibration().getUnit();
+//		if (punit == null || punit.isEmpty())
+//			punit = "px";
+//		final FinalVoxelDimensions voxelSize = new FinalVoxelDimensions(punit, pw, ph, pd);
+//		final int w = imp.getWidth();
+//		final int h = imp.getHeight();
+//		final int d = imp.getNSlices();
+//		final FinalDimensions size = new FinalDimensions(new int[] { w, h, d });
+//
+//		// propose reasonable mipmap settings
+//		// final ExportMipmapInfo autoMipmapSettings =
+//		// ProposeMipmaps.proposeMipmaps( new BasicViewSetup( 0, "", size,
+//		// voxelSize ) );
+//
+//		// imp.getDisplayRangeMin();
+//		// imp.getDisplayRangeMax();
+//
+//		// create ImgLoader wrapping the image
+//		final BasicImgLoader imgLoader;
+//		if (imp.getStack().isVirtual()) {
+//			switch (imp.getType()) {
+//			case ImagePlus.GRAY8:
+//				imgLoader = VirtualStackImageLoader.createUnsignedByteInstance(imp);
+//				break;
+//			case ImagePlus.GRAY16:
+//				imgLoader = VirtualStackImageLoader.createUnsignedShortInstance(imp);
+//				break;
+//			case ImagePlus.GRAY32:
+//				imgLoader = VirtualStackImageLoader.createFloatInstance(imp);
+//				break;
+//			case ImagePlus.COLOR_RGB:
+//			default:
+//				imgLoader = VirtualStackImageLoader.createARGBInstance(imp);
+//				break;
+//			}
+//		} else {
+//			switch (imp.getType()) {
+//			case ImagePlus.GRAY8:
+//				imgLoader = ImageStackImageLoader.createUnsignedByteInstance(imp);
+//				break;
+//			case ImagePlus.GRAY16:
+//				imgLoader = ImageStackImageLoader.createUnsignedShortInstance(imp);
+//				break;
+//			case ImagePlus.GRAY32:
+//				imgLoader = ImageStackImageLoader.createFloatInstance(imp);
+//				break;
+//			case ImagePlus.COLOR_RGB:
+//			default:
+//				imgLoader = ImageStackImageLoader.createARGBInstance(imp);
+//				break;
+//			}
+//		}
+//
+//		final int numTimepoints = imp.getNFrames();
+//		final int numSetups = imp.getNChannels();
+//
+//		// create setups from channels
+//		final HashMap<Integer, BasicViewSetup> setups = new HashMap<>(numSetups);
+//		for (int s = 0; s < numSetups; ++s) {
+//			final BasicViewSetup setup = new BasicViewSetup(s, String.format("channel %d", s + 1), size, voxelSize);
+//			setup.setAttribute(new Channel(s + 1));
+//			setups.put(s, setup);
+//		}
+//
+//		// create timepoints
+//		final ArrayList<TimePoint> timepoints = new ArrayList<>(numTimepoints);
+//		for (int t = 0; t < numTimepoints; ++t)
+//			timepoints.add(new TimePoint(t));
+//		final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal(new TimePoints(timepoints), setups,
+//				imgLoader, null);
+//
+//		// create ViewRegistrations from the images calibration
+//		final AffineTransform3D sourceTransform = new AffineTransform3D();
+//		sourceTransform.set(pw, 0, 0, 0, 0, ph, 0, 0, 0, 0, pd, 0);
+//		final ArrayList<ViewRegistration> registrations = new ArrayList<>();
+//		for (int t = 0; t < numTimepoints; ++t)
+//			for (int s = 0; s < numSetups; ++s)
+//				registrations.add(new ViewRegistration(t, s, sourceTransform));
+//
+//		final File basePath = new File(".");
+//		final SpimDataMinimal spimData = new SpimDataMinimal(basePath, seq, new ViewRegistrations(registrations));
+//		WrapBasicImgLoader.wrapImgLoaderIfNecessary(spimData);
+//
+//		options = ViewerOptions.options();
+//		viewer = BigDataViewer.open(spimData, "BigDataViewer", new ProgressWriterIJ(),
+//				options);
+//		final SetupAssignments sa = viewer.getSetupAssignments();
+//		final VisibilityAndGrouping vg = viewer.getViewer().getVisibilityAndGrouping();
+//		if (imp.isComposite())
+//			transferChannelSettings((CompositeImage) imp, sa, vg);
+//		else
+//			transferImpSettings(imp, sa);
+//	}
 
 	protected void transferChannelSettings(final CompositeImage ci, final SetupAssignments setupAssignments,
 			final VisibilityAndGrouping visibility) {

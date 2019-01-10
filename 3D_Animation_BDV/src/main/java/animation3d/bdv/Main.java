@@ -1,43 +1,46 @@
 package animation3d.bdv;
 
+import java.io.File;
+
 import animation3d.editor.AnimationEditor;
 import animation3d.textanim.Default3DRecordingProvider;
-import ij.ImagePlus;
-import ij.plugin.filter.PlugInFilter;
-import ij.process.ImageProcessor;
+import ij.IJ;
+import ij.plugin.PlugIn;
+import mpicbg.spim.data.SpimDataException;
 
-public class Main implements PlugInFilter {
-
-	private ImagePlus image;
+public class Main implements PlugIn {
 
 	@Override
-	public int setup(String arg, ImagePlus imp) {
-		this.image = imp;
-		return DOES_8G | DOES_16;
+	public void run(String arg) {
+		if ( ij.Prefs.setIJMenuBar )
+			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 	}
 
-	@Override
-	public void run(ImageProcessor ip) {
-		// TODO
-	}
-
-	public static void run(ImagePlus imp) {
-		// File xmlFile = new File("/Users/bene/Downloads/HisYFP-SPIM/downsampled/dataset.xml");
+	public static void run(File xmlFile) {
 		BDVRenderer renderer;
-		renderer = new BDVRenderer(imp);
-		AnimationEditor editor = new AnimationEditor(renderer, Default3DRecordingProvider.getInstance());
-		editor.setVisible(true);
+		try {
+			renderer = new BDVRenderer(xmlFile);
+			AnimationEditor editor = new AnimationEditor(renderer, Default3DRecordingProvider.getInstance());
+			editor.setVisible(true);
+		} catch (SpimDataException e) {
+			e.printStackTrace();
+			IJ.handleException(e);
+		}
 	}
 
 	public static void main(String[] args) {
+		if ( ij.Prefs.setIJMenuBar )
+			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 		new ij.ImageJ();
 //		ImagePlus imp = ij.IJ.openImage("/Users/bene/flybrain.tif");
-		ImagePlus imp = ij.IJ.openImage("/Users/bene/head.tif");
-		// ImagePlus imp = ij.IJ.openImage("/Users/bene/Downloads/HisYFP-SPIM/downsampled/fused.tif");
 //		imp.getCalibration().pixelWidth = 2;
 //		imp.getCalibration().pixelHeight = 2;
 //		imp.getCalibration().pixelDepth = 4;
-		imp.show();
-		Main.run(imp);
+//		imp.show();
+//		ImagePlus imp = ij.IJ.openImage("/Users/bene/head.tif");
+//		ImagePlus imp = ij.IJ.openImage("/Users/bene/Downloads/HisYFP-SPIM/downsampled/fused.tif");
+		File xmlFile = new File("/Users/bene/Downloads/HisYFP-SPIM/downsampled/dataset.xml");
+		// File xmlFile = new File("/Users/bene/fijiplugins/3Dscript/export.xml");
+		Main.run(xmlFile);
 	}
 }
