@@ -4,9 +4,6 @@
 
 #include "OpenCLInfo.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <iostream>
 #include <fstream>
 
@@ -14,7 +11,7 @@
 
 using namespace std;
 
-static void print_data_type(cl_channel_type type, ofstream& log)
+static void print_data_type(cl_channel_type type, ostream& log)
 {
 	switch(type) {
 	case CL_SNORM_INT8: log << "CL_SNORM_INT8"; break;
@@ -37,7 +34,7 @@ static void print_data_type(cl_channel_type type, ofstream& log)
 	}
 }
 
-static void print_channel_order(cl_channel_order order, ofstream& log)
+static void print_channel_order(cl_channel_order order, ostream& log)
 {
 	switch(order) {
 	case CL_R: log << "CL_R"; break;
@@ -62,7 +59,18 @@ static void print_channel_order(cl_channel_order order, ofstream& log)
 void
 OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 {
-	ofstream log("OpenCL-log.txt");
+	streambuf *buf;
+	ofstream of;
+	of.open("OpenCL-log.txt");
+	bool log_to_file = false;
+	if(of.is_open()) {
+		buf = of.rdbuf();
+		log_to_file = true;
+	} else {
+		buf = cout.rdbuf();
+	}
+
+	ostream log(buf);
 
 	char valueString[1024];
 	memset(valueString, 0, 1024);
@@ -318,7 +326,8 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 	else
 		log << "Signed int8 RGBA image format supported by your OpenCL implementation" << endl;
 
-	log.close();
+	if(log_to_file)
+		of.close();
 }
 
 
