@@ -1,6 +1,8 @@
 #ifndef OPENCL_UTILS_H
 #define OPENCL_UTILS_H
 
+#include <string>
+
 void
 setWarningHandler(void (*handler)(void *, const char *), void *param);
 
@@ -18,7 +20,7 @@ __clexception(const char *text, const char *file, int line);
 
 #define clwarning(text) {__clwarning((text), __FILE__, __LINE__); }
 void
-__clwarning(const char *text, const char *file, int line);
+__clwarning(const std::string& text, const std::string& file, int line);
 
 #endif
 

@@ -4,10 +4,9 @@
 
 #include "OpenCLUtils.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdexcept>
+#include <iostream>
+#include <sstream>
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -15,9 +14,11 @@
 #include <CL/cl.h>
 #endif
 
+using namespace std;
+
 static void defaultWarningHandler(void *, const char *msg)
 {
-	printf("%s\n", msg);
+	cout << msg << endl;
 }
 
 static void (*bla_on_warning)(void *, const char *) = defaultWarningHandler;
@@ -133,6 +134,7 @@ __clexception(const char *text, const char *file, int line)
 	throw std::runtime_error(message);
 }
 
+/*
 void
 __clwarning(const char *text, const char *file, int line)
 {
@@ -142,5 +144,15 @@ __clwarning(const char *text, const char *file, int line)
 	fprintf(stderr, "%s\n", message);
 	fflush(stderr);
 	bla_on_warning(hparam, message);
+}
+*/
+
+void
+__clwarning(const string& text, const string& file, int line)
+{
+	ostringstream message;
+	message << "Warning: " << text << " in " << file << " (line "<< line << ")";
+	cerr << message.str() << endl;
+	bla_on_warning(hparam, message.str().c_str());
 }
 

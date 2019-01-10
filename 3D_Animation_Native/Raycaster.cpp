@@ -6,7 +6,7 @@
 #include "ChannelInfo.h"
 
 #include <stdio.h>
-#include <string.h>
+// #include <string.h>
 #include <math.h>
 
 #ifdef _WIN32
@@ -28,7 +28,7 @@ loadText(const char *file)
 {
 	FILE *fp;
 	char *source_str;
-	size_t source_size, program_size;
+	size_t program_size;
 
 	fp = fopen(file, "rb");
 	if (!fp) {
