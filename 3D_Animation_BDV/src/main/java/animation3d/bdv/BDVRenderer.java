@@ -121,11 +121,15 @@ public class BDVRenderer implements IRenderer3D {
 		};
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
+		DisplayMode mode = viewer.getViewer().getVisibilityAndGrouping().getDisplayMode();
+		int tp = viewer.getViewer().getState().getCurrentTimepoint();
+		Interpolation interpolation = viewer.getViewer().getState().getInterpolation();
+		int currentSource = viewer.getViewer().getState().getCurrentSource();
 		this.rs = new BDVRenderingState(0,
-				DisplayMode.FUSED,
-				0, // timepoint
-				Interpolation.NLINEAR,
-				0, // current source
+				mode,
+				tp,
+				interpolation,
+				currentSource, // current source
 				transformation);
 
 	}
