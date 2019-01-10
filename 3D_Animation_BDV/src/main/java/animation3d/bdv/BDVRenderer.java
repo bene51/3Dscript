@@ -1,5 +1,6 @@
 package animation3d.bdv;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
@@ -84,12 +85,28 @@ public class BDVRenderer implements IRenderer3D {
 		int tp = viewer.getViewer().getState().getCurrentTimepoint();
 		Interpolation interpolation = viewer.getViewer().getState().getInterpolation();
 		int currentSource = viewer.getViewer().getState().getCurrentSource();
+		int nSources = viewer.getViewer().getState().numSources();
+		double[] min = new double[nSources];
+		double[] max = new double[nSources];
+		Color[] colors = new Color[nSources];
+
+		SetupAssignments setupAssignments = viewer.getSetupAssignments();
+		for(int s = 0; s < nSources; s++) {
+			final ConverterSetup setup = setupAssignments.getConverterSetups().get(s);
+			colors[s] = new Color(setup.getColor().get());
+			min[s] = setup.getDisplayRangeMin();
+			max[s] = setup.getDisplayRangeMax();
+		}
+
 		this.rs = new BDVRenderingState(0,
 				mode,
 				tp,
 				interpolation,
 				currentSource, // current source
-				transformation);
+				transformation,
+				colors,
+				min,
+				max);
 
 	}
 
@@ -109,12 +126,17 @@ public class BDVRenderer implements IRenderer3D {
 		ViewerPanel panel = viewer.getViewer();
 		ViewerState state = panel.getState();
 
+		SetupAssignments setupAssignments = viewer.getSetupAssignments();
+		for(int s = 0; s < state.numSources(); s++) {
+			final ConverterSetup setup = setupAssignments.getConverterSetups().get(s);
+			setup.setColor(new ARGBType(bkf.getChannelColor(s).getRGB()));
+			setup.setDisplayRange(bkf.getChannelMin(s), bkf.getChannelMax(s));
+		}
+
 		DisplayMode displaymode = bkf.getDisplayMode();
 		Interpolation interpolation = bkf.getInterpolation();
 		int timepoint = bkf.getTimepoint();
 		int currentSource = bkf.getCurrentSource();
-
-
 
 		panel.setDisplayMode(displaymode);
 		if(state.getInterpolation() != interpolation)

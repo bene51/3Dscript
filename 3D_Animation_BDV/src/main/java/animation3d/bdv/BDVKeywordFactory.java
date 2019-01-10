@@ -22,6 +22,6 @@ public class BDVKeywordFactory implements IKeywordFactory {
 
 	@Override
 	public Keyword[] getChannelKeywords() {
-		return null;
+		return BDVChannelKeyword.values();
 	}
 }
