@@ -18,6 +18,7 @@ public class OpenCLProgram {
 	@SuppressWarnings("unused")
 	private static String makeCommonSource(int channels) {
 		String source =
+				"#pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable\n" +
 		        /* ****************************************************************
 				 * intersects()
 				 * ****************************************************************/
