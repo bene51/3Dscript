@@ -2,6 +2,8 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
 
+#pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable
+
 #include "Raycaster.h"
 #include "ChannelInfo.h"
 
