@@ -113,39 +113,21 @@ void
 __clAssert(unsigned int code, const char *file, int line)
 {
 	if(code != CL_SUCCESS) {
-		char message[256];
-		sprintf(message, "OpenCL error %d: %s in %s (line %i)",
-				code, clGetErrorString(code),
-				file, line);
-		fprintf(stderr, "%s\n", message);
-		fflush(stderr);
-		throw std::runtime_error(message);
+		ostringstream message;
+		message << "OpenCL error " << code << ": " << clGetErrorString(code) << " in " << file << " (line " << line << ")";
+		cerr << message.str() << endl;
+		throw std::runtime_error(message.str());
 	}
 }
 
 void
 __clexception(const char *text, const char *file, int line)
 {
-	char message[256];
-	sprintf(message, "Native exception: %s in %s (line %i)",
-			text, file, line);
-	fprintf(stderr, "%s\n", message);
-	fflush(stderr);
-	throw std::runtime_error(message);
+	ostringstream message;
+	message << "Native exception: " << text << " in " << file << " (line " << line << ")";
+	cerr << message.str() << endl;
+	throw std::runtime_error(message.str());
 }
-
-/*
-void
-__clwarning(const char *text, const char *file, int line)
-{
-	char message[256];
-	sprintf(message, "Warning: %s in %s (line %i)",
-			text, file, line);
-	fprintf(stderr, "%s\n", message);
-	fflush(stderr);
-	bla_on_warning(hparam, message);
-}
-*/
 
 void
 __clwarning(const string& text, const string& file, int line)
