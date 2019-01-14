@@ -166,16 +166,18 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setKernel(
 	try {
 		if(raycaster8 != NULL) {
 			raycaster8->setKernel(env, k);
+			env->ReleaseStringUTFChars(kernel, k);
 		} else if(raycaster16 != NULL) {
 			raycaster16->setKernel(env, k);
+			env->ReleaseStringUTFChars(kernel, k);
 		} else {
+			env->ReleaseStringUTFChars(kernel, k);
 			ThrowException(env, "No raycaster initialized\n");
 		}
 	} catch(std::runtime_error& e) {
 		env->ReleaseStringUTFChars(kernel, k);
 		ThrowException(env, e.what());
 	}
-	env->ReleaseStringUTFChars(kernel, k);
 }
 
 JNIEXPORT jintArray JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_cast (
