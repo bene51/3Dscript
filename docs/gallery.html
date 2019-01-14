@@ -70,6 +70,9 @@
 
   <h2>Gallery</h2>
 
+<!---------------------------->
+<!-- Supplementary Video 01 -->
+<!---------------------------->
   <div class="item">
     <textarea class="script" readonly wrap="off">
 At frame 0:
@@ -100,6 +103,9 @@ Simultaneous rotation around multiple axes. 3D animation of mouse colon tumors u
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 03 -->
+<!---------------------------->
   <div class="item">
     <!--h1>Title</h1-->
     <textarea class="script" readonly wrap="off">
@@ -147,6 +153,9 @@ Simultaneous pivoting and channel switching. Animation of a mouse paw, imaged on
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 04 -->
+<!---------------------------->
   <div class="item">
     <!--h1>Title</h1-->
     <textarea class="script" readonly wrap="off">
@@ -223,6 +232,9 @@ Consecutive zoom-in and scroll-through at different positions. Animation of a mo
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 05 -->
+<!---------------------------->
   <div class="item">
     <!--h1>Title</h1-->
     <textarea class="script" readonly wrap="off">
@@ -261,6 +273,47 @@ Macro for parameterized zooming. Animation of a human cornea, imaged on a Zeiss 
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 09 -->
+<!---------------------------->
+  <div class="item">
+    <!--h1>Title</h1-->
+    <textarea class="script" readonly wrap="off">
+From frame 0 to frame 100:
+- rotate by -360 degrees horizontally
+- translate horizontally by tr
+- zoom by a factor of z
+
+From frame 80 to frame 120 translate by (0, 0, 80) ease-in-out
+From frame 120 to frame 190 translate by (0, 0, -160) ease-in-out
+From frame 190 to frame 230 translate by (0, 0, 80) ease-in-out
+
+script
+function z(t) {
+    return 0.75 + 0.25 * cos(2 * PI * t / 100);
+}
+
+script
+function tr(t) {
+    return 128 * cos(2 * PI * (t+25) / 100);
+}
+    </textarea>
+    <div class="video">
+      <!--video controls width="50%">
+        <source src="videos/SupplementaryVideo-4.mp4" type="video/mp4">
+        Your browser doesn't support this video.
+      </video-->
+      <iframe width="800" height="622" src="https://www.youtube.com/embed/YpK64tDvaNE&rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="caption">
+<!--b>Caption.</b-->
+Rendering of an MRI image volume of a human head using the BigDataViewer. To demonstrate the extendibility of our framework, we wrote an adapter for Fiji’s BigDataViewer.
+    </div>
+  </div> <!-- item -->
+
+<!---------------------------->
+<!-- Supplementary Video 10 -->
+<!---------------------------->
   <div class="item">
     <!--h1>Title</h1-->
     <textarea class="script" readonly wrap="off">
@@ -289,8 +342,11 @@ Rendering of an organoid from the mouse intestine in an artificial laboratory en
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 06 -->
+<!---------------------------->
   <div class="item">
-    <!--h1>Supplementary Video 5</h1-->
+    <!--h1>Supplementary Video 6</h1-->
     <div class="video">
       <iframe width="896" height="672" src="https://www.youtube.com/embed/eRrSoAubv6w?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
@@ -300,8 +356,11 @@ Composing an animation. This screencast demonstrates how the animation of the hu
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 07 -->
+<!---------------------------->
   <div class="item">
-    <!--h1>Supplementary Video 6</h1-->
+    <!--h1>Supplementary Video 7</h1-->
     <div class="video">
       <iframe width="914" height="674" src="https://www.youtube.com/embed/DS0SHjodez4?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
@@ -311,8 +370,11 @@ A dedicated animation editor, based on Fiji's script editor, facilitates the com
     </div>
   </div> <!-- item -->
 
+<!---------------------------->
+<!-- Supplementary Video 08 -->
+<!---------------------------->
   <div class="item">
-    <!--h1>Supplementary Video 7</h1-->
+    <!--h1>Supplementary Video 8</h1-->
     <div class="video">
       <iframe width="998" height="706" src="https://www.youtube.com/embed/zTXkecZY0tg?rel=0&amp;showinfo=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
