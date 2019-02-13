@@ -57,6 +57,8 @@ public class BookmarkPanel extends JPanel {
 
 	private final ArrayList<Bookmark> bookmarks = new ArrayList<Bookmark>();
 
+	private final BookmarkTableModel dm;
+
 	public interface Listener {
 		public void gotoBookmark(Bookmark bookmark);
 	}
@@ -78,7 +80,7 @@ public class BookmarkPanel extends JPanel {
 
 		bookmarks.add(new Bookmark("Home", renderer.getRenderingState().clone()));
 
-		BookmarkTableModel dm = new BookmarkTableModel(bookmarks);
+		dm = new BookmarkTableModel(bookmarks);
 		JTable table = new JTable(dm) {
 		    @Override // Always selectAll()
 		    public boolean editCellAt(int row, int column, EventObject e) {
@@ -226,11 +228,9 @@ public class BookmarkPanel extends JPanel {
 		});
 		save.addActionListener(e -> {
 			saveBookmarks();
-			dm.fireTableDataChanged();
 		});
 		open.addActionListener(e -> {
 			loadBookmarks();
-			dm.fireTableDataChanged();
 		});
 		// buttons.add(remove);
 		add(buttons, BorderLayout.SOUTH);
@@ -253,7 +253,12 @@ public class BookmarkPanel extends JPanel {
 		int s = fc.showOpenDialog(null);
 		if(s != JFileChooser.APPROVE_OPTION)
 			return;
+
 		String path = fc.getSelectedFile().getAbsolutePath();
+		loadBookmarks(path);
+	}
+
+	public void loadBookmarks(String path) {
 		try {
 			StringBuffer buf = new StringBuffer();;
 			ArrayList<String> names = new ArrayList<String>();
@@ -280,6 +285,7 @@ public class BookmarkPanel extends JPanel {
 						names.get(i),
 						(ExtendedRenderingState)renderingStates.get(i)));
 			}
+			dm.fireTableDataChanged();
 		} catch (IOException e) {
 			IJ.handleException(e);
 			return;
@@ -331,18 +337,6 @@ public class BookmarkPanel extends JPanel {
 	}
 
 	void saveBookmarks() {
-		StringBuffer buf = new StringBuffer();
-		for(int bIndex = 0; bIndex < bookmarks.size(); bIndex++) {
-			Bookmark b = bookmarks.get(bIndex);
-			RecordingProvider recordings = (RecordingProvider) RecordingProvider.getInstance();
-			buf.append("At bookmark " + b.getName() + ":\n");
-			for(RecordingItem ri : recordings) {
-				String r = ri.getRecording(b.getRenderingState());
-				int idx = r.indexOf('\n');
-				r = r.substring(idx + 1);
-				buf.append(r);
-			}
-		}
 		JFileChooser fc = new JFileChooser(OpenDialog.getLastDirectory());
 		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fc.setFileFilter(new FileFilter() {
@@ -358,17 +352,31 @@ public class BookmarkPanel extends JPanel {
 		});
 		int s = fc.showSaveDialog(null);
 		if(s == JFileChooser.APPROVE_OPTION) {
-			try {
-				String path = fc.getSelectedFile().getAbsolutePath();
-				if(!path.toLowerCase().endsWith(".bookmarks.txt"))
-					path += ".bookmarks.txt";
-				Files.write(Paths.get(path), buf.toString().getBytes());
-			} catch(IOException e) {
-				IJ.handleException(e);
-			}
+			String path = fc.getSelectedFile().getAbsolutePath();
+			saveBookmarks(path);
 		}
+	}
 
-		System.out.println(buf);
+	public void saveBookmarks(String path) {
+		try {
+			if(!path.toLowerCase().endsWith(".bookmarks.txt"))
+				path += ".bookmarks.txt";
+			StringBuffer buf = new StringBuffer();
+			for(int bIndex = 0; bIndex < bookmarks.size(); bIndex++) {
+				Bookmark b = bookmarks.get(bIndex);
+				RecordingProvider recordings = (RecordingProvider) RecordingProvider.getInstance();
+				buf.append("At bookmark " + b.getName() + ":\n");
+				for(RecordingItem ri : recordings) {
+					String r = ri.getRecording(b.getRenderingState());
+					int idx = r.indexOf('\n');
+					r = r.substring(idx + 1);
+					buf.append(r);
+				}
+			}
+			Files.write(Paths.get(path), buf.toString().getBytes());
+		} catch(IOException e) {
+			IJ.handleException(e);
+		}
 	}
 
 	public static void main(String[] args) {
