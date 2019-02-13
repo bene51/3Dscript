@@ -166,9 +166,23 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		float pwOut = (float)(image.getWidth()  * cal.pixelWidth  / w);
 		float phOut = (float)(image.getHeight() * cal.pixelHeight / h);
 		float pdOut = rs.getFwdTransform().getOutputSpacing()[2];
+
+		int iw = super.wIn;
+		int ih = super.hIn;
+
+		float ox = 0;
+		float oy = 0;
 		float[] p = new float[] {pwOut, phOut, pdOut};
 
+		if(w > h * (float)iw / ih) { // output width > expected output width
+			ox = (w - h * (float)iw / ih) / 2f;
+			p = new float[] {phOut, phOut, pdOut};
+		} else if(h > (float)w * ih / iw) {
+			oy = (h - w * (float)ih / iw) / 2f;
+			p = new float[] {pwOut, pwOut, pdOut};
+		}
 		rs.getFwdTransform().setOutputSpacing(p);
+		rs.getFwdTransform().setOffset(ox, oy);
 	}
 
 	@Override

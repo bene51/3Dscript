@@ -14,6 +14,9 @@ public class CombinedTransform {
 	private float[] rotation;
 	private float   scale;
 
+	private float offsetX = 0;
+	private float offsetY = 0;
+
 	private float[] center;
 
 	public CombinedTransform(float[] pdIn, float[] pdOut, float[] center) {
@@ -32,13 +35,20 @@ public class CombinedTransform {
 
 	public void setOutputSpacing(float[] pdOut) {
 		System.arraycopy(pdOut, 0, this.pdOut, 0, 3);
-		toTransform = Transform.fromCalibration(pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
+		toTransform = Transform.fromCalibration(pdOut[0], pdOut[1], pdOut[2], offsetX, offsetY, 0, null);
+		Transform.invert(toTransform);
+	}
+
+	public void setOffset(float ox, float oy) {
+		this.offsetX = -ox * pdOut[0];
+		this.offsetY = -oy * pdOut[1];
+		toTransform = Transform.fromCalibration(pdOut[0], pdOut[1], pdOut[2], offsetX, offsetY, 0, null);
 		Transform.invert(toTransform);
 	}
 
 	public void setOutputSpacingZ(float pdOutZ) {
 		pdOut[2] = pdOutZ;
-		toTransform = Transform.fromCalibration(pdOut[0], pdOut[1], pdOut[2], 0, 0, 0, null);
+		toTransform = Transform.fromCalibration(pdOut[0], pdOut[1], pdOut[2], offsetX, offsetY, 0, null);
 		Transform.invert(toTransform); // TODO invert can be faster because it's a diagonal matrix
 	}
 
@@ -66,6 +76,9 @@ public class CombinedTransform {
 		System.arraycopy(translation, 0, ct.translation, 0, 3);
 		System.arraycopy(rotation,    0, ct.rotation,    0, 12);
 		ct.scale = scale;
+		ct.offsetX = offsetX;
+		ct.offsetY = offsetY;
+		ct.toTransform = toTransform.clone();
 		return ct;
 	}
 
