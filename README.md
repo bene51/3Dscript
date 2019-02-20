@@ -15,6 +15,7 @@ Tested hardware:
 ----------------
 Graphics card | Operating system
 ------------- | -------------
+NVIDIA Quadro P2000 | Windows 10
 NVIDIA Quadro M4000 | Windows 10
 NVIDIA Quadro M2000 | Windows 10
 NVIDIA Quadro K620  | Windows 10
