@@ -15,7 +15,9 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -66,7 +68,7 @@ import ij.process.ImageStatistics;
  */
 public class InteractiveRaycaster implements PlugInFilter {
 
-	private static InteractiveRaycaster instance;
+	private static List<InteractiveRaycaster> instances;
 
 	private ImagePlus image;
 	private double[] min, max;
@@ -86,7 +88,22 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private ImagePlus outputImage;
 
 	public InteractiveRaycaster() {
-		instance = this;
+		if(instances != null)
+			instances = new ArrayList<InteractiveRaycaster>(3);
+		instances.add(0, this);
+	}
+
+	public static InteractiveRaycaster getActiveRaycaster() {
+		return instances.get(0);
+	}
+
+	void setAsActiveRaycaster() {
+		InteractiveRaycaster active = getActiveRaycaster();
+		if(this.equals(active))
+			return;
+		if(active != null)
+			instances.remove(this);
+		instances.add(0, this);
 	}
 
 	@Override
@@ -173,6 +190,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final MouseListener mouseListener = new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
+				setAsActiveRaycaster();
 				if(Toolbar.getToolId() != Toolbar.HAND)
 					return;
 				mouseDown.setLocation(e.getPoint());
@@ -182,6 +200,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				setAsActiveRaycaster();
 				if(Toolbar.getToolId() != Toolbar.HAND)
 					return;
 				int dx = e.getX() - mouseDown.x;
@@ -216,6 +235,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final MouseMotionListener mouseMotionListener = new MouseMotionListener() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				setAsActiveRaycaster();
 				if(Toolbar.getToolId() != Toolbar.HAND)
 					return;
 
@@ -257,6 +277,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		final MouseWheelListener mouseWheelListener = new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
+				setAsActiveRaycaster();
 				int units = e.getWheelRotation();
 				float factor = 1 + units * 0.2f;
 
@@ -281,6 +302,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void channelChanged() {
+				setAsActiveRaycaster();
 				int channel = contrastPanel.getChannel();
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
 				croppingPanel.setBoundingBox(
@@ -436,6 +458,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 				canvas.removeMouseMotionListener(mouseMotionListener);
 				canvas.removeMouseWheelListener(mouseWheelListener);
 				WindowManager.removeWindow(dialog);
+				instances.remove(this);
 			}
 		});
 
@@ -484,6 +507,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private void push(ExtendedRenderingState rs, int w, int h, boolean forceUpdateProgram) {
+		setAsActiveRaycaster();
 		worker.push(rs, w, h, forceUpdateProgram);
 	}
 
@@ -548,6 +572,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	public void startTextBasedAnimation() {
+		setAsActiveRaycaster();
 		Animator animator = new Animator(renderer);
 		animator.addAnimationListener(new Animator.Listener() {
 			@Override
