@@ -97,6 +97,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 		return instances.get(0);
 	}
 
+	public ImagePlus getImage() {
+		return image;
+	}
+
 	void setAsActiveRaycaster() {
 		InteractiveRaycaster active = getActiveRaycaster();
 		if(this.equals(active))
