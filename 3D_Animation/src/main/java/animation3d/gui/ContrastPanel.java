@@ -709,7 +709,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				yprev = h - 1 - (int)Math.round(y);
 			}
 			drawnColorMin = (int)Math.round((cmin - min) * w / (max - min));
-			drawnColorMax = (int)Math.round((cmin - min) * w / (max - min));
+			drawnColorMax = (int)Math.round((cmax - min) * w / (max - min));
 
 			g.drawLine(drawnColorMin, 0, drawnColorMin, h);
 			g.drawLine(drawnColorMax, 0, drawnColorMax, h);
