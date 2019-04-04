@@ -698,7 +698,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			int xprev = 0;
 			int yprev = 0;
 			for(int bx = 0; bx < w; bx++) {
-				int x = (int)Math.round(min + bx * (max - min) / w);
+				double x = min + bx * (max - min) / w;
 				double ly = (x - cmin) / (cmax - cmin);
 				ly = Math.max(0, Math.min(1, ly));
 				double y = h * Math.pow(ly, cgamma);
@@ -719,7 +719,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			xprev = 0;
 			yprev = 0;
 			for(int bx = 0; bx < w; bx++) {
-				int x = (int)Math.round(min + bx * (max - min) / w);
+				double x = min + bx * (max - min) / w;
 				double ly = (x - amin) / (amax - amin);
 				ly = Math.max(0, Math.min(1, ly));
 				double y = h * Math.pow(ly, agamma);
