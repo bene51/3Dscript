@@ -686,12 +686,12 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 				g.drawLine(1 + bx, by, 1 + bx, by + bh);
 			}
 
-			int cmin   = (int)renderingSettings[ExtendedRenderingState.INTENSITY_MIN];
-			int cmax   = (int)renderingSettings[ExtendedRenderingState.INTENSITY_MAX];
-			int cgamma = (int)renderingSettings[ExtendedRenderingState.INTENSITY_GAMMA];
-			int amin   = (int)renderingSettings[ExtendedRenderingState.ALPHA_MIN];
-			int amax   = (int)renderingSettings[ExtendedRenderingState.ALPHA_MAX];
-			int agamma = (int)renderingSettings[ExtendedRenderingState.ALPHA_GAMMA];
+			double cmin   = renderingSettings[ExtendedRenderingState.INTENSITY_MIN];
+			double cmax   = renderingSettings[ExtendedRenderingState.INTENSITY_MAX];
+			double cgamma = renderingSettings[ExtendedRenderingState.INTENSITY_GAMMA];
+			double amin   = renderingSettings[ExtendedRenderingState.ALPHA_MIN];
+			double amax   = renderingSettings[ExtendedRenderingState.ALPHA_MAX];
+			double agamma = renderingSettings[ExtendedRenderingState.ALPHA_GAMMA];
 
 			// color transfer function
 			g.setColor(Color.BLACK);
