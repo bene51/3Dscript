@@ -602,6 +602,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.ALPHA_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
+						slider.fireRenderingSettingsChanged(false);
 					}
 					break;
 				case DRAGGING_COLOR_LEFT:
