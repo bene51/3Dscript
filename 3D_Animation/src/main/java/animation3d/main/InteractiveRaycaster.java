@@ -88,7 +88,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private ImagePlus outputImage;
 
 	public InteractiveRaycaster() {
-		if(instances != null)
+		if(instances == null)
 			instances = new ArrayList<InteractiveRaycaster>(3);
 		instances.add(0, this);
 	}
