@@ -13,21 +13,19 @@
 	</parent>
 
 	<groupId>sc.fiji</groupId>
-	<artifactId>3D_Animation</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<artifactId>pom-3Dscript</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-	<name>3D Animation</name>
-	<description>Animate image stacks three-dimensionally by a natural language based animation description</description>
-	
-	<url>TODO</url>
-	
+	<name>3Dscript</name>
+	<description>A plugin for Fiji/ImageJ for creating 3D and 4D animations of microscope data.</description>
+	<url>https://github.com/bene51/3Dscript</url>
 	<inceptionYear>2016</inceptionYear>
-	
 	<organization>
 		<name>OICE</name>
 		<url>http://oice.uni-erlangen.de</url>
 	</organization>
-	
+
 	<licenses>
 		<license>
 			<name>Simplified BSD License</name>
@@ -54,7 +52,9 @@
 	
 	<contributors>
 		<contributor>
-			<name>none</name>
+			<name>Jan Eglinger</name>
+			<url>https://imagej.net/User:Eglinger</url>
+			<properties><id>imagejan</id></properties>
 		</contributor>
 	</contributors>
 
@@ -63,78 +63,44 @@
 			<name>none</name>
 		</mailingList>
 	</mailingLists>
-	
+
+	<modules>
+		<module>3D_Animation</module>
+		<module>3D_Animation_BDV</module>
+		<module>3D_Animation_Example_Extension</module>
+		<module>3D_Animation_IJ3DViewer</module>
+		<module>3D_Animation_Language</module>
+		<!-- Not a Maven project -->
+		<!-- <module>3D_Animation_Native</module> -->
+		<module>3D_Animation_Povray</module>
+	</modules>
+
 	<scm>
-	<connection>TODO</connection>
+		<connection>scm:git:git://github.com/bene51/3Dscript</connection>
+		<developerConnection>scm:git:git@github.com:bene51/3Dscript</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/bene51/3Dscript</url>
 	</scm>
 
 	<issueManagement>
-		<system>TODO</system>
-		<url>TODO</url>
+		<system>GitHub Issues</system>
+		<url>https://github.com/bene51/3Dscript/issues</url>
 	</issueManagement>
 
 	<ciManagement>
-		<system>none</system>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/bene51/3Dscript</url>
 	</ciManagement>
-	
+
 	<properties>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Benjamin Schmid</license.copyrightOwners>
 	</properties>
 
-	
-	<dependencies>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>3D_Animation_Language</artifactId>
-			<version>0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>fiji-lib</artifactId>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>none</phase>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		<extensions>
-			<!-- Enabling the use of SSH -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh-external</artifactId>
-				<version>1.0-beta-6</version>
-			</extension>
-		</extensions>
-	</build>
-	<distributionManagement>
-		<repository>
-			<id>ssh-repository</id>
-			<url>scpexe://romulus/usr/local/share/maven/repository</url>
-		</repository>
-	</distributionManagement>
-
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
 			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
-		<repository>
-			<id>3dscript.public</id>
-			<url>https://romulus.oice.uni-erlangen.de/maven/repository</url>
 		</repository>
 	</repositories>
 </project>

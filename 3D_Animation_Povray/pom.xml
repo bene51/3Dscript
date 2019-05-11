@@ -8,13 +8,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>17.1.1</version>
+		<version>26.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_Povray</artifactId>
-	<version>0.1</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>3D Animation Povray</name>
 	<description>Povray adapter for the 3D Animation plugin</description>
