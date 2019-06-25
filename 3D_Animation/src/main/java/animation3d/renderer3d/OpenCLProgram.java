@@ -114,10 +114,41 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 				"	int z = get_global_id(2);\n" +
 				"\n" +
 				"	if(x < grad_size.x && y < grad_size.y && z < grad_size.z) {\n" +
-		        "		float dx = downsampled(image, sampler, x + 1, y, z) - downsampled(image, sampler, x - 1, y, z);\n" +
-		        "		float dy = downsampled(image, sampler, x, y + 1, z) - downsampled(image, sampler, x, y - 1, z);\n" +
-		        "		float dz = downsampled(image, sampler, x, y, z + 1) - downsampled(image, sampler, x, y, z - 1);\n" +
-		        "		int4 v = convert_int4(round(255 * normalize((float4)(dx, dy, dz, 0))));" +
+				"		float a000 = downsampled(image, sampler, x - 1, y - 1, z - 1);\n" +
+				"		float a001 = downsampled(image, sampler, x,     y - 1, z - 1);\n" +
+				"		float a002 = downsampled(image, sampler, x + 1, y - 1, z - 1);\n" +
+				"		float a010 = downsampled(image, sampler, x - 1, y,     z - 1);\n" +
+				"		float a011 = downsampled(image, sampler, x,     y,     z - 1);\n" +
+				"		float a012 = downsampled(image, sampler, x + 1, y,     z - 1);\n" +
+				"		float a020 = downsampled(image, sampler, x - 1, y + 1, z - 1);\n" +
+				"		float a021 = downsampled(image, sampler, x,     y + 1, z - 1);\n" +
+				"		float a022 = downsampled(image, sampler, x + 1, y + 1, z - 1);\n" +
+				"		float a100 = downsampled(image, sampler, x - 1, y - 1, z);\n" +
+				"		float a101 = downsampled(image, sampler, x,     y - 1, z);\n" +
+				"		float a102 = downsampled(image, sampler, x + 1, y - 1, z);\n" +
+				"		float a110 = downsampled(image, sampler, x - 1, y,     z);\n" +
+				"		float a111 = downsampled(image, sampler, x,     y,     z);\n" +
+				"		float a112 = downsampled(image, sampler, x + 1, y,     z);\n" +
+				"		float a120 = downsampled(image, sampler, x - 1, y + 1, z);\n" +
+				"		float a121 = downsampled(image, sampler, x,     y + 1, z);\n" +
+				"		float a122 = downsampled(image, sampler, x + 1, y + 1, z);\n" +
+				"		float a200 = downsampled(image, sampler, x - 1, y - 1, z + 1);\n" +
+				"		float a201 = downsampled(image, sampler, x,     y - 1, z + 1);\n" +
+				"		float a202 = downsampled(image, sampler, x + 1, y - 1, z + 1);\n" +
+				"		float a210 = downsampled(image, sampler, x - 1, y,     z + 1);\n" +
+				"		float a211 = downsampled(image, sampler, x,     y,     z + 1);\n" +
+				"		float a212 = downsampled(image, sampler, x + 1, y,     z + 1);\n" +
+				"		float a220 = downsampled(image, sampler, x - 1, y + 1, z + 1);\n" +
+				"		float a221 = downsampled(image, sampler, x,     y + 1, z + 1);\n" +
+				"		float a222 = downsampled(image, sampler, x + 1, y + 1, z + 1);\n" +
+				"\n" +
+				"		float dx = (a002 + a012 + a022 + a102 + a112 + a122 + a202 + a212 + a222) -\n" +
+				"					(a000 + a010 + a020 + a100 + a110 + a120 + a200 + a210 + a220);\n" +
+				"		float dy = (a020 + a021 + a022 + a120 + a121 + a122 + a220 + a221 + a222) -\n" +
+				"					(a000 + a001 + a002 + a100 + a101 + a102 + a200 + a201 + a202);\n" +
+				"		float dz = (a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) -\n" +
+				"					(a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022);\n" +
+				"		int4 v = convert_int4(round(255 * normalize((float4)(dx, dy, dz, 0))));" +
 				"		write_imagei(gradients, (int4)(x, y, z, 0), v);\n" +
 				"	}\n" +
 				"}\n" +
@@ -126,6 +157,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 		return source;
 	}
 
+	@SuppressWarnings("unused")
 	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip, boolean[] useLights) {
 		String source = makeCommonSource(channels) +
 		    /* ****************************************************************
@@ -312,7 +344,8 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"		float2 maxAlphaColor" + c + "   = (float2)(alphamax" + c + ", colormax" + c + ");\n" +
 			"		float2 gammaAlphaColor" + c + " = (float2)(alphagamma" + c + ", colorgamma" + c + ");\n" +
 			"		float2 dAlphaColor" + c + "     = maxAlphaColor" + c + " - minAlphaColor" + c + ";\n" +
-			"\n";
+			"		float4 no" + c + " = (float4)(0, 0, 0, 0);" +
+			"\n\n";
 		}
 		boolean useAnyLight = false;
 		for(int c = 0; c < channels; c++) {
@@ -321,15 +354,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 				break;
 			}
 		}
-		if(useAnyLight) {
-			source = source +
-			"		float4 li = (float4)(" + light[0] + ", " + light[1] + ", " + light[2] + ", 0);\n" +
-			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
-			"		float4 ha = (float4)(" + ha[0]    + ", " + ha[1]    + ", " + ha[2]    + ", 0);\n" +
-			"		ha = normalize((float4)(multiplyMatrixVector(inverseTransform, ha), 0));\n" +
-			"		float ko, kd, ks, shininess;\n" +
-			"\n";
-		}
+
 		source = source +
 			"		for(int step = floor(inear); step < ifar; step++) {\n" +
 			"\n" +
@@ -362,40 +387,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"\n";
 				continue;
 			}
-			if(useLights[c]) {
-			source = source +
-			"				ko = light" + c + ".x;\n" +
-			"				kd = light" + c + ".y;\n" +
-			"				ks = light" + c + ".z;\n" +
-			"				shininess = light" + c + ".w;\n" +
-			"\n";
-if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
-			source = source +
-			"				float4 grad" + c + " = grad(p0,\n" +
-			"						texture" + c + ", sampler, maxv,\n" +
-			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
-}
-else {
-			source = source +
-			"				float4 grad" + c + " = grad(p0, gradient" + c + ", sampler);\n";
-}
-			source = source +
-			"\n" +
-//			"				if(dbg) {\n" +
-//			"					printf(\"grad = %f, %f, %f\\n\", grad" + c + ".x, grad" + c + ".y, grad" + c + ".z);\n" +
-//			"					printf(\"li = %f, %f, %f\\n\", li.x, li.y, li.z);\n" +
-//			"					printf(\"ha = %f, %f, %f\\n\", ha.x, ha.y, ha.z);\n" +
-//			"					printf(\"kd = %f\\n\", kd);\n" +
-//			"					printf(\"ks = %f\\n\", ks);\n" +
-//			"					printf(\"tmpd = %f\\n\", tmpd);\n" +
-//			"					printf(\"tmph = %f\\n\", tmph);\n" +
-//			"				}\n" +
-			"				rAlphaColor" + c + ".y = \n" +
-			"						ko * rAlphaColor" + c + ".y +\n" +
-			"						kd * fmax((float)0, dot(li, grad" + c + ")) +\n" +
-			"						ks * fmax((float)0, pow(dot(ha, grad" + c + "), shininess));\n" +
-			"\n";
-			}
+
 			source = source + "\n";
 			if(combinedAlpha) {
 				source = source +
@@ -405,7 +397,22 @@ else {
 			"				float a" + c + " = alpha" + c + ";\n";
 			}
 			source = source +
-			"				float tmp" + c + " = weight" + c + " * (1 - a" + c + ") * rAlphaColor" + c + ".x;\n" +
+			"				float tmp" + c + " = weight" + c + " * (1 - a" + c + ") * rAlphaColor" + c + ".x;\n";
+			if(useLights[c]) {
+				if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
+					source = source +
+			"				float4 grad" + c + " = grad(p0,\n" +
+			"						texture" + c + ", sampler, maxv,\n" +
+			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
+				}
+				else {
+					source = source +
+			"				float4 grad" + c + " = grad(p0, gradient" + c + ", sampler);\n";
+				}
+			source = source +
+			"				no" + c + " = mad(tmp" + c + ", grad" + c + ", no" + c + ");\n";
+			}
+			source = source +
 			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n" +
 			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n" +
 			"			}\n" +
@@ -414,10 +421,42 @@ else {
 		source = source +
 			"			p0 = p0 + inc;\n" +
 			"		}\n";
+		source = source +
+			"		float4 li = (float4)(" + light[0] + ", " + light[1] + ", " + light[2] + ", 0);\n" +
+			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
+			"		float4 ha = (float4)(" + ha[0]    + ", " + ha[1]    + ", " + ha[2]    + ", 0);\n" +
+			"		ha = normalize((float4)(multiplyMatrixVector(inverseTransform, ha), 0));\n" +
+			"		float ko, kd, ks, shininess;\n" +
+			"\n";
 		for(int c = 0; c < channels; c++) {
+			if(useLights[c]) {
+			source = source +
+			"		ko = light" + c + ".x;\n" +
+			"		kd = light" + c + ".y;\n" +
+			"		ks = light" + c + ".z;\n" +
+			"		shininess = light" + c + ".w;\n" +
+			"\n";
+			source = source +
+			"\n" +
+//				"				if(dbg) {\n" +
+//				"					printf(\"grad = %f, %f, %f\\n\", grad" + c + ".x, grad" + c + ".y, grad" + c + ".z);\n" +
+//				"					printf(\"li = %f, %f, %f\\n\", li.x, li.y, li.z);\n" +
+//				"					printf(\"ha = %f, %f, %f\\n\", ha.x, ha.y, ha.z);\n" +
+//				"					printf(\"kd = %f\\n\", kd);\n" +
+//				"					printf(\"ks = %f\\n\", ks);\n" +
+//				"					printf(\"tmpd = %f\\n\", tmpd);\n" +
+//				"					printf(\"tmph = %f\\n\", tmph);\n" +
+//				"				}\n" +
+			"		color" + c + " = \n" +
+			"			ko * color" + c + " +\n" +
+			"			kd * fmax((float)0, dot(li, no" + c + ")) +\n" +
+			"			ks * fmax((float)0, pow(dot(ha, no" + c + "), shininess));\n" +
+			"\n";
+				}
 			source = source +
 			"		color" + c + " = color" + c + " * weight" + c + ";\n" +
-			"		alpha" + c + " = alpha" + c + " * weight" + c + ";\n";
+			"		alpha" + c + " = alpha" + c + " * weight" + c + ";\n" +
+			"\n";
 		}
 		source = source +
 					// color0 + rgb0.x + color1 * rgb1.x + ...
