@@ -292,7 +292,12 @@ Raycaster<T>::setTexture(int channel, const T * const * const data)
 	// calculate gradient texture (kernel call)
 
 #if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
+
+#if GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPED_TEXTURE
 	cl_int3 grad_size = {dataWidth_ / 2, dataHeight_ / 2, dataDepth_ / 2};
+#elif GRADIENT_MODE == GRADIENT_MODE_TEXTURE
+	cl_int3 grad_size = {dataWidth_, dataHeight_, dataDepth_};
+#endif
 
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 0, sizeof(cl_mem), &texture_[channel]));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 1, sizeof(cl_sampler), &sampler));
