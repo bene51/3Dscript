@@ -107,6 +107,8 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_DIFFUSE,  0);
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_SPECULAR, 0);
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_SHININESS,  0);
+			rs.setChannelProperty(c, ExtendedRenderingState.USE_LUT, 0);
+			// TODO useLUT
 		}
 		rs.setNonChannelProperty(ExtendedRenderingState.RENDERING_ALGORITHM, RenderingAlgorithm.INDEPENDENT_TRANSPARENCY.ordinal());
 	}
@@ -136,27 +138,36 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 	private void adjustProgram(ExtendedRenderingState next, boolean forceUpdateProgram) {
 		int nChannels = getNChannels();
 		boolean[] pUseLights = rs.useLights();
+		boolean[] pUseLUT = rs.useLUT();
 		RenderingAlgorithm pAlgorithm = rs.getRenderingAlgorithm();
 		boolean[] nUseLights = next.useLights();
+		boolean[] nUseLUT = next.useLUT();
 		RenderingAlgorithm nAlgorithm = next.getRenderingAlgorithm();
 
-		if(!forceUpdateProgram && Arrays.equals(pUseLights, nUseLights) && pAlgorithm.equals(nAlgorithm))
+		if(!forceUpdateProgram && Arrays.equals(pUseLights, nUseLights) && Arrays.equals(pUseLUT, nUseLUT) && pAlgorithm.equals(nAlgorithm))
 			return;
 
 		String program = null;
 		switch(nAlgorithm) {
 		case INDEPENDENT_TRANSPARENCY:
-			program = OpenCLProgram.makeSource(nChannels, false, false, false, nUseLights);
+			program = OpenCLProgram.makeSource(nChannels, false, false, false, nUseLights, nUseLUT);
 			break;
 		case COMBINED_TRANSPARENCY:
-			program = OpenCLProgram.makeSource(nChannels, false, true, false, nUseLights);
+			program = OpenCLProgram.makeSource(nChannels, false, true, false, nUseLights, nUseLUT);
 			break;
 		case MAXIMUM_INTENSITY:
-			program = OpenCLProgram.makeSource(nChannels, false, false, true, nUseLights);
+			program = OpenCLProgram.makeSource(nChannels, false, false, true, nUseLights, nUseLUT);
 			break;
 		}
 
 		setProgram(program);
+
+		for(int c = 0; c < nChannels; c++) {
+			if(nUseLUT[c] && !pUseLUT[c]) // lut switched on for channel c
+				setLookupTable(c, makeRandomLUT());
+			else if(!nUseLUT[c] && pUseLUT[c]) // lut switched of for channel c
+				setLookupTable(c, null);
+		}
 	}
 
 	@Override

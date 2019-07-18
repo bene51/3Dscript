@@ -21,7 +21,11 @@ public:
 			jint width, jint height, jint depth,
 			jint tgtWidth, jint tgtHeight);
 	~RaycasterJNI();
-	void setTexture(JNIEnv *env, jint channel, jobjectArray data);
+	void setTexture(JNIEnv *env, jint channel, jobjectArray data, jfloat dzByDx);
+
+	void setColorLUT(JNIEnv *env, jint channel, jintArray lut);
+
+	void clearColorLUT(JNIEnv *env, jint channel);
 
 	void setTgtDimensions(int targetWidth, int targetHeight)
 	{

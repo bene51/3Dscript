@@ -489,6 +489,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		Toolbar.getInstance().setTool(Toolbar.HAND);
 
+//		ExtendedRenderingState tmp = renderer.getRenderingState().clone();
+//		tmp.setChannelProperty(1, ExtendedRenderingState.USE_LUT, 1);
+//		push(tmp);
+
 //		ImageProcessor bg = IJ.openImage("D:\\PSoteloHitschfeld\\cover\\bg2.tif").getProcessor();
 //		ColorProcessor cp = bg.convertToColorProcessor();
 //		renderer.setBackground(cp);

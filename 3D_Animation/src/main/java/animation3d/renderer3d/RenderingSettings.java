@@ -13,6 +13,7 @@ public class RenderingSettings {
 	public float weight = 1;
 
 	public boolean useLight = false;
+	public boolean useLUT = false;
 
 	public float k_o = 1;
 	public float k_d = 0;
@@ -71,5 +72,6 @@ public class RenderingSettings {
 		this.k_d        = s.k_d;
 		this.k_s        = s.k_s;
 		this.shininess  = s.shininess;
+		this.useLUT     = s.useLUT;
 	}
 }

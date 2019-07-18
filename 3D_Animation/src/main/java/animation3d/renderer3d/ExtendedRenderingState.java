@@ -30,6 +30,7 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int LIGHT_K_DIFFUSE     = 20;
 	public static final int LIGHT_K_SPECULAR    = 21;
 	public static final int LIGHT_SHININESS     = 22;
+	public static final int USE_LUT             = 23;
 
 	public static final int BG_COLOR_RED        = 0;
 	public static final int BG_COLOR_GREEN      = 1;
@@ -40,7 +41,7 @@ public class ExtendedRenderingState extends RenderingState {
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[5];
-		channelProperties = new double[nChannels][23];
+		channelProperties = new double[nChannels][24];
 	}
 
 	public ExtendedRenderingState(
@@ -85,6 +86,7 @@ public class ExtendedRenderingState extends RenderingState {
 			channelProperties[c][LIGHT_K_DIFFUSE]     = renderingSettings[c].k_d;
 			channelProperties[c][LIGHT_K_SPECULAR]    = renderingSettings[c].k_s;
 			channelProperties[c][LIGHT_SHININESS]     = renderingSettings[c].shininess;
+			channelProperties[c][USE_LUT]             = renderingSettings[c].useLUT ? 1 : 0;
 		}
 	}
 
@@ -138,6 +140,13 @@ public class ExtendedRenderingState extends RenderingState {
 		for(int c = 0; c < channelProperties.length; c++)
 			useLights[c] = channelProperties[c][USE_LIGHT] > 0;
 		return useLights;
+	}
+
+	public boolean[] useLUT() {
+		boolean[] useLUT = new boolean[channelProperties.length];
+		for(int c = 0; c < channelProperties.length; c++)
+			useLUT[c] = channelProperties[c][USE_LUT] > 0;
+		return useLUT;
 	}
 
 	@Override

@@ -32,13 +32,16 @@ private:
 	cl_kernel kernel;
 	cl_kernel clear_kernel;
 	cl_kernel grad_kernel;
+	cl_kernel box_kernel;
+	cl_kernel erode_kernel;
 	cl_command_queue command_queue;
 	cl_program program;
 
 	cl_mem *texture_;
 	cl_mem *gradients_;
-	cl_mem *LUT_;
-	cl_sampler sampler;
+	cl_mem *colorLUT_;
+	cl_sampler lisampler;
+	cl_sampler nnsampler;
 
 	cl_mem background_;
 	cl_sampler bgsampler;
@@ -48,6 +51,11 @@ private:
 	void init_opencl();
 	void cleanup_opencl();
 
+	void calculateGradients(int channel, float dzByDx, bool do_erode);
+	void smooth(cl_mem in, cl_mem out);
+	void erode(cl_mem in, cl_mem out);
+
+
 public:
 	Raycaster(int nChannels,
 			int dataWidth, int dataHeight, int dataDepth,
@@ -55,10 +63,12 @@ public:
 	~Raycaster();
 
 	void setBackground(const unsigned int * const data, int w, int h);
-
 	void clearBackground();
 
-	void setTexture(int channel, const T * const * const data);
+	void setColorLUT(int channel, const unsigned int * const lut);
+	void clearColorLUT(int channel);
+
+	void setTexture(int channel, const T * const * const data, float dzBydX);
 
 	void setTgtDimensions(int targetWidth, int targetHeight);
 

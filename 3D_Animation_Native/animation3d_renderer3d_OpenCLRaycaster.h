@@ -37,7 +37,7 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_close
  * Signature: (I[[B)V
  */
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture8
-  (JNIEnv *, jclass, jint, jobjectArray);
+  (JNIEnv *, jclass, jint, jobjectArray, jfloat);
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setBackground
   (JNIEnv *, jclass, jintArray data, jint w, jint h);
@@ -51,7 +51,7 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearBackgrou
  * Signature: (I[[S)V
  */
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture16
-  (JNIEnv *, jclass, jint, jobjectArray);
+  (JNIEnv *, jclass, jint, jobjectArray, jfloat);
 
 /*
  * Class:     renderer3d_OpenCLRaycaster
@@ -77,6 +77,17 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setKernel(
 		JNIEnv *env,
 		jclass,
 		jstring kernel);
+
+JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setColorLUT(
+		JNIEnv *env,
+		jclass,
+		jint channel,
+		jintArray lut);
+
+JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearColorLUT(
+		JNIEnv *env,
+		jclass,
+		jint channel);
 
 #ifdef __cplusplus
 }

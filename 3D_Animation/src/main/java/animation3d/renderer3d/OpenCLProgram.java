@@ -8,10 +8,10 @@ public class OpenCLProgram {
 	public static final int GRADIENT_MODE_TEXTURE             = 1;
 	public static final int GRADIENT_MODE_DOWNSAMPLED_TEXTURE = 2;
 
-	public static final int GRADIENT_MODE = GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
+	public static final int GRADIENT_MODE = GRADIENT_MODE_TEXTURE; // GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
 
 	public static void main(String[] args) {
-		System.out.println(makeSource(2, false, true, false, new boolean[] {true, true}));
+		System.out.println(makeSource(2, false, true, false, new boolean[] {false, false}, new boolean[] {true, false}));
 //		System.out.println(makeSourceForMIP(2, false));
 	}
 
@@ -72,6 +72,8 @@ public class OpenCLProgram {
 				 * downsampled()
 				 * ****************************************************************/
 if(GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
+				// TODO take hasLUT into account
+				// TODO +0.5 for positions
 				source = source +
 				"inline float downsampled(__read_only image3d_t texture, sampler_t sampler, int x, int y, int z)\n" +
 				"{\n" +
@@ -92,12 +94,119 @@ if(GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
 				source = source +
 				"inline float downsampled(__read_only image3d_t texture, sampler_t sampler, int x, int y, int z)\n" +
 				"{\n" +
-				"		return read_imagef(texture, sampler, (float4)(x, y, z, 0)).x;\n" +
+				"		return read_imagef(texture, sampler, (float4)(x + 0.5f, y + 0.5f, z + 0.5f, 0)).x;\n" +
 				"}\n" +
 				"\n";
 }
 
 if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
+				/* ****************************************************************
+				 * erode()
+				 * ****************************************************************/
+				source = source +
+				"kernel void\n" +
+				"erode(\n" +
+				"			__read_only image3d_t image,\n" +
+				"			sampler_t sampler,\n" +
+				"			__write_only image3d_t out,\n" +
+				"			int3 out_size)\n" +
+				"{\n" +
+				"	int x = get_global_id(0);\n" +
+				"	int y = get_global_id(1);\n" +
+				"	int z = get_global_id(2);\n" +
+				"\n" +
+				"	if(x < out_size.x && y < out_size.y && z < out_size.z) {\n" +
+				"		bool a000 = downsampled(image, sampler, x - 1, y - 1, z - 1) > 0;\n" +
+				"		bool a001 = downsampled(image, sampler, x,     y - 1, z - 1) > 0;\n" +
+				"		bool a002 = downsampled(image, sampler, x + 1, y - 1, z - 1) > 0;\n" +
+				"		bool a010 = downsampled(image, sampler, x - 1, y,     z - 1) > 0;\n" +
+				"		bool a011 = downsampled(image, sampler, x,     y,     z - 1) > 0;\n" +
+				"		bool a012 = downsampled(image, sampler, x + 1, y,     z - 1) > 0;\n" +
+				"		bool a020 = downsampled(image, sampler, x - 1, y + 1, z - 1) > 0;\n" +
+				"		bool a021 = downsampled(image, sampler, x,     y + 1, z - 1) > 0;\n" +
+				"		bool a022 = downsampled(image, sampler, x + 1, y + 1, z - 1) > 0;\n" +
+				"		bool a100 = downsampled(image, sampler, x - 1, y - 1, z) > 0;\n" +
+				"		bool a101 = downsampled(image, sampler, x,     y - 1, z) > 0;\n" +
+				"		bool a102 = downsampled(image, sampler, x + 1, y - 1, z) > 0;\n" +
+				"		bool a110 = downsampled(image, sampler, x - 1, y,     z) > 0;\n" +
+				"		float a111 = downsampled(image, sampler, x,     y,     z);\n" +
+				"		bool a112 = downsampled(image, sampler, x + 1, y,     z) > 0;\n" +
+				"		bool a120 = downsampled(image, sampler, x - 1, y + 1, z) > 0;\n" +
+				"		bool a121 = downsampled(image, sampler, x,     y + 1, z) > 0;\n" +
+				"		bool a122 = downsampled(image, sampler, x + 1, y + 1, z) > 0;\n" +
+				"		bool a200 = downsampled(image, sampler, x - 1, y - 1, z + 1) > 0;\n" +
+				"		bool a201 = downsampled(image, sampler, x,     y - 1, z + 1) > 0;\n" +
+				"		bool a202 = downsampled(image, sampler, x + 1, y - 1, z + 1) > 0;\n" +
+				"		bool a210 = downsampled(image, sampler, x - 1, y,     z + 1) > 0;\n" +
+				"		bool a211 = downsampled(image, sampler, x,     y,     z + 1) > 0;\n" +
+				"		bool a212 = downsampled(image, sampler, x + 1, y,     z + 1) > 0;\n" +
+				"		bool a220 = downsampled(image, sampler, x - 1, y + 1, z + 1) > 0;\n" +
+				"		bool a221 = downsampled(image, sampler, x,     y + 1, z + 1) > 0;\n" +
+				"		bool a222 = downsampled(image, sampler, x + 1, y + 1, z + 1) > 0;\n" +
+				"\n" +
+				"		bool b =   (a000 && a001 && a002 && a010 && a011 && a012 && a020 && a021 && a022 &&\n" +
+				"					a100 && a101 && a102 && a110 &&         a112 && a120 && a121 && a122 &&\n" +
+				"					a200 && a201 && a202 && a210 && a211 && a212 && a220 && a221 && a222);\n" +
+				"		float v = 0;\n" +
+				"		if(b)\n" +
+				"			v = a111;\n" +
+				"\n" +
+				"		write_imagef(out, (int4)(x, y, z, 0), a111 - v);\n" +
+				"	}\n" +
+				"}\n" +
+				"\n";
+				/* ****************************************************************
+				 * boxfilter()
+				 * ****************************************************************/
+				source = source +
+				"kernel void\n" +
+				"boxfilter(\n" +
+				"			__read_only image3d_t image,\n" +
+				"			sampler_t sampler,\n" +
+				"			__write_only image3d_t out,\n" +
+				"			int3 out_size)\n" +
+				"{\n" +
+				"	int x = get_global_id(0);\n" +
+				"	int y = get_global_id(1);\n" +
+				"	int z = get_global_id(2);\n" +
+				"\n" +
+				"	if(x < out_size.x && y < out_size.y && z < out_size.z) {\n" +
+				"		float a000 = downsampled(image, sampler, x - 1, y - 1, z - 1);\n" +
+				"		float a001 = downsampled(image, sampler, x,     y - 1, z - 1);\n" +
+				"		float a002 = downsampled(image, sampler, x + 1, y - 1, z - 1);\n" +
+				"		float a010 = downsampled(image, sampler, x - 1, y,     z - 1);\n" +
+				"		float a011 = downsampled(image, sampler, x,     y,     z - 1);\n" +
+				"		float a012 = downsampled(image, sampler, x + 1, y,     z - 1);\n" +
+				"		float a020 = downsampled(image, sampler, x - 1, y + 1, z - 1);\n" +
+				"		float a021 = downsampled(image, sampler, x,     y + 1, z - 1);\n" +
+				"		float a022 = downsampled(image, sampler, x + 1, y + 1, z - 1);\n" +
+				"		float a100 = downsampled(image, sampler, x - 1, y - 1, z);\n" +
+				"		float a101 = downsampled(image, sampler, x,     y - 1, z);\n" +
+				"		float a102 = downsampled(image, sampler, x + 1, y - 1, z);\n" +
+				"		float a110 = downsampled(image, sampler, x - 1, y,     z);\n" +
+				"		float a111 = downsampled(image, sampler, x,     y,     z);\n" +
+				"		float a112 = downsampled(image, sampler, x + 1, y,     z);\n" +
+				"		float a120 = downsampled(image, sampler, x - 1, y + 1, z);\n" +
+				"		float a121 = downsampled(image, sampler, x,     y + 1, z);\n" +
+				"		float a122 = downsampled(image, sampler, x + 1, y + 1, z);\n" +
+				"		float a200 = downsampled(image, sampler, x - 1, y - 1, z + 1);\n" +
+				"		float a201 = downsampled(image, sampler, x,     y - 1, z + 1);\n" +
+				"		float a202 = downsampled(image, sampler, x + 1, y - 1, z + 1);\n" +
+				"		float a210 = downsampled(image, sampler, x - 1, y,     z + 1);\n" +
+				"		float a211 = downsampled(image, sampler, x,     y,     z + 1);\n" +
+				"		float a212 = downsampled(image, sampler, x + 1, y,     z + 1);\n" +
+				"		float a220 = downsampled(image, sampler, x - 1, y + 1, z + 1);\n" +
+				"		float a221 = downsampled(image, sampler, x,     y + 1, z + 1);\n" +
+				"		float a222 = downsampled(image, sampler, x + 1, y + 1, z + 1);\n" +
+				"\n" +
+				"		float v = (a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022 +\n" +
+				"					a100 + a101 + a102 + a110 + a111 + a112 + a120 + a121 + a122 +\n" +
+				"					a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) / 27.0f;\n" +
+				"\n" +
+				"		write_imagef(out, (int4)(x, y, z, 0), v);\n" +
+				"	}\n" +
+				"}\n" +
+				"\n";
 		        /* ****************************************************************
 				 * calculateGradients()
 				 * ****************************************************************/
@@ -107,7 +216,8 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 				"			__read_only image3d_t image,\n" +
 				"			sampler_t sampler,\n" +
 				"			__write_only image3d_t gradients,\n" +
-				"			int3 grad_size)\n" +
+				"			int3 grad_size,\n" +
+				"			float dzByDx)\n" +
 				"{\n" +
 				"	int x = get_global_id(0);\n" +
 				"	int y = get_global_id(1);\n" +
@@ -148,7 +258,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 				"					(a000 + a001 + a002 + a100 + a101 + a102 + a200 + a201 + a202);\n" +
 				"		float dz = (a200 + a201 + a202 + a210 + a211 + a212 + a220 + a221 + a222) -\n" +
 				"					(a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022);\n" +
-				"		int4 v = convert_int4(round(255 * normalize((float4)(dx, dy, dz, 0))));" +
+				"		int4 v = convert_int4(round(255 * normalize((float4)(dx, dy, dz * dzByDx, 0))));" +
 				"		write_imagei(gradients, (int4)(x, y, z, 0), v);\n" +
 				"	}\n" +
 				"}\n" +
@@ -158,7 +268,14 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 	}
 
 	@SuppressWarnings("unused")
-	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip, boolean[] useLights) {
+	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip, boolean[] useLights, boolean[] colorLUT) {
+		boolean useLightsAtAll = false;
+		for(int i = 0; i < useLights.length; i++) {
+			if(useLights[i]) {
+				useLightsAtAll = true;
+				break;
+			}
+		}
 		String source = makeCommonSource(channels) +
 		    /* ****************************************************************
 			 * sample()
@@ -182,6 +299,27 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 	        "	return rAlphaColor;\n" +
 	        "}\n" +
 	        "\n";
+			/* ****************************************************************
+			 * sampleWithColorLUT()
+			 * ****************************************************************/
+			source = source +
+			"inline float4\n" +
+			"sampleWithColorLUT(float3 p0,\n" +
+			"		__read_only image3d_t texture,\n" +
+			"		sampler_t sampler,\n" +
+			"		float maxv,\n" +
+			"		image1d_buffer_t textureLUT,\n" +
+			"		bool dbg) {\n" +
+			"	float v0 = maxv * read_imagef(texture, sampler, (float4)(p0 + 0.5f, 0)).x;\n" +
+			"	if(v0 == 0)\n" +
+			"		return (float4)(0.0f);\n" +
+			"	int idx = clamp((uint)round(v0), (uint)0, (uint)maxv);\n" +
+			"	if(dbg)\n" +
+			"		printf(\"v0 = %f, idx = %d\", v0, idx);\n" +
+			"	float4 color = (float4)(1.0f, convert_float3(read_imageui(textureLUT, idx).xyz) / 255.0f);\n" +
+			"	return color;\n" +
+			"}\n" +
+			"\n";
 	        /* ****************************************************************
 			 * grad()
 			 * ****************************************************************/
@@ -242,10 +380,15 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"		__read_only image3d_t texture" + c + ",";
 			if(GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY)
 				source = source + " __read_only image3d_t gradient" + c + ",";
-			source = source + " int3 rgb" + c + ",\n";
+			source = source + " int3 rgb" + c + ",";
+			if(colorLUT[c]) {
+				source = source + "__read_only image1d_buffer_t textureLUT" + c + ",";
+			}
+			source = source + "\n";
 		}
 		source = source +
-			"		sampler_t sampler,\n" +
+			"		sampler_t lisampler,\n" +
+			"		sampler_t nnsampler,\n" +
 			"		__global unsigned int *d_result,\n" +
 			"		int2 target_size,\n" +
 			"		const float16 inverseTransform,\n";
@@ -337,8 +480,14 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		ha[1] /= tmp;
 		ha[2] /= tmp;
 		for(int c = 0; c < channels; c++) {
+			if(!colorLUT[c]) {
 			source = source +
-			"		float color" + c + " = 0;\n" +
+			"		float color" + c + " = 0;\n";
+			} else {
+			source = source +
+			"		float3 color" + c + " = (float3)(0);\n";
+			}
+			source = source +
 			"		float alpha" + c + " = 0;\n" +
 			"		float2 minAlphaColor" + c + "   = (float2)(alphamin" + c + ", colormin" + c + ");\n" +
 			"		float2 maxAlphaColor" + c + "   = (float2)(alphamax" + c + ", colormax" + c + ");\n" +
@@ -354,6 +503,10 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 				break;
 			}
 		}
+
+		source = source +
+			"		bool dbg = x == 80 && y == 170;";
+
 
 		source = source +
 			"		for(int step = floor(inear); step < ifar; step++) {\n" +
@@ -372,19 +525,47 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 //			"			if(dbg && step == 20) {\n" +
 //			"				printf(\"ch" + c + " = %d\\n\", ch" + c + ");\n" +
 //			"			}\n" +
-			"			if(ch" + c + ") {\n" +
+			"			if(ch" + c + " && alpha" + c + " < 0.99f) {\n";
+//			"			if(ch" + c + ") {\n";
+			if(colorLUT[c]) {
+				source = source +
+			"				float4 rAlphaColor" + c + " = sampleWithColorLUT(p0,\n" +
+			"						texture" + c + ", nnsampler, maxv, textureLUT" + c + ", dbg);\n" +
+			"				if(dbg) {\n" +
+			"					float3 col = (float3)(rAlphaColor" + c + ".yzw);\n" +
+			"					printf(\"color = %f, %f, %f\\n\", col.x, col.y, col.z);\n" +
+//			"					for(int i = 0; i < 10; i++) {\n" +
+//			"						uint4 col = read_imageui(textureLUT" + c + ", i);\n" +
+//			"						printf(\"color[i] = %d, %d, %d, %d\\n\", col.s0, col.s1, col.s2, col.s3);\n" +
+//			"					}\n" +
+			"					\n" +
+			"				}\n";
+			}
+			else {
+				source = source +
 			"				float2 rAlphaColor" + c + " = sample(p0,\n" +
-			"						texture" + c + ", sampler, maxv,\n" +
-			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n" +
-			"\n";
+			"						texture" + c + ", lisampler, maxv,\n" +
+			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
+			}
+			source = source + "\n";
+
 			if(mip) {
-			source = source +
+			if(colorLUT[c]) {
+				source = source +
+			"				color" + c + " = max(color" + c + ", rAlphaColor" + c + ".yzw);\n" +
+			"				alpha" + c + " = max(alpha" + c + ", rAlphaColor" + c + ".x);\n" +
+			"			}\n" +
+			"\n";
+			}
+			else {
+				source = source +
 			"				if(rAlphaColor" + c + ".y > color" + c + ") {\n" +
 			"					color" + c + " = rAlphaColor" + c + ".y;\n" +
 			"					alpha" + c + " = rAlphaColor" + c + ".x;\n" +
 			"				}\n" +
 			"			}\n" +
 			"\n";
+			}
 				continue;
 			}
 
@@ -402,18 +583,25 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 				if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 					source = source +
 			"				float4 grad" + c + " = grad(p0,\n" +
-			"						texture" + c + ", sampler, maxv,\n" +
+			"						texture" + c + ", lisampler, maxv,\n" +
 			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
 				}
 				else {
 					source = source +
-			"				float4 grad" + c + " = grad(p0, gradient" + c + ", sampler);\n";
+			"				float4 grad" + c + " = grad(p0, gradient" + c + ", lisampler);\n";
 				}
-			source = source +
+					source = source +
 			"				no" + c + " = mad(tmp" + c + ", grad" + c + ", no" + c + ");\n";
 			}
+			if(colorLUT[c]) {
 			source = source +
-			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n" +
+			"				color" + c + " = mad(rAlphaColor" + c + ".yzw, tmp" + c + ", color" + c + ");\n";
+			}
+			else {
+			source = source +
+			"				color" + c + " = mad(rAlphaColor" + c + ".y, tmp" + c + ", color" + c + ");\n";
+			}
+			source = source +
 			"				alpha" + c + " = alpha" + c + " + tmp" + c + ";\n" +
 			"			}\n" +
 			"\n";
@@ -421,6 +609,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		source = source +
 			"			p0 = p0 + inc;\n" +
 			"		}\n";
+		if(useLightsAtAll) {
 		source = source +
 			"		float4 li = (float4)(" + light[0] + ", " + light[1] + ", " + light[2] + ", 0);\n" +
 			"		li = normalize((float4)(multiplyMatrixVector(inverseTransform, li), 0));\n" +
@@ -428,9 +617,19 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"		ha = normalize((float4)(multiplyMatrixVector(inverseTransform, ha), 0));\n" +
 			"		float ko, kd, ks, shininess;\n" +
 			"\n";
+		}
+		source = source +
+			"		unsigned int out_r = 0;\n" +
+			"		unsigned int out_g = 0;\n" +
+			"		unsigned int out_b = 0;\n" +
+			"\n";
 		for(int c = 0; c < channels; c++) {
 			if(useLights[c]) {
 			source = source +
+			"		if(dbg) {\n" +
+			"			float4 notmp = no" + c + ";\n"+
+			"			printf(\"no = %f, %f, %f\\n\", notmp.x, notmp.y, notmp.z);\n" +
+			"		}\n" +
 			"		ko = light" + c + ".x;\n" +
 			"		kd = light" + c + ".y;\n" +
 			"		ks = light" + c + ".z;\n" +
@@ -447,22 +646,39 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 //				"					printf(\"tmpd = %f\\n\", tmpd);\n" +
 //				"					printf(\"tmph = %f\\n\", tmph);\n" +
 //				"				}\n" +
+			"		if(dbg) {\n" +
+			"			float3 ctmp = color" + c + ";\n"+
+			"			printf(\"colorbefore = %f, %f, %f\\n\", ctmp.x, ctmp.y, ctmp.z);\n" +
+			"		}\n" +
 			"		color" + c + " = \n" +
 			"			ko * color" + c + " +\n" +
 			"			kd * fmax((float)0, dot(li, no" + c + ")) +\n" +
 			"			ks * fmax((float)0, pow(dot(ha, no" + c + "), shininess));\n" +
-			"\n";
+			"		if(dbg) {\n" +
+			"			float3 ctmp = color" + c + ";\n"+
+			"			printf(\"colorafter = %f, %f, %f\\n\", ctmp.x, ctmp.y, ctmp.z);\n" +
+			"		}\n" +			"\n";
 				}
 			source = source +
 			"		color" + c + " = color" + c + " * weight" + c + ";\n" +
 			"		alpha" + c + " = alpha" + c + " * weight" + c + ";\n" +
 			"\n";
+			if(colorLUT[c]) {
+			source = source +
+			"		out_r = out_r + 255 * color" + c + ".x;\n" +
+			"		out_g = out_g + 255 * color" + c + ".y;\n" +
+			"		out_b = out_b + 255 * color" + c + ".z;\n" +
+			"\n";
+			}
+			else {
+			source = source +
+			"		out_r = out_r + color" + c + " * rgb" + c + ".x;\n" +
+			"		out_g = out_g + color" + c + " * rgb" + c + ".y;\n" +
+			"		out_b = out_b + color" + c + " * rgb" + c + ".z;\n" +
+			"\n";
+			}
 		}
 		source = source +
-					// color0 + rgb0.x + color1 * rgb1.x + ...
-			"		unsigned int out_r = " + sumOfProducts("color", "rgb", ".x", channels) + ";\n" +
-			"		unsigned int out_g = " + sumOfProducts("color", "rgb", ".y", channels) + ";\n" +
-			"		unsigned int out_b = " + sumOfProducts("color", "rgb", ".z", channels) + ";\n" +
 			"		float alpha = clamp(" + sum("alpha", channels) + ", 0.0f, 1.0f);\n" +
 			"		out_r = (unsigned int)(clamp(alpha * out_r + (1 - alpha) * background.x, 0.0f, 255.0f));\n" +
 			"		out_g = (unsigned int)(clamp(alpha * out_g + (1 - alpha) * background.y, 0.0f, 255.0f));\n" +

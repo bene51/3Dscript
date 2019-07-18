@@ -74,15 +74,51 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearBackgrou
 	}
 }
 
+JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setColorLUT(
+		JNIEnv *env,
+		jclass,
+		jint channel,
+		jintArray lut)
+{
+	try {
+		if(raycaster8 != NULL)
+			raycaster8->setColorLUT(env, channel, lut);
+		else if(raycaster16 != NULL)
+			raycaster16->setColorLUT(env, channel, lut);
+		else
+			ThrowException(env, "No raycaster initialized\n");
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
+}
+
+JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearColorLUT(
+		JNIEnv *env,
+		jclass,
+		jint channel)
+{
+	try {
+		if(raycaster8 != NULL)
+			raycaster8->clearColorLUT(env, channel);
+		else if(raycaster16 != NULL)
+			raycaster16->clearColorLUT(env, channel);
+		else
+			ThrowException(env, "No raycaster initialized\n");
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
+}
+
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture8(
 		JNIEnv *env,
 		jclass,
 		jint channel,
-		jobjectArray data)
+		jobjectArray data,
+		jfloat dzByDx)
 {
 	if(raycaster8 != NULL) {
 		try {
-			raycaster8->setTexture(env, channel, data);
+			raycaster8->setTexture(env, channel, data, dzByDx);
 		} catch(std::runtime_error& e) {
 			ThrowException(env, e.what());
 		}
@@ -95,11 +131,12 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture16(
 		JNIEnv *env,
 		jclass,
 		jint channel,
-		jobjectArray data)
+		jobjectArray data,
+		jfloat dzByDx)
 {
 	if(raycaster16 != NULL) {
 		try {
-			raycaster16->setTexture(env, channel, data);
+			raycaster16->setTexture(env, channel, data, dzByDx);
 		} catch(std::runtime_error& e) {
 			ThrowException(env, e.what());
 		}

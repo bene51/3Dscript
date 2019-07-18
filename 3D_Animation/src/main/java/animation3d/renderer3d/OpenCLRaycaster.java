@@ -40,8 +40,8 @@ public class OpenCLRaycaster {
 
 	public static native void close();
 
-	private static native void setTexture8(int channel, byte[][] data);
-	private static native void setTexture16(int channel, short[][] data);
+	private static native void setTexture8(int channel, byte[][] data, float dzByDx);
+	private static native void setTexture16(int channel, short[][] data, float dzByDx);
 
 	private static native void setBackground(int[] data, int w, int h);
 	private static native void clearBackground();
@@ -55,6 +55,9 @@ public class OpenCLRaycaster {
 			float alphacorr,
 			float[][] channelSettings,
 			int bgred, int bggreen, int bgblue);
+
+	private static native void setColorLUT(int channel, int[] lut);
+	private static native void clearColorLUT(int channel);
 
 	private static native void white(int channel);
 
@@ -86,7 +89,8 @@ public class OpenCLRaycaster {
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 		boolean[] useLights = new boolean[nChannels];
-		setKernel(OpenCLProgram.makeSource(nChannels, false, false, false, useLights));
+		boolean[] colorLUT = new boolean[nChannels];
+		setKernel(OpenCLProgram.makeSource(nChannels, false, false, false, useLights, colorLUT));
 		setImage(imp);
 	}
 
@@ -124,6 +128,7 @@ public class OpenCLRaycaster {
 		int d = imp.getNSlices();
 		int nChannels = imp.getNChannels();
 		tIndex = imp.getT();
+		float dzByDx = (float)(imp.getCalibration().pixelDepth / imp.getCalibration().pixelWidth);
 
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
@@ -136,7 +141,7 @@ public class OpenCLRaycaster {
 					int idx = imp.getStackIndex(c + 1, z + 1, imp.getT());
 					image[z] = (byte[])imp.getStack().getPixels(idx);
 				}
-				setTexture8(c, image);
+				setTexture8(c, image, dzByDx);
 			}
 		}
 		else if(imp.getType() == ImagePlus.GRAY16) {
@@ -146,23 +151,43 @@ public class OpenCLRaycaster {
 					int idx = imp.getStackIndex(c + 1, z + 1, imp.getT());
 					image[z] = (short[])imp.getStack().getPixels(idx);
 				}
-				setTexture16(c, image);
+				setTexture16(c, image, dzByDx);
 			}
 		}
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
 	}
 
-	public void setBackground(ColorProcessor cp, boolean combinedAlpha, boolean mip, boolean[] useLights) {
+	public void setBackground(ColorProcessor cp, boolean combinedAlpha, boolean mip, boolean[] useLights, boolean[] colorLUT) {
 		if(cp == null) {
 			clearBackground();
-			setKernel(OpenCLProgram.makeSource(nChannels, false, combinedAlpha, mip, useLights));
+			setKernel(OpenCLProgram.makeSource(nChannels, false, combinedAlpha, mip, useLights, colorLUT));
 			return;
 		}
 		int[] rgb = (int[])cp.getPixels();
 		setBackground(rgb, cp.getWidth(), cp.getHeight());
 		// setKernel(OpenCLProgram.makeSourceForMIP(nChannels, true));
-		setKernel(OpenCLProgram.makeSource(nChannels, true, combinedAlpha, mip, useLights));
+		setKernel(OpenCLProgram.makeSource(nChannels, true, combinedAlpha, mip, useLights, colorLUT));
+	}
+
+	public void setLookupTable(int channel, int[] lut) {
+		if(lut != null)
+			setColorLUT(channel, lut);
+		else
+			clearColorLUT(channel);
+	}
+
+	public int[] makeRandomLUT() {
+		int l = 1 << image.getBitDepth();
+		int[] lut = new int[l];
+		for(int i = 0; i < l; i++)
+			lut[i] = Color.HSBtoRGB((float)Math.random(), 1, 1);
+
+		lut[0] = new Color(0, 0, 0).getRGB();
+		lut[1] = new Color(255, 0, 0).getRGB();
+		lut[2] = new Color(0, 255, 0).getRGB();
+		lut[3] = new Color(0, 0, 255).getRGB();
+		return lut;
 	}
 
 	// TODO take a RenderingState object as an argument
@@ -222,6 +247,7 @@ public class OpenCLRaycaster {
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_SPECULAR]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_SHININESS]),
+					(int)(channelProperties[c][ExtendedRenderingState.USE_LUT]),
 			};
 		}
 		// TODO remove this line and set from GUI

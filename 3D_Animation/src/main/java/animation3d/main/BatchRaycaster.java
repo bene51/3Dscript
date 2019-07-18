@@ -116,16 +116,17 @@ public class BatchRaycaster implements PlugInFilter {
 		int nChannels = renderer.getNChannels();
 		ExtendedRenderingState kf = renderer.getRenderingState().clone();
 		boolean[] useLights = kf.useLights();
+		boolean[] useLUT = kf.useLUT();
 
 		switch(algorithm) {
 		case INDEPENDENT_TRANSPARENCY:
-			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false, useLights));
+			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false, useLights, useLUT));
 			break;
 		case COMBINED_TRANSPARENCY:
-			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false, useLights));
+			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false, useLights, useLUT));
 			break;
 		case MAXIMUM_INTENSITY:
-			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true, useLights));
+			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true, useLights, useLUT));
 			break;
 		}
 

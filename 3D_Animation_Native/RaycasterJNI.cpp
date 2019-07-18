@@ -31,16 +31,44 @@ RaycasterJNI<T>::RaycasterJNI(
 
 template<typename T>
 void
+RaycasterJNI<T>::setColorLUT(
+		JNIEnv *env,
+		jint channel,
+		jintArray lut)
+{
+	int l = env->GetArrayLength(lut);
+
+	unsigned int *cArray = new unsigned int[l];
+	if(!cArray) {
+		ThrowException(env, "Not enough memory");
+		return;
+	}
+	env->GetIntArrayRegion(lut, 0, l, (jint *)cArray);
+	raycaster->setColorLUT(channel, cArray);
+}
+
+template<typename T>
+void
+RaycasterJNI<T>::clearColorLUT(
+		JNIEnv *env,
+		jint channel)
+{
+	raycaster->clearColorLUT(channel);
+}
+
+template<typename T>
+void
 RaycasterJNI<T>::setTexture(
 		JNIEnv *env,
 		jint channel,
-		jobjectArray data)
+		jobjectArray data,
+		jfloat dzByDx)
 {
 	int depth = raycaster->getDepth();
 	for(int z = 0; z < depth; z++)
 		initPlane(env, data, channel, z);
 
-	raycaster->setTexture(channel, cArray_[channel]);
+	raycaster->setTexture(channel, cArray_[channel], dzByDx);
 }
 
 template<typename T>
