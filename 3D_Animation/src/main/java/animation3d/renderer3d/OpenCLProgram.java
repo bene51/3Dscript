@@ -9,8 +9,8 @@ public class OpenCLProgram {
 	public static final int GRADIENT_MODE_DOWNSAMPLED_TEXTURE = 2;
 
 //	public static final int GRADIENT_MODE = GRADIENT_MODE_ONTHEFLY;
-	public static final int GRADIENT_MODE = GRADIENT_MODE_TEXTURE;
-//	public static final int GRADIENT_MODE = GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
+//	public static final int GRADIENT_MODE = GRADIENT_MODE_TEXTURE;
+	public static final int GRADIENT_MODE = GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
 
 	public static void main(String[] args) {
 		System.out.println(makeSource(2, false, true, false, new boolean[] {false, false}, new boolean[] {true, false}));
@@ -75,13 +75,12 @@ public class OpenCLProgram {
 				 * ****************************************************************/
 if(GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
 				// TODO take hasLUT into account
-				// TODO +0.5 for positions
 				source = source +
 				"inline float downsampled(__read_only image3d_t texture, sampler_t sampler, int x, int y, int z)\n" +
 				"{\n" +
-				"		int x2 = 2 * x;\n" +
-				"		int y2 = 2 * y;\n" +
-				"		int z2 = 2 * z;\n" +
+				"		float x2 = x * 2.0f + 0.5f;\n" +
+				"		float y2 = y * 2.0f + 0.5f;\n" +
+				"		float z2 = z * 2.0f + 0.5f;\n" +
 				"		return     (read_imagef(texture, sampler, (float4)(x2,     y2,     z2,     0)).x +\n" +
 		        "					read_imagef(texture, sampler, (float4)(x2 + 1, y2,     z2,     0)).x +\n" +
 		        "					read_imagef(texture, sampler, (float4)(x2,     y2 + 1, z2,     0)).x +\n" +
@@ -100,6 +99,12 @@ if(GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
 				"}\n" +
 				"\n";
 }
+				source = source +
+				"inline float sampled(__read_only image3d_t texture, sampler_t sampler, int x, int y, int z)\n" +
+				"{\n" +
+				"		return read_imagef(texture, sampler, (float4)(x + 0.5f, y + 0.5f, z + 0.5f, 0)).x;\n" +
+				"}\n" +
+				"\n";
 
 if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPLED_TEXTURE) {
 				/* ****************************************************************
@@ -118,33 +123,33 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 				"	int z = get_global_id(2);\n" +
 				"\n" +
 				"	if(x < out_size.x && y < out_size.y && z < out_size.z) {\n" +
-				"		bool a000 = downsampled(image, sampler, x - 1, y - 1, z - 1) > 0;\n" +
-				"		bool a001 = downsampled(image, sampler, x,     y - 1, z - 1) > 0;\n" +
-				"		bool a002 = downsampled(image, sampler, x + 1, y - 1, z - 1) > 0;\n" +
-				"		bool a010 = downsampled(image, sampler, x - 1, y,     z - 1) > 0;\n" +
-				"		bool a011 = downsampled(image, sampler, x,     y,     z - 1) > 0;\n" +
-				"		bool a012 = downsampled(image, sampler, x + 1, y,     z - 1) > 0;\n" +
-				"		bool a020 = downsampled(image, sampler, x - 1, y + 1, z - 1) > 0;\n" +
-				"		bool a021 = downsampled(image, sampler, x,     y + 1, z - 1) > 0;\n" +
-				"		bool a022 = downsampled(image, sampler, x + 1, y + 1, z - 1) > 0;\n" +
-				"		bool a100 = downsampled(image, sampler, x - 1, y - 1, z) > 0;\n" +
-				"		bool a101 = downsampled(image, sampler, x,     y - 1, z) > 0;\n" +
-				"		bool a102 = downsampled(image, sampler, x + 1, y - 1, z) > 0;\n" +
-				"		bool a110 = downsampled(image, sampler, x - 1, y,     z) > 0;\n" +
-				"		float a111 = downsampled(image, sampler, x,     y,     z);\n" +
-				"		bool a112 = downsampled(image, sampler, x + 1, y,     z) > 0;\n" +
-				"		bool a120 = downsampled(image, sampler, x - 1, y + 1, z) > 0;\n" +
-				"		bool a121 = downsampled(image, sampler, x,     y + 1, z) > 0;\n" +
-				"		bool a122 = downsampled(image, sampler, x + 1, y + 1, z) > 0;\n" +
-				"		bool a200 = downsampled(image, sampler, x - 1, y - 1, z + 1) > 0;\n" +
-				"		bool a201 = downsampled(image, sampler, x,     y - 1, z + 1) > 0;\n" +
-				"		bool a202 = downsampled(image, sampler, x + 1, y - 1, z + 1) > 0;\n" +
-				"		bool a210 = downsampled(image, sampler, x - 1, y,     z + 1) > 0;\n" +
-				"		bool a211 = downsampled(image, sampler, x,     y,     z + 1) > 0;\n" +
-				"		bool a212 = downsampled(image, sampler, x + 1, y,     z + 1) > 0;\n" +
-				"		bool a220 = downsampled(image, sampler, x - 1, y + 1, z + 1) > 0;\n" +
-				"		bool a221 = downsampled(image, sampler, x,     y + 1, z + 1) > 0;\n" +
-				"		bool a222 = downsampled(image, sampler, x + 1, y + 1, z + 1) > 0;\n" +
+				"		bool a000 = sampled(image, sampler, x - 1, y - 1, z - 1) > 0;\n" +
+				"		bool a001 = sampled(image, sampler, x,     y - 1, z - 1) > 0;\n" +
+				"		bool a002 = sampled(image, sampler, x + 1, y - 1, z - 1) > 0;\n" +
+				"		bool a010 = sampled(image, sampler, x - 1, y,     z - 1) > 0;\n" +
+				"		bool a011 = sampled(image, sampler, x,     y,     z - 1) > 0;\n" +
+				"		bool a012 = sampled(image, sampler, x + 1, y,     z - 1) > 0;\n" +
+				"		bool a020 = sampled(image, sampler, x - 1, y + 1, z - 1) > 0;\n" +
+				"		bool a021 = sampled(image, sampler, x,     y + 1, z - 1) > 0;\n" +
+				"		bool a022 = sampled(image, sampler, x + 1, y + 1, z - 1) > 0;\n" +
+				"		bool a100 = sampled(image, sampler, x - 1, y - 1, z) > 0;\n" +
+				"		bool a101 = sampled(image, sampler, x,     y - 1, z) > 0;\n" +
+				"		bool a102 = sampled(image, sampler, x + 1, y - 1, z) > 0;\n" +
+				"		bool a110 = sampled(image, sampler, x - 1, y,     z) > 0;\n" +
+				"		float a111 = sampled(image, sampler, x,     y,     z);\n" +
+				"		bool a112 = sampled(image, sampler, x + 1, y,     z) > 0;\n" +
+				"		bool a120 = sampled(image, sampler, x - 1, y + 1, z) > 0;\n" +
+				"		bool a121 = sampled(image, sampler, x,     y + 1, z) > 0;\n" +
+				"		bool a122 = sampled(image, sampler, x + 1, y + 1, z) > 0;\n" +
+				"		bool a200 = sampled(image, sampler, x - 1, y - 1, z + 1) > 0;\n" +
+				"		bool a201 = sampled(image, sampler, x,     y - 1, z + 1) > 0;\n" +
+				"		bool a202 = sampled(image, sampler, x + 1, y - 1, z + 1) > 0;\n" +
+				"		bool a210 = sampled(image, sampler, x - 1, y,     z + 1) > 0;\n" +
+				"		bool a211 = sampled(image, sampler, x,     y,     z + 1) > 0;\n" +
+				"		bool a212 = sampled(image, sampler, x + 1, y,     z + 1) > 0;\n" +
+				"		bool a220 = sampled(image, sampler, x - 1, y + 1, z + 1) > 0;\n" +
+				"		bool a221 = sampled(image, sampler, x,     y + 1, z + 1) > 0;\n" +
+				"		bool a222 = sampled(image, sampler, x + 1, y + 1, z + 1) > 0;\n" +
 				"\n" +
 				"		bool b =   (a000 && a001 && a002 && a010 && a011 && a012 && a020 && a021 && a022 &&\n" +
 				"					a100 && a101 && a102 && a110 &&         a112 && a120 && a121 && a122 &&\n" +
@@ -173,33 +178,33 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 				"	int z = get_global_id(2);\n" +
 				"\n" +
 				"	if(x < out_size.x && y < out_size.y && z < out_size.z) {\n" +
-				"		float a000 = downsampled(image, sampler, x - 1, y - 1, z - 1);\n" +
-				"		float a001 = downsampled(image, sampler, x,     y - 1, z - 1);\n" +
-				"		float a002 = downsampled(image, sampler, x + 1, y - 1, z - 1);\n" +
-				"		float a010 = downsampled(image, sampler, x - 1, y,     z - 1);\n" +
-				"		float a011 = downsampled(image, sampler, x,     y,     z - 1);\n" +
-				"		float a012 = downsampled(image, sampler, x + 1, y,     z - 1);\n" +
-				"		float a020 = downsampled(image, sampler, x - 1, y + 1, z - 1);\n" +
-				"		float a021 = downsampled(image, sampler, x,     y + 1, z - 1);\n" +
-				"		float a022 = downsampled(image, sampler, x + 1, y + 1, z - 1);\n" +
-				"		float a100 = downsampled(image, sampler, x - 1, y - 1, z);\n" +
-				"		float a101 = downsampled(image, sampler, x,     y - 1, z);\n" +
-				"		float a102 = downsampled(image, sampler, x + 1, y - 1, z);\n" +
-				"		float a110 = downsampled(image, sampler, x - 1, y,     z);\n" +
-				"		float a111 = downsampled(image, sampler, x,     y,     z);\n" +
-				"		float a112 = downsampled(image, sampler, x + 1, y,     z);\n" +
-				"		float a120 = downsampled(image, sampler, x - 1, y + 1, z);\n" +
-				"		float a121 = downsampled(image, sampler, x,     y + 1, z);\n" +
-				"		float a122 = downsampled(image, sampler, x + 1, y + 1, z);\n" +
-				"		float a200 = downsampled(image, sampler, x - 1, y - 1, z + 1);\n" +
-				"		float a201 = downsampled(image, sampler, x,     y - 1, z + 1);\n" +
-				"		float a202 = downsampled(image, sampler, x + 1, y - 1, z + 1);\n" +
-				"		float a210 = downsampled(image, sampler, x - 1, y,     z + 1);\n" +
-				"		float a211 = downsampled(image, sampler, x,     y,     z + 1);\n" +
-				"		float a212 = downsampled(image, sampler, x + 1, y,     z + 1);\n" +
-				"		float a220 = downsampled(image, sampler, x - 1, y + 1, z + 1);\n" +
-				"		float a221 = downsampled(image, sampler, x,     y + 1, z + 1);\n" +
-				"		float a222 = downsampled(image, sampler, x + 1, y + 1, z + 1);\n" +
+				"		float a000 = sampled(image, sampler, x - 1, y - 1, z - 1);\n" +
+				"		float a001 = sampled(image, sampler, x,     y - 1, z - 1);\n" +
+				"		float a002 = sampled(image, sampler, x + 1, y - 1, z - 1);\n" +
+				"		float a010 = sampled(image, sampler, x - 1, y,     z - 1);\n" +
+				"		float a011 = sampled(image, sampler, x,     y,     z - 1);\n" +
+				"		float a012 = sampled(image, sampler, x + 1, y,     z - 1);\n" +
+				"		float a020 = sampled(image, sampler, x - 1, y + 1, z - 1);\n" +
+				"		float a021 = sampled(image, sampler, x,     y + 1, z - 1);\n" +
+				"		float a022 = sampled(image, sampler, x + 1, y + 1, z - 1);\n" +
+				"		float a100 = sampled(image, sampler, x - 1, y - 1, z);\n" +
+				"		float a101 = sampled(image, sampler, x,     y - 1, z);\n" +
+				"		float a102 = sampled(image, sampler, x + 1, y - 1, z);\n" +
+				"		float a110 = sampled(image, sampler, x - 1, y,     z);\n" +
+				"		float a111 = sampled(image, sampler, x,     y,     z);\n" +
+				"		float a112 = sampled(image, sampler, x + 1, y,     z);\n" +
+				"		float a120 = sampled(image, sampler, x - 1, y + 1, z);\n" +
+				"		float a121 = sampled(image, sampler, x,     y + 1, z);\n" +
+				"		float a122 = sampled(image, sampler, x + 1, y + 1, z);\n" +
+				"		float a200 = sampled(image, sampler, x - 1, y - 1, z + 1);\n" +
+				"		float a201 = sampled(image, sampler, x,     y - 1, z + 1);\n" +
+				"		float a202 = sampled(image, sampler, x + 1, y - 1, z + 1);\n" +
+				"		float a210 = sampled(image, sampler, x - 1, y,     z + 1);\n" +
+				"		float a211 = sampled(image, sampler, x,     y,     z + 1);\n" +
+				"		float a212 = sampled(image, sampler, x + 1, y,     z + 1);\n" +
+				"		float a220 = sampled(image, sampler, x - 1, y + 1, z + 1);\n" +
+				"		float a221 = sampled(image, sampler, x,     y + 1, z + 1);\n" +
+				"		float a222 = sampled(image, sampler, x + 1, y + 1, z + 1);\n" +
 				"\n" +
 				"		float v = (a000 + a001 + a002 + a010 + a011 + a012 + a020 + a021 + a022 +\n" +
 				"					a100 + a101 + a102 + a110 + a111 + a112 + a120 + a121 + a122 +\n" +
@@ -353,8 +358,8 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"grad(float3 p0,\n" +
 	        "        __read_only image3d_t grad,\n" +
 	        "        sampler_t sampler) {\n" +
-	        "	float3 p = p0 + 0.5f;\n" +
-	        "	float4 gradient = convert_float4(read_imagei(grad, sampler, (float4)(p.x / 2, p.y / 2, p.z / 2, 0)));\n" +
+	        "	float3 p = p0 / 2.0f + 0.5f;\n" +
+	        "	float4 gradient = convert_float4(read_imagei(grad, sampler, (float4)(p.x, p.y, p.z, 0)));\n" +
 	        "	return normalize(gradient);\n" +
 			"}\n" +
 	        "\n";
