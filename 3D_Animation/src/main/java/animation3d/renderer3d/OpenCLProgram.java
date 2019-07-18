@@ -8,7 +8,9 @@ public class OpenCLProgram {
 	public static final int GRADIENT_MODE_TEXTURE             = 1;
 	public static final int GRADIENT_MODE_DOWNSAMPLED_TEXTURE = 2;
 
-	public static final int GRADIENT_MODE = GRADIENT_MODE_TEXTURE; // GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
+//	public static final int GRADIENT_MODE = GRADIENT_MODE_ONTHEFLY;
+	public static final int GRADIENT_MODE = GRADIENT_MODE_TEXTURE;
+//	public static final int GRADIENT_MODE = GRADIENT_MODE_DOWNSAMPLED_TEXTURE;
 
 	public static void main(String[] args) {
 		System.out.println(makeSource(2, false, true, false, new boolean[] {false, false}, new boolean[] {true, false}));

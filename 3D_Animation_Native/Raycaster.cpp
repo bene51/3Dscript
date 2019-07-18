@@ -23,6 +23,7 @@
 
 // #define GRADIENT_MODE GRADIENT_MODE_DOWNSAMPED_TEXTURE
 #define GRADIENT_MODE GRADIENT_MODE_TEXTURE
+// #define GRADIENT_MODE GRADIENT_MODE_ONTHEFLY
 
 static const char *
 loadText(const char *file)
@@ -282,8 +283,10 @@ Raycaster<T>::setTexture(int channel, const T * const * const data, float dzByDx
 			NULL,
 			NULL));
 	}
+#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
 	// TODO calculate gradients only on demand, i.e. when lighting is used
 	calculateGradients(channel, dzByDx, do_erode);
+#endif
 }
 
 template<typename T>
@@ -292,6 +295,8 @@ Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
 {
 	bool do_smooth = true;
 	cl_mem smoothed = NULL;
+	cl_int err;
+
 	if(do_smooth) {
 		cl_image_format format = {CL_R, CL_FLOAT};
 		cl_image_desc desc = {
@@ -304,7 +309,6 @@ Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
 			0, // num_samples
 			NULL}; // buffer (must be NULL)
 
-		cl_int err;
 		smoothed = clCreateImage(context, CL_MEM_READ_WRITE, &format, &desc, NULL, &err);
 		checkOpenCLErrors(err);
 		smooth(texture_[channel], smoothed);
@@ -338,32 +342,27 @@ Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
 		// texture_[channel] = eroded;
 	}
 
-#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
 
 #if GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPED_TEXTURE
 	cl_int3 grad_size = {dataWidth_ / 2, dataHeight_ / 2, dataDepth_ / 2};
 #elif GRADIENT_MODE == GRADIENT_MODE_TEXTURE
 	cl_int3 grad_size = {dataWidth_, dataHeight_, dataDepth_};
+#elif GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY
+	cl_int3 grad_size = {dataWidth_, dataHeight_, dataDepth_};
 #endif
+
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 0, sizeof(cl_mem), &smoothed));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 1, sizeof(cl_sampler), &lisampler));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 2, sizeof(cl_mem), &gradients_[channel]));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 3, sizeof(cl_int3), &grad_size));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 4, sizeof(cl_float), &dzByDx));
 
-#if GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPED_TEXTURE
 	const size_t global_work_size[3] = {
-		dataWidth_  / 2,
-		dataHeight_ / 2,
-		dataDepth_  / 2
+		grad_size.x,
+		grad_size.y,
+		grad_size.z,
 	};
-#elif GRADIENT_MODE == GRADIENT_MODE_TEXTURE
-	const size_t global_work_size[3] = {
-		dataWidth_,
-		dataHeight_,
-		dataDepth_
-	};
-#endif
+
 	checkOpenCLErrors(clEnqueueNDRangeKernel(
 			command_queue,
 			grad_kernel,
@@ -377,15 +376,12 @@ Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
 
 	if(do_smooth)
 		clReleaseMemObject(smoothed);
-#endif
 }
 
 template<typename T>
 void
 Raycaster<T>::smooth(cl_mem in, cl_mem out)
 {
-#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
-
 	cl_int3 out_size = {dataWidth_, dataHeight_, dataDepth_};
 
 	checkOpenCLErrors(clSetKernelArg(box_kernel, 0, sizeof(cl_mem), &in));
@@ -409,15 +405,12 @@ Raycaster<T>::smooth(cl_mem in, cl_mem out)
 			0,                     // cl_uint num_events_in_wait_list,
 			NULL,                  // const cl_event *event_wait_list,
 			NULL));                // cl_event *event
-#endif
 }
 
 template<typename T>
 void
 Raycaster<T>::erode(cl_mem in, cl_mem out)
 {
-#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
-
 	cl_int3 out_size = {dataWidth_, dataHeight_, dataDepth_};
 
 	checkOpenCLErrors(clSetKernelArg(erode_kernel, 0, sizeof(cl_mem), &in));
@@ -441,7 +434,6 @@ Raycaster<T>::erode(cl_mem in, cl_mem out)
 			0,                     // cl_uint num_events_in_wait_list,
 			NULL,                  // const cl_event *event_wait_list,
 			NULL));                // cl_event *event
-#endif
 }
 
 template<typename T>
@@ -495,9 +487,9 @@ Raycaster<T>::setKernel(const char *programSource)
 	fflush(stdout);
 	if(program != NULL) {
 		clReleaseProgram(program);
+#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
 		clReleaseKernel(clear_kernel);
 		clReleaseKernel(kernel);
-#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
 		clReleaseKernel(grad_kernel);
 #endif
 	}
@@ -646,7 +638,6 @@ Raycaster<T>::cast(
 	const size_t total_work_size = local_work_size[0] * local_work_size[1];
 	printf("total_work_size = %d\n", total_work_size);
 
-	// TODO execute kernel
 	checkOpenCLErrors(clEnqueueNDRangeKernel(
 			command_queue,
 			kernel,
@@ -709,9 +700,6 @@ Raycaster<T>::white(int channel)
 			0,                     // cl_uint num_events_in_wait_list,
 			NULL,                  // const cl_event *event_wait_list,
 			NULL));                // cl_event *event
-
-	// TODO wait for it to finish
-
 
 #ifdef _WIN32
 	int end = GetTickCount();
