@@ -276,7 +276,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"\n" +
 			"	if(x < target_size.x && y < target_size.y) {\n" +
 //			"		bool dbg = (x == 128 && y == 128);\n" +
-			"		unsigned int maxv = (1 << bitsPerSample);\n" +
+			"		unsigned int maxv = (1 << bitsPerSample) - 1;\n" +
 			"\n" +
 			"		float3 r0 = multiplyMatrixVector(inverseTransform, (float4)(x, y, 0, 1));\n" +
 			"		int idx_out = y * target_size.x + x;\n" +
