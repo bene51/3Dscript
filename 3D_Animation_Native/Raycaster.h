@@ -88,10 +88,6 @@ public:
 
 	void setKernel(const char *kernel);
 
-	void updateLUT(int channel,
-			float cmin, float cmax, float cgamma,
-			float amin, float amax, float agamma);
-
 	const unsigned int *
 	cast(
 		const float * const inverseTransform,

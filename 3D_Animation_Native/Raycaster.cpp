@@ -143,30 +143,9 @@ Raycaster<T>::Raycaster(
 		checkOpenCLErrors(err);
 	}
 
-//	// initialize LUT textures
-//	chtype = CL_FLOAT;
-//	format = {CL_RA, chtype};
-//	desc = {
-//		CL_MEM_OBJECT_IMAGE1D,
-//		(size_t)(dataWidth_), (size_t)(dataHeight_), (size_t)(dataDepth_),
-//#elif GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPED_TEXTURE
-//		(size_t)(dataWidth_ / 2), (size_t)(dataHeight_ / 2), (size_t)(dataDepth_ / 2),
-//#endif
-//		0, // image_array_size
-//		0, // image_row_pitch
-//		0, // image_slice_pitch
-//		0, // num_mip_levels
-//		0, // num_samples
-//		NULL}; // buffer (must be NULL)
-//	for(int channel = 0; channel < nChannels; channel++) {
-//		gradients_[channel] = clCreateImage(context, CL_MEM_READ_WRITE, &format, &desc, NULL, &err);
-//		checkOpenCLErrors(err);
-//	}
-
 	// initialize gradient textures
 #if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
-	chtype = CL_SIGNED_INT8;
-	cl_image_format gformat = {CL_RGBA, chtype};
+	cl_image_format gformat = {CL_RGBA, CL_SIGNED_INT8};
 	cl_image_desc gdesc = {
 		CL_MEM_OBJECT_IMAGE3D,
 #if GRADIENT_MODE == GRADIENT_MODE_TEXTURE
@@ -389,14 +368,6 @@ Raycaster<T>::setKernel(const char *programSource)
 	checkOpenCLErrors(err);
 	printf("kernel 'calculateGradients' built successfully\n");
 #endif
-}
-
-template<typename T>
-void
-Raycaster<T>::updateLUT(int channel,
-		float cmin, float cmax, float cgamma,
-		float amin, float amax, float agamma)
-{
 }
 
 template<typename T>
