@@ -6,6 +6,7 @@ import java.util.Map;
 
 import animation3d.parser.Autocompletion.ChoiceAutocompletion;
 import animation3d.parser.Autocompletion.IntegerAutocompletion;
+import animation3d.parser.Autocompletion.QuadrupleAutocompletion;
 import animation3d.parser.Autocompletion.RealAutocompletion;
 import animation3d.parser.Autocompletion.StringAutocompletion;
 import animation3d.parser.Autocompletion.TripleAutocompletion;
@@ -210,6 +211,35 @@ public class Interpreter {
 		rparen(false);
 
 		return new NumberOrMacro[] {a, b, c};
+	}
+
+	/**
+	 * triple :: (real ,real, real)
+	 */
+	NumberOrMacro[] quadruple(ParsingResult result) {
+		lparen(false);
+
+		skipSpace();
+		NumberOrMacro a = mor();
+		skipSpace();
+		comma(false);
+
+		skipSpace();
+		NumberOrMacro b = mor();
+		skipSpace();
+		comma(false);
+
+		skipSpace();
+		NumberOrMacro c = mor();
+		skipSpace();
+		comma(false);
+
+		skipSpace();
+		NumberOrMacro d = mor();
+		skipSpace();
+		rparen(false);
+
+		return new NumberOrMacro[] {a, b, c, d};
 	}
 
 	/**
@@ -495,6 +525,29 @@ public class Interpreter {
 				}
 			} else {
 				tgts = triple(result);
+			}
+			break;
+		case 4:
+			if(compl.isEmpty())
+				result.setAutocompletion(new QuadrupleAutocompletion(
+						autocompletionDescriptions[0],
+						autocompletionDescriptions[1],
+						autocompletionDescriptions[2],
+						autocompletionDescriptions[3]));
+			else {
+				compl.add(0, "(" + autocompletionDescriptions[0] + ", " + autocompletionDescriptions[1] + ", " + autocompletionDescriptions[2] + ", " + autocompletionDescriptions[3] + ")");
+				result.setAutocompletion(new ChoiceAutocompletion(lexer.getIndex(), compl.toArray(new String[] {})));
+			}
+			if(!compl.isEmpty()) { // replacments available
+				Token token = lexer.getNextToken(replacements.keySet(), true);
+				if(token == null) // not one of the replacement strings
+					tgts = quadruple(result);
+				else {
+					double[] vals = replacements.get(token.text);
+					tgts = new NumberOrMacro[] { new NumberOrMacro(vals[0]), new NumberOrMacro(vals[1]), new NumberOrMacro(vals[2]), new NumberOrMacro(vals[3]) };
+				}
+			} else {
+				tgts = quadruple(result);
 			}
 			break;
 		}

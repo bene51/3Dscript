@@ -16,6 +16,7 @@ import org.fife.ui.autocomplete.TemplateCompletion;
 import animation3d.parser.Autocompletion;
 import animation3d.parser.Autocompletion.ChoiceAutocompletion;
 import animation3d.parser.Autocompletion.IntegerAutocompletion;
+import animation3d.parser.Autocompletion.QuadrupleAutocompletion;
 import animation3d.parser.Autocompletion.RealAutocompletion;
 import animation3d.parser.Autocompletion.StringAutocompletion;
 import animation3d.parser.Autocompletion.TripleAutocompletion;
@@ -183,6 +184,14 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			RealAutocompletion ia = (RealAutocompletion)autocompletion;
 			String desc = ia.getDescription();
 			completions.add(new TemplateCompletion(this, "input", "0", "${" + desc + "}${cursor}"));
+		}
+		else if(atype == Autocompletion.AUTOCOMPLETION_QUADRUPLE) {
+			QuadrupleAutocompletion ia = (QuadrupleAutocompletion)autocompletion;
+			String desc0 = ia.getDescription(0);
+			String desc1 = ia.getDescription(1);
+			String desc2 = ia.getDescription(2);
+			String desc3 = ia.getDescription(3);
+			completions.add(new TemplateCompletion(this, "input", "(0, 1, 0, 0)", "(${" + desc0 + "}, ${" + desc1 + "}, ${" + desc2 + "}, ${" + desc3 + "})${cursor}"));
 		}
 		else if(atype == Autocompletion.AUTOCOMPLETION_TRIPLE) {
 			TripleAutocompletion ia = (TripleAutocompletion)autocompletion;

@@ -2,12 +2,13 @@ package animation3d.parser;
 
 public abstract class Autocompletion {
 
-	public static final int AUTOCOMPLETION_STRING  = 0;
-	public static final int AUTOCOMPLETION_LIST    = 1;
-	public static final int AUTOCOMPLETION_REAL    = 2;
-	public static final int AUTOCOMPLETION_INTEGER = 3;
-	public static final int AUTOCOMPLETION_TUPLE   = 4;
-	public static final int AUTOCOMPLETION_TRIPLE  = 5;
+	public static final int AUTOCOMPLETION_STRING    = 0;
+	public static final int AUTOCOMPLETION_LIST      = 1;
+	public static final int AUTOCOMPLETION_REAL      = 2;
+	public static final int AUTOCOMPLETION_INTEGER   = 3;
+	public static final int AUTOCOMPLETION_TUPLE     = 4;
+	public static final int AUTOCOMPLETION_TRIPLE    = 5;
+	public static final int AUTOCOMPLETION_QUADRUPLE = 6;
 
 	public final int type;
 
@@ -121,6 +122,32 @@ public abstract class Autocompletion {
 			case 0: return desc1;
 			case 1: return desc2;
 			case 2: return desc3;
+			}
+			return null;
+		}
+	}
+
+	public static class QuadrupleAutocompletion extends Autocompletion {
+
+		private final String desc1;
+		private final String desc2;
+		private final String desc3;
+		private final String desc4;
+
+		public QuadrupleAutocompletion(String desc1, String desc2, String desc3, String desc4) {
+			super(Autocompletion.AUTOCOMPLETION_QUADRUPLE);
+			this.desc1 = desc1;
+			this.desc2 = desc2;
+			this.desc3 = desc3;
+			this.desc4 = desc4;
+		}
+
+		public String getDescription(int i) {
+			switch(i) {
+			case 0: return desc1;
+			case 1: return desc2;
+			case 2: return desc3;
+			case 3: return desc4;
 			}
 			return null;
 		}

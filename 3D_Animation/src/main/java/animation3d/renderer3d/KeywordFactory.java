@@ -35,11 +35,12 @@ public class KeywordFactory implements IKeywordFactory {
 
 		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT),
 
+		USE_LIGHT(            "lighting",       new String[] {"<on/off>"},    makeOnOffMap(), ExtendedRenderingState.USE_LIGHT),
 		OBJECT_LIGHT_WEIGHT(  "object light",   new String[] {"<weight>"},    ExtendedRenderingState.LIGHT_K_OBJECT),
 		DIFFUSE_LIGHT_WEIGHT( "diffuse light",  new String[] {"<weight>"},    ExtendedRenderingState.LIGHT_K_DIFFUSE),
 		SPECULAR_LIGHT_WEIGHT("specular light", new String[] {"<weight>"},    ExtendedRenderingState.LIGHT_K_SPECULAR),
 		SHININESS(            "shininess",      new String[] {"<shininess>"}, ExtendedRenderingState.LIGHT_SHININESS),
-		USE_LIGHT(            "lighting",       new String[] {"<on/off>"},    makeOnOffMap(), ExtendedRenderingState.USE_LIGHT),
+		LIGHT(                "light",          new String[] {"<object>", "<diffuse>", "<specular>", "<shininess>"}, ExtendedRenderingState.LIGHT_K_OBJECT, ExtendedRenderingState.LIGHT_K_DIFFUSE, ExtendedRenderingState.LIGHT_K_SPECULAR, ExtendedRenderingState.LIGHT_SHININESS),
 
 		BOUNDING_BOX_X_MIN("bounding box min x", new String[] {"<x>"}, ExtendedRenderingState.BOUNDINGBOX_XMIN),
 		BOUNDING_BOX_Y_MIN("bounding box min y", new String[] {"<y>"}, ExtendedRenderingState.BOUNDINGBOX_YMIN),
@@ -156,6 +157,7 @@ public class KeywordFactory implements IKeywordFactory {
 		map.put("yellow",  new double[] {255.0, 255.0, 0.0});
 		map.put("cyan",    new double[] {0.0, 255.0, 255.0});
 		map.put("magenta", new double[] {255.0, 0.0, 255.0});
+		map.put("white",   new double[] {255.0, 255.0, 255.0});
 		return map;
 	}
 
