@@ -130,6 +130,12 @@ OpenCLInfo::printInfo(cl_context context, cl_device_id device)
 	if(valueBool == CL_FALSE)
 		clwarning("\nOpenCL does not support images (CL_DEVICE_IMAGE_SUPPORT = CL_FALSE)\nPlease make sure the newest graphics drivers are installed.\n");
 
+	err = clGetDeviceInfo(device, CL_DEVICE_IMAGE_MAX_BUFFER_SIZE, sizeof(valueSize), &valueSize, &size_ret);
+	if(err != CL_SUCCESS)
+		log << "Unable to query CL_DEVICE_IMAGE_MAX_BUFFER_SIZE" << endl;
+	else
+		log << "CL_DEVICE_IMAGE_MAX_BUFFER_SIZE: " << valueSize << endl;
+
 
 	err = clGetDeviceInfo(device, CL_DEVICE_IMAGE2D_MAX_HEIGHT, sizeof(valueSize), &valueSize, &size_ret);
 	if(err != CL_SUCCESS)
