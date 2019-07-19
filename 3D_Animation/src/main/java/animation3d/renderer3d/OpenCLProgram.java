@@ -512,7 +512,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		}
 
 		source = source +
-			"		bool dbg = x == 80 && y == 170;";
+			"		bool dbg = x == 80 && y == 170;\n";
 
 
 		source = source +
