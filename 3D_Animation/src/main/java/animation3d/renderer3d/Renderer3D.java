@@ -125,17 +125,13 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 
 	@Override
 	public ImageProcessor render(RenderingState kf2) {
-		return render(kf2, false);
-	}
-
-	public ImageProcessor render(RenderingState kf2, boolean forceUpdateProgram) {
 		ExtendedRenderingState kf = (ExtendedRenderingState)kf2;
-		adjustProgram(kf, forceUpdateProgram);
+		adjustProgram(kf);
 		rs.setFrom(kf);
 		return super.project(kf);
 	}
 
-	private void adjustProgram(ExtendedRenderingState next, boolean forceUpdateProgram) {
+	private void adjustProgram(ExtendedRenderingState next) {
 		int nChannels = getNChannels();
 		boolean[] pUseLights = rs.useLights();
 		boolean[] pUseLUT = rs.useLUT();
@@ -144,7 +140,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		boolean[] nUseLUT = next.useLUT();
 		RenderingAlgorithm nAlgorithm = next.getRenderingAlgorithm();
 
-		if(!forceUpdateProgram && Arrays.equals(pUseLights, nUseLights) && Arrays.equals(pUseLUT, nUseLUT) && pAlgorithm.equals(nAlgorithm))
+		if(Arrays.equals(pUseLights, nUseLights) && Arrays.equals(pUseLUT, nUseLUT) && pAlgorithm.equals(nAlgorithm))
 			return;
 
 		String program = null;
@@ -159,7 +155,6 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			program = OpenCLProgram.makeSource(nChannels, false, false, true, nUseLights, nUseLUT);
 			break;
 		}
-
 		setProgram(program);
 
 		for(int c = 0; c < nChannels; c++) {

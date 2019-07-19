@@ -534,12 +534,8 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	private void push(ExtendedRenderingState rs, int w, int h) {
-		push(rs, w, h, false);
-	}
-
-	private void push(ExtendedRenderingState rs, int w, int h, boolean forceUpdateProgram) {
 		setAsActiveRaycaster();
-		worker.push(rs, w, h, forceUpdateProgram);
+		worker.push(rs, w, h);
 	}
 
 	public void setOutputSize(int tgtW, int tgtH) {

@@ -20,7 +20,6 @@ public class RenderingThread {
 	static class Event {
 
 		private ExtendedRenderingState rs;
-		private boolean forceUpdateProgram = false;
 		private int tgtW = -1;
 		private int tgtH = -1;
 		private boolean valid;
@@ -70,12 +69,11 @@ public class RenderingThread {
 		OpenCLRaycaster.close();
 	}
 
-	public synchronized void push(ExtendedRenderingState rs, int w, int h, boolean forceUpdateProgram) {
+	public synchronized void push(ExtendedRenderingState rs, int w, int h) {
 		event.rs.setFrom(rs);
 		event.valid = true;
 		event.tgtW = w;
 		event.tgtH = h;
-		event.forceUpdateProgram = forceUpdateProgram;
 		notifyAll();
 	}
 
@@ -90,7 +88,6 @@ public class RenderingThread {
 		ret.rs.setFrom(event.rs);
 		ret.tgtW = event.tgtW;
 		ret.tgtH = event.tgtH;
-		ret.forceUpdateProgram = event.forceUpdateProgram;
 		event.valid = false;
 		return ret;
 	}
@@ -112,7 +109,6 @@ public class RenderingThread {
 			raycaster.setTgtSize(e.tgtW, e.tgtH);
 			e.tgtW = e.tgtH = -1;
 		}
-		out.setProcessor(raycaster.render(e.rs, e.forceUpdateProgram));
-		e.forceUpdateProgram = false;
+		out.setProcessor(raycaster.render(e.rs));
 	}
 }
