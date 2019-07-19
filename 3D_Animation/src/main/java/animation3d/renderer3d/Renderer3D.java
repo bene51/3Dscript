@@ -106,9 +106,9 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_OBJECT,   1);
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_DIFFUSE,  0);
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_SPECULAR, 0);
-			rs.setChannelProperty(c, ExtendedRenderingState.USE_LUT, 0);
-			// TODO useLUT
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_SHININESS,  5);
+			// rs.setChannelProperty(c, ExtendedRenderingState.USE_LUT, 0);
+			// TODO useLUT (for now, just leave it as it is)
 		}
 		rs.setNonChannelProperty(ExtendedRenderingState.RENDERING_ALGORITHM, RenderingAlgorithm.INDEPENDENT_TRANSPARENCY.ordinal());
 	}
