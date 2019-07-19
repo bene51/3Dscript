@@ -78,8 +78,14 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 	private SingleSlider[] weightSliders;
 
+	private boolean dontFire = false;
+
 	public static interface Listener {
-		public void renderingSettingsChanged(boolean lightsChanged);
+		// public void renderingSettingsChanged(boolean lightsChanged);
+		public void intensityChanged(int channel, double min, double max, double gamma);
+		public void alphaChanged(int channel, double min, double max, double gamma);
+		public void lightsChanged(int channel, boolean useLight, double kObj, double kDiff, double kSpec, double shininess);
+		public void weightsChanged(int channel, double weight);
 		public void backgroundChanged(Color bg);
 		public void channelChanged();
 		public void renderingSettingsReset();
@@ -253,9 +259,10 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		useLightCB.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				lightPanel.setVisible(useLightCB.isSelected());
-				r[channel][ExtendedRenderingState.USE_LIGHT] = useLightCB.isSelected() ? 1 : 0;
-				fireRenderingSettingsChanged(true);
+				boolean use = useLightCB.isSelected();
+				lightPanel.setVisible(use);
+				renderingSettings[channel][ExtendedRenderingState.USE_LIGHT] = use ? 1 : 0;
+				fireLightsChanged();
 			}
 		});
 
@@ -265,9 +272,9 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 
 		for(int i = 0; i < renderingSettings.length; i++) {
 			final int ch = i;
-			int red   = (int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_RED];
-			int green = (int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN];
-			int blue  = (int)r[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE];
+			int red   = (int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED];
+			int green = (int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN];
+			int blue  = (int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE];
 			Color color = new Color(red, green, blue);
 			if (red >= 100 && green >= 100 && blue >= 100)
 				color = Color.black;
@@ -281,8 +288,9 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			wslider.addSliderChangeListener(new SingleSlider.Listener() {
 				@Override
 				public void sliderChanged() {
-					r[ch][ExtendedRenderingState.WEIGHT] = wslider.getMax() / 100f;
-					fireRenderingSettingsChanged(false);
+					double w = wslider.getMax() / 100f;
+					renderingSettings[ch][ExtendedRenderingState.WEIGHT] = w;
+					fireWeightsChanged(ch, w);
 				}
 			});
 
@@ -364,6 +372,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	}
 
 	public void setRenderingSettings(double[][] rs) {
+		dontFire = true;
 		this.renderingSettings = rs;
 		setChannel(channel);
 		for(int i = 0; i < renderingSettings.length; i++) {
@@ -387,6 +396,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		boolean useLight = rs[channel][ExtendedRenderingState.USE_LIGHT] > 0;
 		lightPanel.setVisible(useLight);
 		useLightCB.setSelected(useLight);
+		dontFire = false;
 	}
 
 	public RenderingAlgorithm getRenderingAlgorithm() {
@@ -439,7 +449,9 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		kdTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_K_DIFFUSE], 1));
 		ksTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_K_SPECULAR], 1));
 		shininessTF.setText(CustomDecimalFormat.format(renderingSettings[c][ExtendedRenderingState.LIGHT_SHININESS], 1));
-		useLightCB.setSelected(renderingSettings[c][ExtendedRenderingState.USE_LIGHT] > 0);
+		boolean useLight = renderingSettings[c][ExtendedRenderingState.USE_LIGHT] > 0;
+		lightPanel.setVisible(useLight);
+		useLightCB.setSelected(useLight);
 		slider.set(histogram[c], min[c], max[c], renderingSettings[c]);
 		updateTextfieldsFromSliders();
 		slider.repaint();
@@ -450,27 +462,72 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
         listeners.add(l);
     }
 
-	private void fireRenderingSettingsChanged(boolean lightsChanged) {
+	private void fireLightsChanged() {
+		if(dontFire)
+			return;
+		double[] rs = renderingSettings[channel];
 		for(Listener l : listeners)
-			l.renderingSettingsChanged(lightsChanged);
+			l.lightsChanged(channel,
+					rs[ExtendedRenderingState.USE_LIGHT] > 0,
+					rs[ExtendedRenderingState.LIGHT_K_OBJECT],
+					rs[ExtendedRenderingState.LIGHT_K_DIFFUSE],
+					rs[ExtendedRenderingState.LIGHT_K_SPECULAR],
+					rs[ExtendedRenderingState.LIGHT_SHININESS]);
+	}
+
+	private void fireWeightsChanged(int channel, double weight) {
+		if(dontFire)
+			return;
+		for(Listener l : listeners)
+			l.weightsChanged(channel, weight);
+	}
+
+	private void fireIntensityChanged() {
+		if(dontFire)
+			return;
+		double[] rs = renderingSettings[channel];
+		for(Listener l : listeners)
+			l.intensityChanged(channel,
+					rs[ExtendedRenderingState.INTENSITY_MIN],
+					rs[ExtendedRenderingState.INTENSITY_MAX],
+					rs[ExtendedRenderingState.INTENSITY_GAMMA]);
+	}
+
+	private void fireAlphaChanged() {
+		if(dontFire)
+			return;
+		double[] rs = renderingSettings[channel];
+		for(Listener l : listeners)
+			l.intensityChanged(channel,
+					rs[ExtendedRenderingState.ALPHA_MIN],
+					rs[ExtendedRenderingState.ALPHA_MAX],
+					rs[ExtendedRenderingState.ALPHA_GAMMA]);
 	}
 
 	private void fireRenderingSettingsReset() {
+		if(dontFire)
+			return;
 		for(Listener l : listeners)
 			l.renderingSettingsReset();
 	}
 
 	private void fireBackgroundColorChanged(Color bg) {
+		if(dontFire)
+			return;
 		for(Listener l : listeners)
 			l.backgroundChanged(bg);
 	}
 
 	private void fireChannelChanged() {
+		if(dontFire)
+			return;
 		for(Listener l : listeners)
 			l.channelChanged();
 	}
 
 	private void fireRenderingAlgorithmChanged(RenderingAlgorithm algorithm) {
+		if(dontFire)
+			return;
 		for(Listener l : listeners)
 			l.renderingAlgorithmChanged(algorithm);
 	}
@@ -486,21 +543,42 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		valueChanged(0);
 	}
 
+	private static boolean replaceIfUnequal(double[] array, int idx, double v) {
+		if(array[idx] != v) {
+			array[idx] = v;
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void valueChanged(double v) {
 		try {
-			slider.renderingSettings[ExtendedRenderingState.INTENSITY_MIN]   = (float)Double.parseDouble(minCTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.INTENSITY_MAX]   = (float)Double.parseDouble(maxCTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.INTENSITY_GAMMA] = (float)Double.parseDouble(gammaCTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.ALPHA_MIN]   = (float)Double.parseDouble(minATF.getText());
-			slider.renderingSettings[ExtendedRenderingState.ALPHA_MAX]   = (float)Double.parseDouble(maxATF.getText());
-			slider.renderingSettings[ExtendedRenderingState.ALPHA_GAMMA] = (float)Double.parseDouble(gammaATF.getText());
-			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_OBJECT]   = (float)Double.parseDouble(koTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_DIFFUSE]  = (float)Double.parseDouble(kdTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.LIGHT_K_SPECULAR] = (float)Double.parseDouble(ksTF.getText());
-			slider.renderingSettings[ExtendedRenderingState.LIGHT_SHININESS]  = (float)Double.parseDouble(shininessTF.getText());
+			double[] rs = slider.renderingSettings;
+			boolean intensityChanged = false;
+			intensityChanged = replaceIfUnequal(rs, ExtendedRenderingState.INTENSITY_MIN,   (float)Double.parseDouble(minCTF.getText()))   || intensityChanged;
+			intensityChanged = replaceIfUnequal(rs, ExtendedRenderingState.INTENSITY_MAX,   (float)Double.parseDouble(maxCTF.getText()))   || intensityChanged;
+			intensityChanged = replaceIfUnequal(rs, ExtendedRenderingState.INTENSITY_GAMMA, (float)Double.parseDouble(gammaCTF.getText())) || intensityChanged;;
+
+			boolean alphaChanged = false;
+			alphaChanged = replaceIfUnequal(rs, ExtendedRenderingState.ALPHA_MIN,   (float)Double.parseDouble(minATF.getText()))   || alphaChanged;
+			alphaChanged = replaceIfUnequal(rs, ExtendedRenderingState.ALPHA_MAX,   (float)Double.parseDouble(maxATF.getText()))   || alphaChanged;
+			alphaChanged = replaceIfUnequal(rs, ExtendedRenderingState.ALPHA_GAMMA, (float)Double.parseDouble(gammaATF.getText())) || alphaChanged;
+
+			boolean lightsChanged = false;
+			lightsChanged = replaceIfUnequal(rs, ExtendedRenderingState.LIGHT_K_OBJECT,   (float)Double.parseDouble(koTF.getText()))        || lightsChanged;
+			lightsChanged = replaceIfUnequal(rs, ExtendedRenderingState.LIGHT_K_DIFFUSE,  (float)Double.parseDouble(kdTF.getText()))        || lightsChanged;
+			lightsChanged = replaceIfUnequal(rs, ExtendedRenderingState.LIGHT_K_SPECULAR, (float)Double.parseDouble(ksTF.getText()))        || lightsChanged;
+			lightsChanged = replaceIfUnequal(rs, ExtendedRenderingState.LIGHT_SHININESS,  (float)Double.parseDouble(shininessTF.getText())) || lightsChanged;
+
 			slider.update();
-			fireRenderingSettingsChanged(false);
+
+			if(intensityChanged)
+				fireIntensityChanged();
+			if(alphaChanged)
+				fireAlphaChanged();
+			if(lightsChanged)
+				fireLightsChanged();
 		} catch(Exception ex) {
 		}
 	}
@@ -593,7 +671,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.ALPHA_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
-						slider.fireRenderingSettingsChanged(false);
+						slider.fireAlphaChanged();
 					}
 					break;
 				case DRAGGING_ALPHA_RIGHT:
@@ -602,7 +680,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.ALPHA_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
-						slider.fireRenderingSettingsChanged(false);
+						slider.fireAlphaChanged();
 					}
 					break;
 				case DRAGGING_COLOR_LEFT:
@@ -611,7 +689,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.INTENSITY_MIN] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
-						slider.fireRenderingSettingsChanged(false);
+						slider.fireIntensityChanged();
 					}
 					break;
 				case DRAGGING_COLOR_RIGHT:
@@ -620,7 +698,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 						renderingSettings[ExtendedRenderingState.INTENSITY_MAX] = tmp;
 						repaint();
 						slider.updateTextfieldsFromSliders();
-						slider.fireRenderingSettingsChanged(false);
+						slider.fireIntensityChanged();
 					}
 					break;
 			}

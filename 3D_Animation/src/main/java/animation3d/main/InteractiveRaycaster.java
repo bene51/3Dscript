@@ -166,7 +166,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel = dialog.addContrastPanel(
 				histo8,
 				min, max,
-				renderer.getRenderingState().getChannelProperties(),
+				rs.clone().getChannelProperties(),
 				Color.BLACK);
 
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
@@ -300,8 +300,31 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 		contrastPanel.addContrastPanelListener(new ContrastPanel.Listener() {
 			@Override
-			public void renderingSettingsChanged(boolean lightsChanged) {
-				push(renderer.getRenderingState(), -1, -1, lightsChanged);
+			public void intensityChanged(int channel, double min, double max, double gamma) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setIntensity(channel, min, max, gamma);
+				push(kf, -1, -1);
+			}
+
+			@Override
+			public void alphaChanged(int channel, double min, double max, double gamma) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setAlpha(channel, min, max, gamma);
+				push(kf, -1, -1);
+			}
+
+			@Override
+			public void lightsChanged(int channel, boolean use, double kObj, double kDiff, double kSpec, double shininess) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setLight(channel, use, kObj, kDiff, kSpec, shininess);
+				push(kf, -1, -1);
+			}
+
+			@Override
+			public void weightsChanged(int channel, double weight) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setChannelProperty(channel, ExtendedRenderingState.WEIGHT, weight);
+				push(kf, -1, -1);
 			}
 
 			@Override
@@ -534,11 +557,12 @@ public class InteractiveRaycaster implements PlugInFilter {
 	}
 
 	public void resetRenderingSettings() {
-		ExtendedRenderingState rs = renderer.getRenderingState();
+		ExtendedRenderingState rs = renderer.getRenderingState().clone();
 		renderer.resetRenderingSettings(rs);
-		push(rs, 1, -1, true);
 		contrastPanel.setChannel(contrastPanel.getChannel());
+		contrastPanel.setRenderingSettings(rs.clone().getChannelProperties());
 		contrastPanel.setRenderingAlgorithm(rs.getRenderingAlgorithm());
+		push(rs, -1, -1);
 	}
 
 	public void setTransformation(float ax, float ay, float az, float dx, float dy, float dz, float s) {
