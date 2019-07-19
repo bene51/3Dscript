@@ -109,16 +109,50 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearColorLUT
 	}
 }
 
+JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_calculateGradients(
+		JNIEnv *env,
+		jclass,
+		jint channel,
+		jfloat dzByDx)
+{
+	try {
+		if(raycaster8 != NULL)
+			raycaster8->calculateGradients(env, channel, dzByDx);
+		else if(raycaster16 != NULL)
+			raycaster16->calculateGradients(env, channel, dzByDx);
+		else
+			ThrowException(env, "No raycaster initialized\n");
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
+}
+
+JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearGradients(
+		JNIEnv *env,
+		jclass,
+		jint channel)
+{
+	try {
+		if(raycaster8 != NULL)
+			raycaster8->clearGradients(env, channel);
+		else if(raycaster16 != NULL)
+			raycaster16->clearGradients(env, channel);
+		else
+			ThrowException(env, "No raycaster initialized\n");
+	} catch(std::runtime_error& e) {
+		ThrowException(env, e.what());
+	}
+}
+
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture8(
 		JNIEnv *env,
 		jclass,
 		jint channel,
-		jobjectArray data,
-		jfloat dzByDx)
+		jobjectArray data)
 {
 	if(raycaster8 != NULL) {
 		try {
-			raycaster8->setTexture(env, channel, data, dzByDx);
+			raycaster8->setTexture(env, channel, data);
 		} catch(std::runtime_error& e) {
 			ThrowException(env, e.what());
 		}
@@ -131,12 +165,10 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTexture16(
 		JNIEnv *env,
 		jclass,
 		jint channel,
-		jobjectArray data,
-		jfloat dzByDx)
-{
+		jobjectArray data) {
 	if(raycaster16 != NULL) {
 		try {
-			raycaster16->setTexture(env, channel, data, dzByDx);
+			raycaster16->setTexture(env, channel, data);
 		} catch(std::runtime_error& e) {
 			ThrowException(env, e.what());
 		}

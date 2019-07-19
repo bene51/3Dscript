@@ -40,8 +40,11 @@ public class OpenCLRaycaster {
 
 	public static native void close();
 
-	private static native void setTexture8(int channel, byte[][] data, float dzByDx);
-	private static native void setTexture16(int channel, short[][] data, float dzByDx);
+	private static native void setTexture8(int channel, byte[][] data);
+	private static native void setTexture16(int channel, short[][] data);
+
+	private static native void calculateGradients(int channel, float dzByDx);
+	public static native void clearGradients(int channel);
 
 	private static native void setBackground(int[] data, int w, int h);
 	private static native void clearBackground();
@@ -128,7 +131,6 @@ public class OpenCLRaycaster {
 		int d = imp.getNSlices();
 		int nChannels = imp.getNChannels();
 		tIndex = imp.getT();
-		float dzByDx = (float)(imp.getCalibration().pixelDepth / imp.getCalibration().pixelWidth);
 
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
@@ -141,7 +143,7 @@ public class OpenCLRaycaster {
 					int idx = imp.getStackIndex(c + 1, z + 1, imp.getT());
 					image[z] = (byte[])imp.getStack().getPixels(idx);
 				}
-				setTexture8(c, image, dzByDx);
+				setTexture8(c, image);
 			}
 		}
 		else if(imp.getType() == ImagePlus.GRAY16) {
@@ -151,11 +153,16 @@ public class OpenCLRaycaster {
 					int idx = imp.getStackIndex(c + 1, z + 1, imp.getT());
 					image[z] = (short[])imp.getStack().getPixels(idx);
 				}
-				setTexture16(c, image, dzByDx);
+				setTexture16(c, image);
 			}
 		}
 		else
 			throw new RuntimeException("Only 8- and 16-bit images are supported");
+	}
+
+	public void calculateGradients(int channel) {
+		float dzByDx = (float)(image.getCalibration().pixelDepth / image.getCalibration().pixelWidth);
+		calculateGradients(channel, dzByDx);
 	}
 
 	public void setBackground(ColorProcessor cp, boolean combinedAlpha, boolean mip, boolean[] useLights, boolean[] colorLUT) {

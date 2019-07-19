@@ -385,7 +385,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		for(int c = 0; c < channels; c++) {
 			source = source +
 			"		__read_only image3d_t texture" + c + ",";
-			if(GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY)
+			if(GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY && useLights[c])
 				source = source + " __read_only image3d_t gradient" + c + ",";
 			source = source + " int3 rgb" + c + ",";
 			if(colorLUT[c]) {

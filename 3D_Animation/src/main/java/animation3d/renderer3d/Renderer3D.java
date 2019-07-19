@@ -162,6 +162,11 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 				setLookupTable(c, makeRandomLUT());
 			else if(!nUseLUT[c] && pUseLUT[c]) // lut switched of for channel c
 				setLookupTable(c, null);
+
+			if(nUseLights[c] && !pUseLights[c]) // light switched on for channel c
+				super.calculateGradients(c);
+			else if(!nUseLights[c] && pUseLights[c]) // light switched of for channel c
+				super.clearGradients(c);
 		}
 	}
 

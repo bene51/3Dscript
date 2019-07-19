@@ -58,17 +58,35 @@ RaycasterJNI<T>::clearColorLUT(
 
 template<typename T>
 void
+RaycasterJNI<T>::calculateGradients(
+		JNIEnv *env,
+		jint channel,
+		jfloat dzByDx)
+{
+	raycaster->calculateGradients(channel, dzByDx);
+}
+
+template<typename T>
+void
+RaycasterJNI<T>::clearGradients(
+		JNIEnv *env,
+		jint channel)
+{
+	raycaster->clearGradients(channel);
+}
+
+template<typename T>
+void
 RaycasterJNI<T>::setTexture(
 		JNIEnv *env,
 		jint channel,
-		jobjectArray data,
-		jfloat dzByDx)
+		jobjectArray data)
 {
 	int depth = raycaster->getDepth();
 	for(int z = 0; z < depth; z++)
 		initPlane(env, data, channel, z);
 
-	raycaster->setTexture(channel, cArray_[channel], dzByDx);
+	raycaster->setTexture(channel, cArray_[channel]);
 }
 
 template<typename T>

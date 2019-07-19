@@ -21,11 +21,15 @@ public:
 			jint width, jint height, jint depth,
 			jint tgtWidth, jint tgtHeight);
 	~RaycasterJNI();
-	void setTexture(JNIEnv *env, jint channel, jobjectArray data, jfloat dzByDx);
+	void setTexture(JNIEnv *env, jint channel, jobjectArray data);
 
 	void setColorLUT(JNIEnv *env, jint channel, jintArray lut);
 
 	void clearColorLUT(JNIEnv *env, jint channel);
+
+	void calculateGradients(JNIEnv *env, jint channel, jfloat dzByDx);
+
+	void clearGradients(JNIEnv *env, jint channel);
 
 	void setTgtDimensions(int targetWidth, int targetHeight)
 	{

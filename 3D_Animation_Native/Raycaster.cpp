@@ -147,30 +147,9 @@ Raycaster<T>::Raycaster(
 		texture_[channel] = clCreateImage(context, CL_MEM_READ_WRITE, &format, &desc, NULL, &err);
 		checkOpenCLErrors(err);
 		colorLUT_[channel] = NULL;
+		gradients_[channel] = NULL;
 	}
 
-	// initialize gradient textures
-#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
-	cl_image_format gformat = {CL_RGBA, CL_SIGNED_INT8};
-	cl_image_desc gdesc = {
-		CL_MEM_OBJECT_IMAGE3D,
-#if GRADIENT_MODE == GRADIENT_MODE_TEXTURE
-		(size_t)(dataWidth_), (size_t)(dataHeight_), (size_t)(dataDepth_),
-#elif GRADIENT_MODE == GRADIENT_MODE_DOWNSAMPED_TEXTURE
-		(size_t)(dataWidth_ / 2), (size_t)(dataHeight_ / 2), (size_t)(dataDepth_ / 2),
-#endif
-		0, // image_array_size
-		0, // image_row_pitch
-		0, // image_slice_pitch
-		0, // num_mip_levels
-		0, // num_samples
-		NULL}; // buffer (must be NULL)
-	for(int channel = 0; channel < nChannels; channel++) {
-		gradients_[channel] = clCreateImage(context, CL_MEM_READ_WRITE, &gformat, &gdesc, NULL, &err);
-		checkOpenCLErrors(err);
-	}
-#endif
-		
 
 	lisampler = clCreateSampler(context,
 	                CL_FALSE,         // cl_bool normalized_coords,
@@ -263,9 +242,8 @@ Raycaster<T>::clearBackground()
 
 template<typename T>
 void
-Raycaster<T>::setTexture(int channel, const T * const * const data, float dzByDx)
+Raycaster<T>::setTexture(int channel, const T * const * const data)
 {
-	bool do_erode = false;
 	// copy data to 3D array
 	for(int z = 0; z < dataDepth_; z++) {
 		size_t origin[3] = {0, 0, z};
@@ -283,16 +261,13 @@ Raycaster<T>::setTexture(int channel, const T * const * const data, float dzByDx
 			NULL,
 			NULL));
 	}
-#if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
-	// TODO calculate gradients only on demand, i.e. when lighting is used
-	calculateGradients(channel, dzByDx, do_erode);
-#endif
 }
 
 template<typename T>
 void
-Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
+Raycaster<T>::calculateGradients(int channel, float dzByDx)
 {
+	bool do_erode = false;
 	bool do_smooth = true;
 	cl_mem smoothed = NULL;
 	cl_int err;
@@ -351,6 +326,27 @@ Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
 	cl_int3 grad_size = {dataWidth_, dataHeight_, dataDepth_};
 #endif
 
+
+	// TODO reuse
+	if(gradients_[channel] != NULL)
+		clearGradients(channel);
+
+	// initialize gradient textures
+	cl_image_format gformat = {CL_RGBA, CL_SIGNED_INT8};
+	cl_image_desc gdesc = {
+		CL_MEM_OBJECT_IMAGE3D,
+		(size_t)(grad_size.x), (size_t)(grad_size.y), (size_t)(grad_size.z),
+		0, // image_array_size
+		0, // image_row_pitch
+		0, // image_slice_pitch
+		0, // num_mip_levels
+		0, // num_samples
+		NULL}; // buffer (must be NULL)
+
+	gradients_[channel] = clCreateImage(context, CL_MEM_READ_WRITE, &gformat, &gdesc, NULL, &err);
+	printf("Created gradient for channel %d\n", channel);
+	checkOpenCLErrors(err);
+
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 0, sizeof(cl_mem), &smoothed));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 1, sizeof(cl_sampler), &lisampler));
 	checkOpenCLErrors(clSetKernelArg(grad_kernel, 2, sizeof(cl_mem), &gradients_[channel]));
@@ -376,6 +372,16 @@ Raycaster<T>::calculateGradients(int channel, float dzByDx, bool do_erode)
 
 	if(do_smooth)
 		clReleaseMemObject(smoothed);
+}
+
+template<typename T>
+void
+Raycaster<T>::clearGradients(int channel)
+{
+	if(gradients_[channel] != NULL) {
+		clReleaseMemObject(gradients_[channel]);
+		gradients_[channel] = NULL;
+	}
 }
 
 template<typename T>
@@ -453,7 +459,7 @@ Raycaster<T>::setColorLUT(int channel, const unsigned int * const lut)
 	int l = 2 << bitsPerSample_;
 	cl_int err = 0;
 	// TODO reuse
-	if(colorLUT_ != NULL)
+	if(colorLUT_[channel] != NULL)
 		clearColorLUT(channel);
 
 	cl_channel_type chtype = CL_UNSIGNED_INT8;
@@ -581,7 +587,9 @@ Raycaster<T>::cast(
 		cl_int3 rgb = {channels[c]->r, channels[c]->g, channels[c]->b};
 		checkOpenCLErrors(clSetKernelArg(kernel, argIdx++,  sizeof(cl_mem), &texture_[c]));
 #if GRADIENT_MODE != GRADIENT_MODE_ONTHEFLY
-		checkOpenCLErrors(clSetKernelArg(kernel, argIdx++,  sizeof(cl_mem), &gradients_[c]));
+		if(gradients_[c]) {
+			checkOpenCLErrors(clSetKernelArg(kernel, argIdx++,  sizeof(cl_mem), &gradients_[c]));
+		}
 #endif
 		checkOpenCLErrors(clSetKernelArg(kernel, argIdx++,  sizeof(cl_int3), &rgb));
 		if(colorLUT_[c]) {
@@ -714,7 +722,7 @@ Raycaster<T>::~Raycaster()
 	fflush(stdout);
 	for(int i = 0; i < nChannels_; i++) {
 		clReleaseMemObject(texture_[i]);
-		clReleaseMemObject(gradients_[i]);
+		clearGradients(i);
 	}
 	clReleaseMemObject(background_);
 	clReleaseMemObject(d_inverseTransform_);

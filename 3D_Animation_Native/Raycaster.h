@@ -51,7 +51,6 @@ private:
 	void init_opencl();
 	void cleanup_opencl();
 
-	void calculateGradients(int channel, float dzByDx, bool do_erode);
 	void smooth(cl_mem in, cl_mem out);
 	void erode(cl_mem in, cl_mem out);
 
@@ -68,7 +67,10 @@ public:
 	void setColorLUT(int channel, const unsigned int * const lut);
 	void clearColorLUT(int channel);
 
-	void setTexture(int channel, const T * const * const data, float dzBydX);
+	void calculateGradients(int channel, float dzByDx);
+	void clearGradients(int channel);
+
+	void setTexture(int channel, const T * const * const data);
 
 	void setTgtDimensions(int targetWidth, int targetHeight);
 
