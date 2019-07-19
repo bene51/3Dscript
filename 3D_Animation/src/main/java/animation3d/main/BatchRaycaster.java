@@ -88,7 +88,8 @@ public class BatchRaycaster implements PlugInFilter {
 		}
 
 		try {
-			renderer = new Renderer3D(image, w, h);
+			renderer = new Renderer3D(image, image.getWidth(), image.getHeight());
+			renderer.setTargetSize(w, h);
 		} catch(UnsatisfiedLinkError e) {
 			IJ.handleException(e);
 			IJ.error("Either your graphics card doesn't support OpenCL "
