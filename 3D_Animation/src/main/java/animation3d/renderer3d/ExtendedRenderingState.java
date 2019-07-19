@@ -125,6 +125,12 @@ public class ExtendedRenderingState extends RenderingState {
 		channelProperties[channel][ALPHA_GAMMA] = gamma;
 	}
 
+	public void setColor(int channel, Color c) {
+		channelProperties[channel][CHANNEL_COLOR_RED]   = c.getRed();
+		channelProperties[channel][CHANNEL_COLOR_GREEN] = c.getGreen();
+		channelProperties[channel][CHANNEL_COLOR_BLUE]  = c.getBlue();
+	}
+
 	public void setLight(int channel, boolean useLight, double kObj, double kDiff, double kSpec, double shininess) {
 		channelProperties[channel][USE_LIGHT]        = useLight ? 1 : 0;
 		channelProperties[channel][LIGHT_K_OBJECT]   = kObj;

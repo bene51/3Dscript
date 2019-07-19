@@ -86,6 +86,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		public void alphaChanged(int channel, double min, double max, double gamma);
 		public void lightsChanged(int channel, boolean useLight, double kObj, double kDiff, double kSpec, double shininess);
 		public void weightsChanged(int channel, double weight);
+		public void colorChanged(int channel, Color c);
 		public void backgroundChanged(Color bg);
 		public void channelChanged();
 		public void renderingSettingsReset();
@@ -317,6 +318,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 							wslider.setColor(c);
 						else
 							wslider.setColor(Color.BLACK);
+						fireColorChanged(ch, c);
 						setChannel(channel);
 					});
 					cp.addBackgroundColorListener(c -> {
@@ -461,6 +463,11 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	public void addContrastPanelListener(Listener l) {
         listeners.add(l);
     }
+
+	private void fireColorChanged(int channel, Color c) {
+		for(Listener l : listeners)
+			l.colorChanged(channel, c);
+	}
 
 	private void fireLightsChanged() {
 		if(dontFire)

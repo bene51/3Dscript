@@ -328,6 +328,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 
 			@Override
+			public void colorChanged(int channel, Color color) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setColor(channel, color);
+				push(kf, -1, -1);
+			}
+
+			@Override
 			public void channelChanged() {
 				setAsActiveRaycaster();
 				int channel = contrastPanel.getChannel();
