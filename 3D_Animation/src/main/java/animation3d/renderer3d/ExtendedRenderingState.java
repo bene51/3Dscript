@@ -113,6 +113,26 @@ public class ExtendedRenderingState extends RenderingState {
 		return c;
 	}
 
+	public void setIntensity(int channel, double min, double max, double gamma) {
+		channelProperties[channel][INTENSITY_MIN]   = min;
+		channelProperties[channel][INTENSITY_MAX]   = max;
+		channelProperties[channel][INTENSITY_GAMMA] = gamma;
+	}
+
+	public void setAlpha(int channel, double min, double max, double gamma) {
+		channelProperties[channel][ALPHA_MIN]   = min;
+		channelProperties[channel][ALPHA_MAX]   = max;
+		channelProperties[channel][ALPHA_GAMMA] = gamma;
+	}
+
+	public void setLight(int channel, boolean useLight, double kObj, double kDiff, double kSpec, double shininess) {
+		channelProperties[channel][USE_LIGHT]        = useLight ? 1 : 0;
+		channelProperties[channel][LIGHT_K_OBJECT]   = kObj;
+		channelProperties[channel][LIGHT_K_DIFFUSE]  = kDiff;
+		channelProperties[channel][LIGHT_K_SPECULAR] = kSpec;
+		channelProperties[channel][LIGHT_SHININESS]  = shininess;
+	}
+
 	public Color getBackgroundColor() {
 		int r = (int)nonChannelProperties[BG_COLOR_RED];
 		int g = (int)nonChannelProperties[BG_COLOR_GREEN];
