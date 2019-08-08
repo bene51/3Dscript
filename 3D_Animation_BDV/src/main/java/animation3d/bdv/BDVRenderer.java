@@ -1,12 +1,8 @@
 package animation3d.bdv;
 
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.io.File;
 import java.util.Arrays;
 
 import animation3d.textanim.CombinedTransform;
@@ -15,16 +11,16 @@ import animation3d.textanim.IRenderer3D;
 import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
 import bdv.BigDataViewer;
+import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.cache.CacheControl;
-import bdv.export.ProgressWriter;
-import bdv.ij.util.ProgressWriterIJ;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.tools.brightness.SetupAssignments;
+import bdv.util.Affine3DHelpers;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.Interpolation;
-import bdv.viewer.ViewerFrame;
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.VisibilityAndGrouping;
+import bdv.viewer.animate.RotationAnimator;
 import bdv.viewer.render.MultiResolutionRenderer;
 import bdv.viewer.state.ViewerState;
 import ij.CompositeImage;
@@ -34,10 +30,10 @@ import ij.process.ImageProcessor;
 import ij.process.LUT;
 import mpicbg.spim.data.SpimDataException;
 import net.imglib2.Cursor;
+import net.imglib2.RealPoint;
 import net.imglib2.display.screenimage.awt.ARGBScreenImage;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.ui.PainterThread;
@@ -143,8 +139,53 @@ public class BDVRenderer implements IRenderer3D {
 	}
 
 	@Override
-	public ImageProcessor render(RenderingState kf) {
+	public ImageProcessor render(RenderingState rs) {
 		final ViewerState renderState = viewer.getState();
+		
+		final CombinedTransform transform = rs.getFwdTransform();
+		float[] tmp = transform.calculateForwardTransform();
+		final AffineTransform3D fwd = new AffineTransform3D();
+		fwd.set(toDouble(tmp));
+		
+		final AffineTransform3D c = new AffineTransform3D();
+		renderState.getViewerTransform(c);
+		
+		final double[] qTarget = new double[ 4 ];
+		Affine3DHelpers.extractRotation( fwd, qTarget );
+		viewer.setTransformAnimator(
+				new RotationAnimator(c, tgtW/2, tgtH/2, qTarget, 0));
+		
+		/*
+		CombinedTransform transform = rs.getFwdTransform();
+		float[] translation = transform.getTranslation();
+		float[] rotation    = transform.getRotation();
+		float scale         = transform.getScale();
+		
+		final AffineTransform3D c = new AffineTransform3D();
+		renderState.getViewerTransform(c);
+		
+		double rcw = rotationCenter[0];
+		double rch = rotationCenter[1];
+		//NOTE extract?
+		viewer.setTransformAnimator(
+				new RotationAnimator(c, rcw, rch, toDouble(rotation), 0));
+		*/
+			
+		/*
+		double rw = 2 * rotationCenter[0];
+		double rh = 2 * rotationCenter[1];
+		double scaleX = tgtW / rw;
+		double scaleY = tgtH / rh;
+		double scale = Math.min(scaleX, scaleY);
+		affine.scale(scale);
+		
+		rw *= scale;
+		rh *= scale;
+		double tx = (tgtW - rw) / 2;
+		double ty = (tgtH - rh) / 2;
+		affine.translate(tx, ty, 0);
+		*/
+		//viewer.setCurrentViewerTransform(affine);
 		
 		/*
 		BDVRenderingState bkf = (BDVRenderingState)kf;
@@ -165,8 +206,7 @@ public class BDVRenderer implements IRenderer3D {
 			viewer.toggleInterpolation();
 		viewer.setTimepoint(timepoint);
 		viewer.getVisibilityAndGrouping().setCurrentSource(currentSource);
-		*/
-		
+
 		CombinedTransform transform = kf.getFwdTransform();
 
 		float[] tmp = calculateForwardTransform(transform);
@@ -189,11 +229,13 @@ public class BDVRenderer implements IRenderer3D {
 		affine.translate(tx, ty, 0);
 
 		viewer.setCurrentViewerTransform(affine);
+		*/
 
 		return takeSnapshot().getProcessor();
 	}
 
 	public ImagePlus takeSnapshot() {
+		System.out.println("takeSnapshot()");
 		final ViewerState renderState = viewer.getState();
 		
 		final AffineTransform3D tGV = new AffineTransform3D();
@@ -264,11 +306,21 @@ public class BDVRenderer implements IRenderer3D {
 		
 		final MyTarget target = new MyTarget();
 		final MultiResolutionRenderer renderer = new MultiResolutionRenderer(
-				target, new PainterThread( null ), new double[] { 1 }, 0, false, 1, null, false,
-				viewer.getOptionValues().getAccumulateProjectorFactory(), new CacheControl.Dummy() );
+				target, 
+				new PainterThread( null ), 
+				new double[] { 1 }, 
+				0, 
+				false, 
+				16, //1, // n_rendering_thread 
+				null, 
+				false,
+				viewer.getOptionValues().getAccumulateProjectorFactory(), 
+				//new CacheControl.Dummy() 
+				new VolatileGlobalCellCache(1, 8) // cache (n_mip_level, n_thread)
+			);
 		
 		//FIXME
-		final int numStep = 100;
+		final int numStep = 500;
 		final int stepSize = 1;
 		
 		target.clear();
@@ -285,24 +337,6 @@ public class BDVRenderer implements IRenderer3D {
 		
 		final BufferedImage bImage = target.accumulated.image();
 		return new ImagePlus("Snapshot", bImage);
-		
-		/*
-		ViewerFrame win = viewer.getViewerFrame();
-		win.toFront();
-		IJ.wait(500);
-		Rectangle bounds = win.getBounds();
-		Rectangle r = bounds;
-		ImagePlus imp = null;
-		Image img = null;
-		try {
-			Robot robot = new Robot();
-			img = robot.createScreenCapture(r);
-		} catch(Exception e) { }
-		if (img != null) {
-			imp = new ImagePlus("", img);
-		}
-		return imp;
-		*/
 	}
 
 	@Override
@@ -323,9 +357,8 @@ public class BDVRenderer implements IRenderer3D {
 
 	@Override
 	public void setTargetSize(int w, int h) {
-//		this.tgtW = w;
-//		this.tgtH = h;
-		// TODO
+		tgtW = w;
+		tgtH = h;
 	}
 
 	@Override

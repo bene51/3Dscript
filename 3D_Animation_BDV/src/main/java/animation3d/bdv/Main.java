@@ -143,7 +143,8 @@ public class Main implements Command {
 		System.setProperty( "apple.laf.userScreenMenuBar", "true");
 		new ij.ImageJ();
 		//File xmlFile = new File("C:\\Users\\Andy\\Desktop\\E145_lung_2x2_1hd5\\dataset.xml");
-		File xmlFile = new File("C:\\Users\\Andy\\Desktop\\t1-head\\dataset.xml");
+		//File xmlFile = new File("C:\\Users\\Andy\\Desktop\\t1-head\\dataset.xml");
+		File xmlFile = new File("C:\\Users\\Andy\\Desktop\\12Rays\\dataset.xml");
 		Main.run(xmlFile);
 	}
 }
