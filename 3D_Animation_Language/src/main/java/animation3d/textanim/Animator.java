@@ -32,6 +32,8 @@ public class Animator {
 	private boolean stopRendering = false;
 	private boolean isExecuting = false;
 
+	private int from, to, current;
+
 	public Animator(IRenderer3D renderer) {
 		this.renderer = renderer;
 		animations = new ArrayList<Animation>();
@@ -41,9 +43,13 @@ public class Animator {
 		this.listeners.add(l);
 	}
 
+	public void removeAnimationListener(Listener l) {
+		this.listeners.remove(l);
+	}
+
 	private Future<?> submitted = null;
 
-	public void render(final int from, final int to) throws InterruptedException, ExecutionException {
+	private void render(final int from, final int to) throws InterruptedException, ExecutionException {
 		submitted = exec.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -64,8 +70,8 @@ public class Animator {
 
 		float[] rotcenter = renderer.getRotationCenter();
 		clearAnimations();
-		int from = Integer.MAX_VALUE;
-		int to = 0;
+		from = Integer.MAX_VALUE;
+		to = 0;
 		for(String line : lines) {
 			ParsingResult pr = new ParsingResult();
 			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
@@ -78,6 +84,18 @@ public class Animator {
 			}
 		}
 		render(from, to);
+	}
+
+	public int getFrom() {
+		return from;
+	}
+
+	public int getTo() {
+		return to;
+	}
+
+	public int getCurrent() {
+		return current;
 	}
 
 	public void cancelRendering() {
