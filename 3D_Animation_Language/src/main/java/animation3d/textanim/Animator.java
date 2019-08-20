@@ -21,7 +21,7 @@ import ij.process.ImageProcessor;
 public class Animator {
 
 	public interface Listener {
-		public void animationFinished();
+		public void animationFinished(ImagePlus result);
 	}
 
 	private ArrayList<Listener> listeners = new ArrayList<Listener>();
@@ -99,6 +99,7 @@ public class Animator {
 			if(stopRendering)
 				break;
 
+			current = kf.getFrame();
 			int fIdx = frames.indexOf(kf);
 			boolean alreadyRendered = fIdx >= 0 && fIdx < f;
 			ImageProcessor ip = alreadyRendered ? stack.getProcessor(fIdx + 1).duplicate() : renderer.render(kf);
@@ -120,7 +121,7 @@ public class Animator {
 		}
 
 		isExecuting = false;
-		fireAnimationFinished();
+		fireAnimationFinished(ret);
 		return ret;
 	}
 
@@ -147,8 +148,8 @@ public class Animator {
 		return renderingStates;
 	}
 
-	private void fireAnimationFinished() {
+	private void fireAnimationFinished(ImagePlus ret) {
 		for(Listener l : listeners)
-			l.animationFinished();
+			l.animationFinished(ret);
 	}
 }

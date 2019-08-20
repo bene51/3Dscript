@@ -135,7 +135,7 @@ public class BatchRaycaster implements PlugInFilter {
 		AtomicBoolean finished = new AtomicBoolean(false);
 		animator.addAnimationListener(new Animator.Listener() {
 			@Override
-			public void animationFinished() {
+			public void animationFinished(ImagePlus result) {
 				finished.set(true);
 			}
 		});

@@ -53,6 +53,7 @@ import animation3d.textanim.IRecordingProvider.RecordingItem;
 import animation3d.textanim.IRenderer3D;
 import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
+import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
@@ -964,7 +965,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	// Animator.Listener interface
 	@Override
-	public void animationFinished() {
+	public void animationFinished(ImagePlus result) {
 		getTab().restore();
 	}
 
