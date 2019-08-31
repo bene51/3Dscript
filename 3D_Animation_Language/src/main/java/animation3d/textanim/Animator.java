@@ -3,10 +3,13 @@ package animation3d.textanim;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import animation3d.parser.Interpreter;
 import animation3d.parser.NoSuchMacroException;
@@ -47,19 +50,19 @@ public class Animator {
 		this.listeners.remove(l);
 	}
 
-	private Future<?> submitted = null;
+	private Future<ImagePlus> submitted = null;
 
 	private void render(final int from, final int to) throws InterruptedException, ExecutionException {
-		submitted = exec.submit(new Runnable() {
+		submitted = exec.submit(new Callable<ImagePlus>() {
 			@Override
-			public void run() {
-				try {
-					dorender(from, to);
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
+			public ImagePlus call() {
+				return dorender(from, to);
 			}
 		});
+	}
+
+	public ImagePlus waitForRendering(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+		return submitted.get(timeout, unit);
 	}
 
 	public void render(String text) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
