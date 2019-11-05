@@ -2,7 +2,6 @@ package animation3d.editor;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.text.JTextComponent;
@@ -41,31 +40,16 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 
 	@Override
 	public String getAlreadyEnteredText(JTextComponent comp) {
+		return getAlreadyEnteredText(comp.getText(), comp.getCaretPosition());
+	}
 
-		System.out.println("getAlreadyEnteredText");
-//		Document doc = comp.getDocument();
-		int dot = comp.getCaretPosition();
-//		Element root = doc.getDefaultRootElement();
-//		int index = root.getElementIndex(dot);
-//		Element elem = root.getElement(index);
-
-//		int start = elem.getStartOffset();
-//		int len = dot - start;
-
+	public String getAlreadyEnteredText(String text, int dot) {
 		String input = "";
-//		try {
-//			input = doc.getText(start, len);
-//		} catch (BadLocationException e) {
-//			e.printStackTrace();
-//			return input;
-//		}
-
 
 		ParsingResult result = new ParsingResult();
 		try {
-			input = Preprocessor.getLineForCursor(comp.getText(), dot - 1);
+			input = Preprocessor.getLineForCursor(text, dot - 1);
 			System.out.println("Current line = " + input);
-//			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
 			Interpreter.parse(kwFactory, input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
 			// e.printStackTrace();
@@ -83,9 +67,7 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			if(options == null || options.length == 0)
 				return "";
 
-//			String alreadyEntered = input.substring(ca.getInsertionPosition(), dot - start);
 			String alreadyEntered = input.substring(ca.getInsertionPosition(), input.length());
-			System.out.println("alreadyEntered: " + alreadyEntered);
 			return alreadyEntered;
 		}
 		if(atype == Autocompletion.AUTOCOMPLETION_STRING) {
@@ -94,12 +76,9 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			if(option == null || option.length() == 0)
 				return "";
 
-//			String alreadyEntered = input.substring(ca.getInsertionPosition(), dot - start);
 			String alreadyEntered = input.substring(ca.getInsertionPosition(), input.length());
-			System.out.println("alreadyEntered: " + alreadyEntered);
 			return alreadyEntered;
 		}
-		System.out.println("alreadyEntered: EMPTY");
 		return "";
 	}
 
@@ -115,32 +94,19 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 
 	@Override
 	protected List<Completion> getCompletionsImpl(JTextComponent comp) {
-		System.out.println("getCompletionsImpl");
+		String text = comp.getText();
+		int dot = comp.getCaretPosition();
+		return getCompletionsImpl(text, dot);
+	}
+
+	public List<Completion> getCompletionsImpl(String text, int dot) {
 		List<Completion> completions = new ArrayList<Completion>();
 
-		System.out.println("getAlreadyEnteredText");
-//		Document doc = comp.getDocument();
-		int dot = comp.getCaretPosition();
-//		Element root = doc.getDefaultRootElement();
-//		int index = root.getElementIndex(dot);
-//		Element elem = root.getElement(index);
-
-//		int start = elem.getStartOffset();
-//		int len = dot - start;
-
 		String input = "";
-//		try {
-//			input = doc.getText(start, len);
-//		} catch (BadLocationException e) {
-//			e.printStackTrace();
-//			return completions;
-//		}
 
 		ParsingResult result = new ParsingResult();
 		try {
-			input = Preprocessor.getLineForCursor(comp.getText(), dot - 1);
-			System.out.println("Current line = " + input);
-//			Interpreter.parse(input, dot - start, new float[] {100, 100, 100}, result);
+			input = Preprocessor.getLineForCursor(text, dot - 1);
 			Interpreter.parse(kwFactory, input, input.length(), new float[] {100, 100, 100}, result);
 		} catch(Exception e) {
 //			e.printStackTrace();
@@ -206,7 +172,6 @@ public class AnimationCompletionProvider extends CompletionProviderBase {
 			String desc1 = ia.getDescription(1);
 			completions.add(new TemplateCompletion(this, "input", "(0, 1)", "(${" + desc0 + "}, ${" + desc1 + "})${cursor}"));
 		}
-		System.out.println("return completions: " + Arrays.toString(completions.toArray()));
 
 		return completions;
 	}
