@@ -599,7 +599,7 @@ public class Interpreter {
 		else
 			result.setResult(ta);
 
-		skipSpace();
+		space(result, false);
 
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(), lexer.getAutocompletionList(cursorpos, Transition.values())));
