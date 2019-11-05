@@ -39,6 +39,13 @@ public class Scalebar {
 			return name;
 		}
 
+		public static Position fromName(String name) {
+			for(Position sb : values())
+				if(sb.name.equals(name))
+					return sb;
+			return null;
+		}
+
 		public static String[] getNames() {
 			String[] ret = new String[values().length];
 			for(int i = 0; i < ret.length; i++)
