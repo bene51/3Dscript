@@ -599,11 +599,14 @@ public class Interpreter {
 		else
 			result.setResult(ta);
 
-		space(result, false);
+		Token space = space(result, true);
 
-		result.setAutocompletion(new ChoiceAutocompletion(
-				lexer.getIndex(), lexer.getAutocompletionList(cursorpos, Transition.values())));
-		float[] transition = transition();
+		float[] transition = Transition.LINEAR.getTransition();
+		if(space != null) {
+			result.setAutocompletion(new ChoiceAutocompletion(
+					lexer.getIndex(), lexer.getAutocompletionList(cursorpos, Transition.values())));
+			transition = transition();
+		}
 
 		if(ta != null)
 			ta.setBezierControls(transition[0], transition[1], transition[2], transition[3]);
