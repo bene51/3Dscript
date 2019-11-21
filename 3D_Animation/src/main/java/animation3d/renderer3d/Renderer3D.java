@@ -71,6 +71,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 				Color.BLACK,
 				RenderingAlgorithm.INDEPENDENT_TRANSPARENCY,
 				transformation);
+		this.rs.setNonChannelProperty(ExtendedRenderingState.SHOW_SCALEBAR, 1);
 	}
 
 	@Override

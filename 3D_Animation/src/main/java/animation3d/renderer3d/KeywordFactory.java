@@ -102,10 +102,10 @@ public class KeywordFactory implements IKeywordFactory {
 	}
 
 	public static enum NonChannelKeyword implements Keyword {
-
 		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE),
 		TIMEPOINT("timepoint", new String[] {"<timepoint>"}, ExtendedRenderingState.TIMEPOINT),
-		RENDERING_ALGORITHM("rendering algorithm", new String[] {"<algorithm>"}, makeRenderingAlgorithmMap(), ExtendedRenderingState.RENDERING_ALGORITHM);
+		RENDERING_ALGORITHM("rendering algorithm", new String[] {"<algorithm>"}, makeRenderingAlgorithmMap(), ExtendedRenderingState.RENDERING_ALGORITHM),
+		SCALEBAR("scalebar", new String[] {"<on/off>"}, makeOnOffMap(), ExtendedRenderingState.SHOW_SCALEBAR);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;

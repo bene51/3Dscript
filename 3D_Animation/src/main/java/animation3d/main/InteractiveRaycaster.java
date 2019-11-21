@@ -479,7 +479,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void scalebarChanged() {
-				push();
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setNonChannelProperty(ExtendedRenderingState.SHOW_SCALEBAR, renderer.getScalebar().isVisible() ? 1 : 0);
+				push(kf);
 			}
 		});
 
@@ -604,6 +606,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		croppingPanel.setNearAndFar(near, far);
 
 		// TODO Output Panel, once its options are included in the RenderingState
+		outputPanel.updateGui();
 	}
 
 	public void startTextBasedAnimation() {

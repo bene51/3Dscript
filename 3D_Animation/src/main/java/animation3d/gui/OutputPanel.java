@@ -49,6 +49,7 @@ public class OutputPanel extends JPanel {
 
 
 	private NumberField widthTF, heightTF; // , zStepTF;
+	private JCheckBox sbBox;
 
 	public static interface Listener {
 		public void outputWidthChanged(int w);
@@ -61,6 +62,10 @@ public class OutputPanel extends JPanel {
 
 	private final BoundingBox boundingBox;
 	private final Scalebar scaleBar;
+
+	public void updateGui() {
+		sbBox.setSelected(scaleBar.isVisible());
+	}
 
 	public OutputPanel(int w, int h, float zStep, final BoundingBox boundingBox, final Scalebar scaleBar) {
 		super(new GridLayout(2, 1));
@@ -130,7 +135,7 @@ public class OutputPanel extends JPanel {
 		c.weightx = 1;
 		propertiesPanel.add(bbProperties, c);
 
-		final JCheckBox sbBox = new JCheckBox("Scalebar", scaleBar.isVisible());
+		sbBox = new JCheckBox("Scalebar", scaleBar.isVisible());
 		final JButton sbProperties = new JButton("Properties");
 
 		c.gridx = 0; c.gridy = 1;
