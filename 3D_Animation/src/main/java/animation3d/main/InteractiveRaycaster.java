@@ -474,7 +474,9 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 			@Override
 			public void boundingBoxChanged() {
-				push();
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setBoundingboxProperties(renderer.getBoundingBox());
+				push(kf);
 			}
 
 			@Override

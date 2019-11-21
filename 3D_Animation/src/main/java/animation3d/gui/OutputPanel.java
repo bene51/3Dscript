@@ -49,7 +49,7 @@ public class OutputPanel extends JPanel {
 
 
 	private NumberField widthTF, heightTF; // , zStepTF;
-	private JCheckBox sbBox;
+	private final JCheckBox sbBox, bbBox;
 
 	public static interface Listener {
 		public void outputWidthChanged(int w);
@@ -65,6 +65,7 @@ public class OutputPanel extends JPanel {
 
 	public void updateGui() {
 		sbBox.setSelected(scaleBar.isVisible());
+		bbBox.setSelected(boundingBox.isVisible());
 	}
 
 	public OutputPanel(int w, int h, float zStep, final BoundingBox boundingBox, final Scalebar scaleBar) {
@@ -122,7 +123,7 @@ public class OutputPanel extends JPanel {
 		JPanel propertiesPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
-		final JCheckBox bbBox = new JCheckBox("Bounding Box", boundingBox.isVisible());
+		bbBox = new JCheckBox("Bounding Box", boundingBox.isVisible());
 		final JButton bbProperties = new JButton("Properties");
 
 		c.gridx = c.gridy = 0;

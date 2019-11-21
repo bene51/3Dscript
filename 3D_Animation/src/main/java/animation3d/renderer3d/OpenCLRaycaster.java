@@ -273,7 +273,11 @@ public class OpenCLRaycaster {
 		int[] result = cast(invTransform, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
+
+		kf.adjustBoundingbox(bbox);
 		bbox.drawBoundingBox(ret, fwdTransform, invTransform);
+
+		kf.adjustScalebar(sbar);
 		sbar.drawScalebar(ret, fwdTransform, invTransform, transform.getOutputSpacing()[0] / transform.getScale());
 
 

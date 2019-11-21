@@ -45,10 +45,15 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int SCALEBAR_WIDTH      = 10;
 	public static final int SCALEBAR_POSITION   = 11;
 	public static final int SCALEBAR_OFFSET     = 12;
+	public static final int SHOW_BOUNDINGBOX    = 13;
+	public static final int BOUNDINGBOX_RED     = 14;
+	public static final int BOUNDINGBOX_GREEN   = 15;
+	public static final int BOUNDINGBOX_BLUE    = 16;
+	public static final int BOUNDINGBOX_WIDTH   = 17;
 
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
-		nonChannelProperties = new double[13];
+		nonChannelProperties = new double[18];
 		channelProperties = new double[nChannels][24];
 	}
 
@@ -183,6 +188,24 @@ public class ExtendedRenderingState extends RenderingState {
 		sbar.setWidth((float)nonChannelProperties[ExtendedRenderingState.SCALEBAR_WIDTH]);
 		sbar.setPosition(Scalebar.Position.values()[p]);
 		sbar.setOffset((float)nonChannelProperties[ExtendedRenderingState.SCALEBAR_OFFSET]);
+	}
+
+	public void setBoundingboxProperties(BoundingBox bb) {
+		nonChannelProperties[SHOW_BOUNDINGBOX]     = bb.isVisible() ? 1 : 0;
+		nonChannelProperties[BOUNDINGBOX_RED]      = bb.getColor().getRed();
+		nonChannelProperties[BOUNDINGBOX_GREEN]    = bb.getColor().getGreen();
+		nonChannelProperties[BOUNDINGBOX_BLUE]     = bb.getColor().getBlue();
+		nonChannelProperties[BOUNDINGBOX_WIDTH]    = bb.getWidth();
+	}
+
+	public void adjustBoundingbox(BoundingBox bb) {
+		Color c = new Color(
+				(int)nonChannelProperties[BOUNDINGBOX_RED],
+				(int)nonChannelProperties[BOUNDINGBOX_GREEN],
+				(int)nonChannelProperties[BOUNDINGBOX_BLUE]);
+		bb.setVisible(nonChannelProperties[ExtendedRenderingState.SHOW_BOUNDINGBOX] > 0.5);
+		bb.setColor(c);
+		bb.setWidth((float)nonChannelProperties[ExtendedRenderingState.BOUNDINGBOX_WIDTH]);
 	}
 
 	public RenderingAlgorithm getRenderingAlgorithm() {

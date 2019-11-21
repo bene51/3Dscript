@@ -72,6 +72,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 				RenderingAlgorithm.INDEPENDENT_TRANSPARENCY,
 				transformation);
 		this.rs.setScalebarProperties(super.getScalebar());
+		this.rs.setBoundingboxProperties(super.getBoundingBox());
 	}
 
 	@Override

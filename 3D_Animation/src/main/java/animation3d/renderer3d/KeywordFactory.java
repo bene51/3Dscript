@@ -105,12 +105,15 @@ public class KeywordFactory implements IKeywordFactory {
 		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE),
 		TIMEPOINT("timepoint", new String[] {"<timepoint>"}, ExtendedRenderingState.TIMEPOINT),
 		RENDERING_ALGORITHM("rendering algorithm", new String[] {"<algorithm>"}, makeRenderingAlgorithmMap(), ExtendedRenderingState.RENDERING_ALGORITHM),
-		SCALEBAR("scalebar visibility", new String[] {"<on/off>"}, makeOnOffMap(), ExtendedRenderingState.SHOW_SCALEBAR),
+		SCALEBAR_VISIBILITY("scalebar visibility", new String[] {"<on/off>"}, makeOnOffMap(), ExtendedRenderingState.SHOW_SCALEBAR),
 		SCALEBAR_LENGTH("scalebar length", new String[] {"<length>"}, ExtendedRenderingState.SCALEBAR_LENGTH),
 		SCALEBAR_COLOR("scalebar color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.SCALEBAR_RED, ExtendedRenderingState.SCALEBAR_GREEN, ExtendedRenderingState.SCALEBAR_BLUE),
 		SCALEBAR_WIDTH("scalebar width", new String[] {"<width>"}, ExtendedRenderingState.SCALEBAR_WIDTH),
 		SCALEBAR_POSITION("scalebar position", new String[] {"<position>"}, makePositionMap(), ExtendedRenderingState.SCALEBAR_POSITION),
-		SCALEBAR_OFFSET("scalebar offset", new String[] {"<offset>"}, ExtendedRenderingState.SCALEBAR_OFFSET);
+		SCALEBAR_OFFSET("scalebar offset", new String[] {"<offset>"}, ExtendedRenderingState.SCALEBAR_OFFSET),
+		BOUNDINGBOX_VISIBILITY("bounding box visibility", new String[] {"<on/off>"}, makeOnOffMap(), ExtendedRenderingState.SHOW_BOUNDINGBOX),
+		BOUNDINGBOX_COLOR("bounding box color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BOUNDINGBOX_RED, ExtendedRenderingState.BOUNDINGBOX_GREEN, ExtendedRenderingState.BOUNDINGBOX_BLUE),
+		BOUNDINGBOX_WIDTH("bounding box width", new String[] {"<width>"}, ExtendedRenderingState.BOUNDINGBOX_WIDTH);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
