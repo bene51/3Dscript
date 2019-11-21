@@ -157,7 +157,7 @@ public class Scalebar {
 	}
 
 	public void setLength(float l) {
-		changedManually = true;
+		changedManually = changedManually || l != length;
 		length = l;
 	}
 

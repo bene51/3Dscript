@@ -105,7 +105,12 @@ public class KeywordFactory implements IKeywordFactory {
 		BG_COLOR("background color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.BG_COLOR_RED, ExtendedRenderingState.BG_COLOR_GREEN, ExtendedRenderingState.BG_COLOR_BLUE),
 		TIMEPOINT("timepoint", new String[] {"<timepoint>"}, ExtendedRenderingState.TIMEPOINT),
 		RENDERING_ALGORITHM("rendering algorithm", new String[] {"<algorithm>"}, makeRenderingAlgorithmMap(), ExtendedRenderingState.RENDERING_ALGORITHM),
-		SCALEBAR("scalebar", new String[] {"<on/off>"}, makeOnOffMap(), ExtendedRenderingState.SHOW_SCALEBAR);
+		SCALEBAR("scalebar visibility", new String[] {"<on/off>"}, makeOnOffMap(), ExtendedRenderingState.SHOW_SCALEBAR),
+		SCALEBAR_LENGTH("scalebar length", new String[] {"<length>"}, ExtendedRenderingState.SCALEBAR_LENGTH),
+		SCALEBAR_COLOR("scalebar color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.SCALEBAR_RED, ExtendedRenderingState.SCALEBAR_GREEN, ExtendedRenderingState.SCALEBAR_BLUE),
+		SCALEBAR_WIDTH("scalebar width", new String[] {"<width>"}, ExtendedRenderingState.SCALEBAR_WIDTH),
+		SCALEBAR_POSITION("scalebar position", new String[] {"<position>"}, makePositionMap(), ExtendedRenderingState.SCALEBAR_POSITION),
+		SCALEBAR_OFFSET("scalebar offset", new String[] {"<offset>"}, ExtendedRenderingState.SCALEBAR_OFFSET);
 
 		private final String keyword;
 		private final String[] autocompletionDesc;
@@ -175,6 +180,13 @@ public class KeywordFactory implements IKeywordFactory {
 			map.put(name, new double[] {algo.ordinal()});
 		}
 		return map;
+	}
 
+	private static Map<String, double[]> makePositionMap() {
+		HashMap<String, double[]> map = new HashMap<String, double[]>();
+		for(Scalebar.Position p : Scalebar.Position.values()) {
+			map.put(p.toString(), new double[] {p.ordinal()});
+		}
+		return map;
 	}
 }

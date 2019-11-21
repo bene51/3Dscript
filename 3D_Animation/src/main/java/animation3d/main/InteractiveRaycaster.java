@@ -480,7 +480,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void scalebarChanged() {
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
-				kf.setNonChannelProperty(ExtendedRenderingState.SHOW_SCALEBAR, renderer.getScalebar().isVisible() ? 1 : 0);
+				kf.setScalebarProperties(renderer.getScalebar());
 				push(kf);
 			}
 		});

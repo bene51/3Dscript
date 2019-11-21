@@ -38,10 +38,17 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int TIMEPOINT           = 3;
 	public static final int RENDERING_ALGORITHM = 4;
 	public static final int SHOW_SCALEBAR       = 5;
+	public static final int SCALEBAR_RED        = 6;
+	public static final int SCALEBAR_GREEN      = 7;
+	public static final int SCALEBAR_BLUE       = 8;
+	public static final int SCALEBAR_LENGTH     = 9;
+	public static final int SCALEBAR_WIDTH      = 10;
+	public static final int SCALEBAR_POSITION   = 11;
+	public static final int SCALEBAR_OFFSET     = 12;
 
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
-		nonChannelProperties = new double[6];
+		nonChannelProperties = new double[13];
 		channelProperties = new double[nChannels][24];
 	}
 
@@ -151,6 +158,31 @@ public class ExtendedRenderingState extends RenderingState {
 		nonChannelProperties[BG_COLOR_RED]   = r;
 		nonChannelProperties[BG_COLOR_GREEN] = g;
 		nonChannelProperties[BG_COLOR_BLUE]  = b;
+	}
+
+	public void setScalebarProperties(Scalebar scalebar) {
+		nonChannelProperties[SHOW_SCALEBAR]     = scalebar.isVisible() ? 1 : 0;
+		nonChannelProperties[SCALEBAR_RED]      = scalebar.getColor().getRed();
+		nonChannelProperties[SCALEBAR_GREEN]    = scalebar.getColor().getGreen();
+		nonChannelProperties[SCALEBAR_BLUE]     = scalebar.getColor().getBlue();
+		nonChannelProperties[SCALEBAR_LENGTH]   = scalebar.getLength();
+		nonChannelProperties[SCALEBAR_WIDTH]    = scalebar.getWidth();
+		nonChannelProperties[SCALEBAR_OFFSET]   = scalebar.getOffset();
+		nonChannelProperties[SCALEBAR_POSITION] = scalebar.getPosition().ordinal();
+	}
+
+	public void adjustScalebar(Scalebar sbar) {
+		Color c = new Color(
+				(int)nonChannelProperties[SCALEBAR_RED],
+				(int)nonChannelProperties[SCALEBAR_GREEN],
+				(int)nonChannelProperties[SCALEBAR_BLUE]);
+		int p = Math.min((int)nonChannelProperties[SCALEBAR_POSITION], Scalebar.Position.values().length - 1);
+		sbar.setVisible(nonChannelProperties[ExtendedRenderingState.SHOW_SCALEBAR] > 0.5);
+		sbar.setColor(c);
+		sbar.setLength((float)nonChannelProperties[ExtendedRenderingState.SCALEBAR_LENGTH]);
+		sbar.setWidth((float)nonChannelProperties[ExtendedRenderingState.SCALEBAR_WIDTH]);
+		sbar.setPosition(Scalebar.Position.values()[p]);
+		sbar.setOffset((float)nonChannelProperties[ExtendedRenderingState.SCALEBAR_OFFSET]);
 	}
 
 	public RenderingAlgorithm getRenderingAlgorithm() {
