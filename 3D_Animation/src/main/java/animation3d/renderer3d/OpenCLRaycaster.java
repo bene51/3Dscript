@@ -333,11 +333,11 @@ public class OpenCLRaycaster {
 		final int wOut = mask.getWidth();
 		final int hOut = mask.getHeight();
 
-		final int n = nC * dIn;
+		final int n = dIn;
 		final AtomicInteger prog = new AtomicInteger(0);
 
 //		for(int ic = 0; ic < nC; ic++) {
-		final int ic = channel + 1;
+		final int ic = channel;
 			for (int iz = 0; iz < dIn; iz++) {
 				final int z = iz;
 				final int c = ic;
@@ -371,6 +371,7 @@ public class OpenCLRaycaster {
 				});
 			}
 //		}
+		IJ.showProgress(1);
 		exec.shutdown();
 		try {
 			exec.awaitTermination(1, TimeUnit.DAYS);
