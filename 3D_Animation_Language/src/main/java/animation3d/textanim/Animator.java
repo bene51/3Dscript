@@ -35,7 +35,7 @@ public class Animator {
 	private boolean stopRendering = false;
 	private boolean isExecuting = false;
 
-	private int from, to, current;
+	private double progress;
 
 	public Animator(IRenderer3D renderer) {
 		this.renderer = renderer;
@@ -52,11 +52,11 @@ public class Animator {
 
 	private Future<ImagePlus> submitted = null;
 
-	private void render(final int from, final int to) throws InterruptedException, ExecutionException {
+	private void render(final List<RenderingState> frames) throws InterruptedException, ExecutionException {
 		submitted = exec.submit(new Callable<ImagePlus>() {
 			@Override
 			public ImagePlus call() {
-				return dorender(from, to);
+				return dorender(frames);
 			}
 		});
 	}
@@ -66,6 +66,10 @@ public class Animator {
 	}
 
 	public void render(String text) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+		render(text, -1, -1);
+	}
+
+	public void render(String text, int f, int t) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
 		HashMap<String, String> macros = new HashMap<String, String>();
 		ArrayList<String> lines = new ArrayList<String>();
 
@@ -73,8 +77,9 @@ public class Animator {
 
 		float[] rotcenter = renderer.getRotationCenter();
 		clearAnimations();
-		from = Integer.MAX_VALUE;
-		to = 0;
+		int from = Integer.MAX_VALUE;
+		int to = 0;
+
 		for(String line : lines) {
 			ParsingResult pr = new ParsingResult();
 			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
@@ -86,19 +91,43 @@ public class Animator {
 				addAnimation(ta);
 			}
 		}
-		render(from, to);
+		if(f >= 0)
+			from = f;
+		if(t >= 0) {
+			if(t < f)
+				t = f;
+			to = t;
+		}
+
+		List<RenderingState> frames = createRenderingStates(from, to);
+		render(frames);
 	}
 
-	public int getFrom() {
-		return from;
+	public void render(String text, int[] frameIndices) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+		HashMap<String, String> macros = new HashMap<String, String>();
+		ArrayList<String> lines = new ArrayList<String>();
+
+		Preprocessor.preprocess(text, lines, macros);
+
+		float[] rotcenter = renderer.getRotationCenter();
+		clearAnimations();
+
+		for(String line : lines) {
+			ParsingResult pr = new ParsingResult();
+			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
+			Animation ta = pr.getResult();
+			if(ta != null) {
+				ta.pickScripts(macros);
+				addAnimation(ta);
+			}
+		}
+
+		List<RenderingState> frames = createRenderingStates(frameIndices);
+		render(frames);
 	}
 
-	public int getTo() {
-		return to;
-	}
-
-	public int getCurrent() {
-		return current;
+	public double getProgress() {
+		return progress;
 	}
 
 	public void cancelRendering() {
@@ -109,25 +138,25 @@ public class Animator {
 		return isExecuting;
 	}
 
-	private ImagePlus dorender(int from, int to) {
+	private ImagePlus dorender(List<RenderingState> frames) {
 		isExecuting = true;
 		stopRendering = false;
-		List<RenderingState> frames = createRenderingStates(from, to);
 		ImageStack stack = null;
 		ImagePlus ret = null;
+		progress = 0;
 		for(int f = 0; f < frames.size(); f++) {
+			progress = f / frames.size();
 			RenderingState kf = frames.get(f);
 			if(stopRendering)
 				break;
 
-			current = kf.getFrame();
 			int fIdx = frames.indexOf(kf);
 			boolean alreadyRendered = fIdx >= 0 && fIdx < f;
 			ImageProcessor ip = alreadyRendered ? stack.getProcessor(fIdx + 1).duplicate() : renderer.render(kf);
 
 			if(stack == null)
 				stack = new ImageStack(ip.getWidth(), ip.getHeight());
-			stack.addSlice(ip);
+			stack.addSlice(Integer.toString(kf.getFrame()), ip);
 
 			if(stack.size() == 2 || (stack.size() == 1 && frames.size() == 1)) {
 				ret = new ImagePlus(renderer.getTitle() + ".avi", stack);
@@ -140,7 +169,7 @@ public class Animator {
 				ret.updateAndDraw();
 			}
 		}
-
+		progress = 1;
 		isExecuting = false;
 		fireAnimationFinished(ret);
 		return ret;
@@ -158,6 +187,21 @@ public class Animator {
 		List<RenderingState> renderingStates = new ArrayList<RenderingState>();
 		RenderingState previous = renderer.getRenderingState();
 		for(int t = from; t <= to; t++) {
+			RenderingState kf = previous.clone();
+			kf.getFwdTransform().setTransformation(Transform.fromIdentity(null));
+			kf.setFrame(t);
+			for(Animation a : animations)
+				a.adjustRenderingState(kf, renderingStates, renderer.getNChannels());
+			renderingStates.add(kf);
+			previous = kf;
+		}
+		return renderingStates;
+	}
+
+	public List<RenderingState> createRenderingStates(int[] frameIndices) {
+		List<RenderingState> renderingStates = new ArrayList<RenderingState>();
+		RenderingState previous = renderer.getRenderingState();
+		for(int t : frameIndices) {
 			RenderingState kf = previous.clone();
 			kf.getFwdTransform().setTransformation(Transform.fromIdentity(null));
 			kf.setFrame(t);
