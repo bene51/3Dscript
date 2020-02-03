@@ -76,7 +76,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			close, undo, redo, cut, copy, paste, find, replace, selectAll, kill,
 			gotoLine,
 			findNext, findPrevious, clearScreen,
-			nextTab, previousTab, runSelection, run,
+			nextTab, previousTab, runSelection, run, runFromTo,
 			decreaseFontSize, increaseFontSize, chooseFontSize,
 			savePreferences,
 //			recordContrast,
@@ -263,6 +263,8 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		runMenu.setMnemonic(KeyEvent.VK_R);
 
 		run = addToMenu(runMenu, "Run", KeyEvent.VK_R, ctrl);
+
+		runFromTo = addToMenu(runMenu, "Run from ... to ...", 0, 0);
 
 		runSelection =
 			addToMenu(runMenu, "Run selected code", KeyEvent.VK_R, ctrl | shift);
@@ -586,6 +588,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		else if (source == save) save();
 		else if (source == saveas) saveAs();
 		else if (source == run) runText(false);
+		else if (source == runFromTo) runTextFromTo(false);
 		else if (source == recordTransformation) recordTransformation();
 		else if (source == recordTransitionStart) recordTransitionStart();
 		else if (source == recordTransitionEnd) recordTransitionEnd();
@@ -956,6 +959,32 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 		try {
 			animator.render(text);
+		} catch(Exception ex) {
+			handleException(ex);
+			tab.restore();
+			throw new RuntimeException("Error reading animations", ex);
+		}
+	}
+
+	public void runTextFromTo(boolean selection) {
+		final TextEditorTab tab = getTab();
+		tab.showOutput();
+		tab.prepare();
+
+		String text = tab.editorPane.getText();
+
+		GenericDialog gd = new GenericDialog("Run from ... to ...");
+		gd.addNumericField("From frame", -1, 0);
+		gd.addNumericField("To frame", -1, 0);
+		gd.showDialog();
+		if(gd.wasCanceled())
+			return;
+
+		int from = (int)gd.getNextNumber();
+		int to   = (int)gd.getNextNumber();
+
+		try {
+			animator.render(text, from, to);
 		} catch(Exception ex) {
 			handleException(ex);
 			tab.restore();
