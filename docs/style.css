@@ -11,40 +11,40 @@ background-size: cover;
 }
 
 #header {
-/* position: fixed; */
-margin-top: 0px;
-display: block;
-padding: 0px;
-border: 0px;
-border-top: white solid 30px;
-/* border-bottom: gray solid 2px; */
-top: 0px;
 height: 250px;
 width: 100%;
-background-image: url('banner.jpg');
+}
+
+#header #logo {
+background-image: url('https://imagej.net/_images/d/d9/3Dscript-Logo.png');
 background-size: contain;
 background-repeat: no-repeat;
 background-color: #fff;
 background-position: center;
-text-align: center;
-z-index: 1;
+display: inline-block;
+width: 200px;
+height: 200px;
+vertical-align: middle;
+}
+
+#header #logotext {
+text-align: left;
+display: inline-block;
+vertical-align: middle;
+margin-left: 80px;
 }
 
 #header h1 {
-position: relative;
-top: 20px;
-margin: 0px;
-margin-top: 50px;
-padding: 0;
-border: 0;
 color: #333;
+padding: 0;
+margin: 0;
+font-size: 3em;
 }
 
 #header p {
-position: relative;
-top: 5px;
 color: #333;
-font-size: medium;
+font-size: 1.5em;
+margin: 5px 0;
 }
 
 #header a {
