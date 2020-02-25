@@ -33,9 +33,7 @@ Installation:
 * Start Fiji
 * Click on Help>Update...
 * Click on "Manage update sites"
-* Click on "Add update site"
-* Enter Name: 3Dscript
-* Enter URL: https://romulus.oice.uni-erlangen.de/updatesite/
+* Check the box in front of "3Dscript"
 * Click on "Close"
 * Click on "Apply changes"
 * Restart Fiji
