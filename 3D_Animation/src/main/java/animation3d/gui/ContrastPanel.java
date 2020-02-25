@@ -505,7 +505,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			return;
 		double[] rs = renderingSettings[channel];
 		for(Listener l : listeners)
-			l.intensityChanged(channel,
+			l.alphaChanged(channel,
 					rs[ExtendedRenderingState.ALPHA_MIN],
 					rs[ExtendedRenderingState.ALPHA_MAX],
 					rs[ExtendedRenderingState.ALPHA_GAMMA]);
