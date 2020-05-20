@@ -268,7 +268,7 @@ void
 Raycaster<T>::calculateGradients(int channel, float dzByDx)
 {
 	bool do_erode = false;
-	bool do_smooth = true;
+	bool do_smooth = false;
 	cl_mem smoothed = NULL;
 	cl_int err;
 
