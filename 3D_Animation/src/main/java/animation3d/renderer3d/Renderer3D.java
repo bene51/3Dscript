@@ -18,14 +18,14 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 
 	private final ExtendedRenderingState rs;
 
-	private float near;
-	private float far;
-
 	private final IKeywordFactory kwFactory = new KeywordFactory();
 
 	public Renderer3D(ImagePlus image, int wOut, int hOut) {
 		super(image, wOut, hOut);
+		this.rs = makeDefaultRenderingState(image);
+	}
 
+	public ExtendedRenderingState makeDefaultRenderingState(ImagePlus image) {
 		LUT[] luts = image.isComposite() ?
 				image.getLuts() : new LUT[] {image.getProcessor().getLut()};
 
@@ -43,8 +43,8 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		float pdOut = pdIn[2];
 		float[] p = new float[] {pwOut, phOut, pdOut};
 
-		near = (float)CroppingPanel.getNear(image);
-		far  = (float)CroppingPanel.getFar(image);
+		float near = (float)CroppingPanel.getNear(image);
+		float far  = (float)CroppingPanel.getFar(image);
 		float[] rotcenter = new float[] {
 				image.getWidth()   * pdIn[0] / 2,
 				image.getHeight()  * pdIn[1] / 2,
@@ -64,15 +64,20 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, p, rotcenter);
 
-		this.rs = new ExtendedRenderingState(0,
+		ExtendedRenderingState rs = new ExtendedRenderingState(0,
 				image.getT(),
 				renderingSettings,
 				channelColors,
 				Color.BLACK,
 				RenderingAlgorithm.INDEPENDENT_TRANSPARENCY,
 				transformation);
-		this.rs.setScalebarProperties(super.getScalebar());
-		this.rs.setBoundingboxProperties(super.getBoundingBox());
+		rs.setScalebarProperties(super.getScalebar());
+		rs.setBoundingboxProperties(super.getBoundingBox());
+		return rs;
+	}
+
+	public void reset() {
+		rs.setFrom(makeDefaultRenderingState(image));
 	}
 
 	@Override
