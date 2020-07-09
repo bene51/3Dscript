@@ -21,7 +21,11 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 	private final IKeywordFactory kwFactory = new KeywordFactory();
 
 	public Renderer3D(ImagePlus image, int wOut, int hOut) {
-		super(image, wOut, hOut);
+		this(image, wOut, hOut, null);
+	}
+
+	public Renderer3D(ImagePlus image, int wOut, int hOut, Progress loadingProgress) {
+		super(image, wOut, hOut, loadingProgress);
 		this.rs = makeDefaultRenderingState(image);
 	}
 

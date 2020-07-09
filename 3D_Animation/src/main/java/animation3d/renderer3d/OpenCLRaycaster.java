@@ -73,13 +73,21 @@ public class OpenCLRaycaster {
 	protected BoundingBox bbox;
 	protected Scalebar sbar;
 
+	private Progress loadingProgress = null;
+
 	public OpenCLRaycaster(ImagePlus imp, int wOut, int hOut) {
+		this(imp, wOut, hOut, null);
+	}
+
+	public OpenCLRaycaster(ImagePlus imp, int wOut, int hOut, Progress loadingProgress) {
 		wIn = imp.getWidth();
 		hIn = imp.getHeight();
 		dIn = imp.getNSlices();
 		this.wOut = wOut;
 		this.hOut = hOut;
 		this.nChannels = imp.getNChannels();
+		this.loadingProgress = loadingProgress;
+
 
 		Calibration cal = imp.getCalibration();
 		bbox = new BoundingBox(wIn, hIn, dIn, cal.pixelWidth, cal.pixelHeight, cal.pixelDepth);
@@ -135,23 +143,26 @@ public class OpenCLRaycaster {
 		if(w != wIn || h != hIn || d != dIn || nChannels != this.nChannels)
 			throw new IllegalArgumentException("Image dimensions must remain the same.");
 
+		int nSlices = nChannels * d;
 
 		if(imp.getType() == ImagePlus.GRAY8) {
-			for(int c = 0; c < nChannels; c++) {
+			for(int c = 0, i = 0; c < nChannels; c++) {
 				byte[][] image = new byte[d][];
-				for(int z = 0; z < d; z++) {
+				for(int z = 0; z < d; z++, i++) {
 					int idx = imp.getStackIndex(c + 1, z + 1, imp.getT());
 					image[z] = (byte[])imp.getStack().getPixels(idx);
+					if(loadingProgress != null) loadingProgress.setProgress((double)(i + 1) / nSlices);
 				}
 				setTexture8(c, image);
 			}
 		}
 		else if(imp.getType() == ImagePlus.GRAY16) {
-			for(int c = 0; c < nChannels; c++) {
+			for(int c = 0, i = 0; c < nChannels; c++) {
 				short[][] image = new short[d][];
-				for(int z = 0; z < d; z++) {
+				for(int z = 0; z < d; z++, i++) {
 					int idx = imp.getStackIndex(c + 1, z + 1, imp.getT());
 					image[z] = (short[])imp.getStack().getPixels(idx);
+					if(loadingProgress != null) loadingProgress.setProgress((double)(i + 1) / nSlices);
 				}
 				setTexture16(c, image);
 			}
