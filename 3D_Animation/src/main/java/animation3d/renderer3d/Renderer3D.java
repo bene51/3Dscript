@@ -225,8 +225,8 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			return channelColors;
 		}
 		for(int c = 0; c < image.getNChannels(); c++) {
-			image.setC(c + 1);
-			channelColors[c] = getLUTColor(((CompositeImage)image).getChannelLut());
+			// image.setC(c + 1);
+			channelColors[c] = getLUTColor(((CompositeImage)image).getChannelLut(c + 1));
 		}
 		return channelColors;
 	}
