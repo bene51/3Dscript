@@ -50,20 +50,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
-import org.fife.ui.autocomplete.AutoCompletePopupWindow;
-import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.autocomplete.AutoCompletionEvent;
-import org.fife.ui.autocomplete.AutoCompletionListener;
-import org.fife.ui.autocomplete.AutoCompletionStyleContext;
-import org.fife.ui.autocomplete.Completion;
-import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.autocomplete.ExternalURLHandler;
-import org.fife.ui.autocomplete.LinkRedirector;
-import org.fife.ui.autocomplete.ParameterizedCompletion;
-import org.fife.ui.autocomplete.ParameterizedCompletionContext;
-import org.fife.ui.autocomplete.TemplateCompletion;
-import org.fife.ui.autocomplete.AutoCompletionEvent.Type;
-
 
 /**
  * Adds auto-completion to a text component. Provides a popup window with a
@@ -856,8 +842,15 @@ public class AnimationAutoCompletion extends AutoCompletion {
 	 *
 	 * @return The current line number of the caret.
 	 */
+	private int prevTextLen = 0;
 	@Override
 	protected int refreshPopupWindow() {
+
+		// needed to avoid calling twice for one event
+		int tl = textComponent.getText().length();
+		if(tl == prevTextLen)
+			return getLineOfCaret();
+		prevTextLen = tl;
 
 		// Bene:
 		if(pcc != null)
@@ -934,9 +927,9 @@ public class AnimationAutoCompletion extends AutoCompletion {
 
 		else if (count == 1) { // !isPopupVisible && autoCompleteSingleChoices
 			SwingUtilities.invokeLater(new Runnable() {
-
 				@Override
 				public void run() {
+					// System.out.println("refreshPopupWindow:insertCompletion: " + completions.get(0).getReplacementText());
 					insertCompletion(completions.get(0));
 				}
 			});
