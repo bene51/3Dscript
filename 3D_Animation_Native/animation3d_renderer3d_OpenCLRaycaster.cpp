@@ -20,6 +20,7 @@ JNIEXPORT jstring JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_getUNCForP
 		jclass,
 		jstring localPath)
 {
+#ifdef _WIN32
 	const char* path = env->GetStringUTFChars(localPath, 0);
 	char buffer[4096];
 	DWORD size = sizeof(buffer);
@@ -33,6 +34,9 @@ JNIEXPORT jstring JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_getUNCForP
 	jstring result = env->NewStringUTF(str);
 	env->ReleaseStringUTFChars(localPath, path);
 	return result;
+#else
+	return NULL;
+#endif
 }
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster8(
