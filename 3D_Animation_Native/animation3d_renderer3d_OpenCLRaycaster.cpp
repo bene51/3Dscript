@@ -4,11 +4,36 @@
 #include <stdlib.h>
 #include <stdexcept>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <Winnetwk.h>
+#endif
+
 #include "BasicOpenCLJNI.h"
 #include "RaycasterJNI.h"
 
 static RaycasterJNI<unsigned char> *raycaster8 = NULL;
 static RaycasterJNI<unsigned short> *raycaster16 = NULL;
+
+JNIEXPORT jstring JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_getUNCForPath(
+		JNIEnv *env,
+		jclass,
+		jstring localPath)
+{
+	const char* path = env->GetStringUTFChars(localPath, 0);
+	char buffer[4096];
+	DWORD size = sizeof(buffer);
+	printf("*** size = %d\n", size);
+	DWORD ret = WNetGetUniversalName(path, UNIVERSAL_NAME_INFO_LEVEL, buffer, &size);
+	printf("*** WNetGetUniversalName returned %d\n", ret);
+	if(ret != 0)
+		return NULL;
+	char *str = ((UNIVERSAL_NAME_INFO *) buffer)->lpUniversalName;
+	printf("*** str = %s\n", str);
+	jstring result = env->NewStringUTF(str);
+	env->ReleaseStringUTFChars(localPath, path);
+	return result;
+}
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_initRaycaster8(
 		JNIEnv *env,

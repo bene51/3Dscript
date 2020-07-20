@@ -28,6 +28,8 @@ public class OpenCLRaycaster {
 		System.loadLibrary("OpenCLRaycaster");
 	}
 
+	public static native String getUNCForPath(String path);
+
 	private static native void initRaycaster8(
 			int nChannels,
 			int width, int height, int depth,

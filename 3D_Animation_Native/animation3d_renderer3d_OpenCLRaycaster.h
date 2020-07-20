@@ -100,6 +100,11 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_clearGradient
 		jclass,
 		jint channel);
 
+JNIEXPORT jstring JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_getUNCForPath(
+		JNIEnv *env,
+		jclass,
+		jstring localPath);
+
 #ifdef __cplusplus
 }
 #endif
