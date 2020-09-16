@@ -11,23 +11,6 @@ Requirements:
 * OpenCL 1.2-capable Graphics Card or better
 * Decent graphics card, preferably from Nvidia or AMD, but newer Intel cards will work also (see below for tested hardware)
 
-Tested hardware:
-----------------
-Graphics card | Operating system
-------------- | -------------
-NVIDIA Quadro P2000 | Windows 10
-NVIDIA Quadro M4000 | Windows 10
-NVIDIA Quadro M2000 | Windows 10
-NVIDIA Quadro K620  | Windows 10
-NVIDIA Quadro K600  | Windows 10
-NVIDIA Quadro K420  | Windows 7
-NVIDIA GeForce GTX760 | Windows 7
-AMD FirePro W5100   | Windows 7
-Intel HD Graphics 4600 | Windows 7
-Intel HD Graphics 4000 | Mac OS X
-Intel HD Graphics 5000 | Mac OS X
-Intel HD Graphics 530 | Windows 10
-
 Installation:
 -------------
 * Start Fiji
@@ -57,4 +40,25 @@ The resulting stack can be saved as a video file using Fiji's File>Save As>AVI..
 To run the software on another data set, open a different image stack (instead of the T1 Head sample data) before running 3Dscript.
 
 More information is available at https://bene51.github.io/3Dscript
+
+Usage:
+------
+Detailed usage information is available on the [wiki](https://github.com/bene51/3Dscript/wiki).
+
+Tested hardware:
+----------------
+Graphics card | Operating system
+------------- | -------------
+NVIDIA Quadro P2000 | Windows 10
+NVIDIA Quadro M4000 | Windows 10
+NVIDIA Quadro M2000 | Windows 10
+NVIDIA Quadro K620  | Windows 10
+NVIDIA Quadro K600  | Windows 10
+NVIDIA Quadro K420  | Windows 7
+NVIDIA GeForce GTX760 | Windows 7
+AMD FirePro W5100   | Windows 7
+Intel HD Graphics 4600 | Windows 7
+Intel HD Graphics 4000 | Mac OS X
+Intel HD Graphics 5000 | Mac OS X
+Intel HD Graphics 530 | Windows 10
 
