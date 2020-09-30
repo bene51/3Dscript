@@ -5,12 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import animation3d.renderer3d.ExtendedRenderingState;
-import animation3d.renderer3d.OpenCLProgram;
 import animation3d.renderer3d.OpenCLRaycaster;
 import animation3d.renderer3d.Renderer3D;
-import animation3d.renderer3d.RenderingAlgorithm;
-import animation3d.renderer3d.Scalebar;
 import animation3d.textanim.Animator;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
@@ -53,18 +49,6 @@ public class BatchRaycaster implements PlugInFilter {
 		gd.addNumericField("Output_width", image.getWidth(), 0);
 		gd.addNumericField("Output_height", image.getHeight(), 0);
 
-		String[] scalebarChoice = Scalebar.Position.getNames();
-		gd.addChoice("Scalebar_position", scalebarChoice, Scalebar.Position.VIEW_LOWER_LEFT.name());
-		gd.addNumericField("Scalebar length", 0, 0);
-		gd.addNumericField("Scalebar_offset", 10, 2);
-		gd.addCheckbox("Bounding_Box", true);
-
-		String[] renderingChoice = new String[] {
-				"Independent transparency",
-				"Combined transparency",
-				"Maximum intensity projection"};
-		gd.addChoice("Rendering_algorithm", renderingChoice, renderingChoice[0]);
-
 		gd.showDialog();
 		if(gd.wasCanceled())
 			return;
@@ -72,12 +56,7 @@ public class BatchRaycaster implements PlugInFilter {
 		String animationFile = gd.getNextString();
 		int w = (int)gd.getNextNumber();
 		int h = (int)gd.getNextNumber();
-		Scalebar.Position scalebarPos = Scalebar.Position.values()[gd.getNextChoiceIndex()];
-		int scalebar = (int)gd.getNextNumber();
-		float scalebarOffs = (float)gd.getNextNumber();
-		int algo = gd.getNextChoiceIndex();
-		RenderingAlgorithm algorithm = RenderingAlgorithm.values()[algo];
-		boolean bb = gd.getNextBoolean();
+
 
 		String animation = null;
 		try {
@@ -109,27 +88,6 @@ public class BatchRaycaster implements PlugInFilter {
 //
 //		setOutputSize(outsize.width, outsize.height);
 
-		renderer.getBoundingBox().setVisible(bb);
-		renderer.getScalebar().setVisible(scalebar > 0);
-		renderer.getScalebar().setLength(scalebar);
-		renderer.getScalebar().setPosition(scalebarPos);
-		renderer.getScalebar().setOffset(scalebarOffs);
-		int nChannels = renderer.getNChannels();
-		ExtendedRenderingState kf = renderer.getRenderingState().clone();
-		boolean[] useLights = kf.useLights();
-		boolean[] useLUT = kf.useLUT();
-
-		switch(algorithm) {
-		case INDEPENDENT_TRANSPARENCY:
-			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, false, useLights, useLUT));
-			break;
-		case COMBINED_TRANSPARENCY:
-			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, true, false, useLights, useLUT));
-			break;
-		case MAXIMUM_INTENSITY:
-			renderer.setProgram(OpenCLProgram.makeSource(nChannels, false, false, true, useLights, useLUT));
-			break;
-		}
 
 		Animator animator = new Animator(renderer);
 		AtomicBoolean finished = new AtomicBoolean(false);

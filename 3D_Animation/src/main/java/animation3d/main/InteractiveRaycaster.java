@@ -652,7 +652,7 @@ macro = macro +
 "File.saveString(makeAnimation(), path);\n" +
 "run(\"Batch Animation\",\n" +
 "	\"animation=\" + path + \" \" +\n" +
-"	\"output_width=" + ow + " output_height=" + oh + " scalebar=" + scalebar + " rendering_algorithm=[" + algo + "] " + boundingbox + "\");";
+"	\"output_width=" + ow + " output_height=" + oh + "\");";
 			Path tmp = null;
 			try {
 				tmp = Files.createTempFile("ijmacro", ".ijm");
