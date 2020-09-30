@@ -76,6 +76,11 @@ public class RecordingProvider extends Default3DRecordingProvider {
 						.append(kf.getChannelProperty(c, ExtendedRenderingState.WEIGHT))
 						.append("\n");
 				}
+				text.append("- change ")
+					.append(KeywordFactory.NonChannelKeyword.RENDERING_ALGORITHM.getKeyword())
+					.append(" to ")
+					.append(kf.getRenderingAlgorithm().toString().toLowerCase().replace('_', ' '))
+					.append("\n");
 				return text.toString();
 			}
 		});
