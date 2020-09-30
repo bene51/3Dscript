@@ -573,16 +573,18 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		if (source == newFile) createNewDocument();
 		else if (source == open) {
 			final EditorPane editorPane = getEditorPane();
-			final File defaultDir =
-				editorPane.getFile() != null ? editorPane.getFile().getParentFile() : null;
+			final File defaultDir = OpenDialog.getDefaultDirectory() != null ? new File(OpenDialog.getDefaultDirectory()) :
+				(editorPane.getFile() != null ? editorPane.getFile().getParentFile() : null);
 			final File file = openWithDialog(defaultDir);
-			if (file != null) new Thread() {
-
-				@Override
-				public void run() {
-					open(file);
-				}
-			}.start();
+			if (file != null) {
+				OpenDialog.setDefaultDirectory(file.getParentFile().getAbsolutePath());
+				new Thread() {
+					@Override
+					public void run() {
+						open(file);
+					}
+				}.start();
+			}
 			return;
 		}
 		else if (source == save) save();
@@ -1112,6 +1114,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		if(dir == null || name == null)
 			return false;
 		final File fileToSave = new File(dir, name);
+		OpenDialog.setDefaultDirectory(dir);
 		return saveAs(fileToSave.getAbsolutePath(), true);
 	}
 
