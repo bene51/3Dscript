@@ -45,6 +45,10 @@ Usage:
 ------
 Detailed usage information is available on the [wiki](https://github.com/bene51/3Dscript/wiki).
 
+Publication:
+------------
+Schmid, B.; Tripal, P. & Fraaß, T. et al. (2019), "[3Dscript: animating 3D/4D microscopy data using a natural-language-based syntax](3Dscript: animating 3D/4D microscopy data using a natural-language-based syntax)", _Nature methods_ **16(4)**: 278–280, PMID 30886414.
+
 Tested hardware:
 ----------------
 Graphics card | Operating system
