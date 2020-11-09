@@ -57,6 +57,7 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
+import ij.measure.ResultsTable;
 
 
 @SuppressWarnings("serial")
@@ -76,7 +77,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			close, undo, redo, cut, copy, paste, find, replace, selectAll, kill,
 			gotoLine,
 			findNext, findPrevious, clearScreen,
-			nextTab, previousTab, runSelection, run, runFromTo,
+			nextTab, previousTab, runSelection, run, runFromTo, dryRun,
 			decreaseFontSize, increaseFontSize, chooseFontSize,
 			savePreferences,
 //			recordContrast,
@@ -270,6 +271,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			addToMenu(runMenu, "Run selected code", KeyEvent.VK_R, ctrl | shift);
 		runSelection.setMnemonic(KeyEvent.VK_S);
 
+		dryRun = addToMenu(runMenu, "Dry run (only show frame rendering settings)", 0, 0);
 
 		runMenu.addSeparator();
 
@@ -595,6 +597,7 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		else if (source == recordTransitionStart) recordTransitionStart();
 		else if (source == recordTransitionEnd) recordTransitionEnd();
 		else if (source == runSelection) runText(true);
+		else if (source == dryRun) dryRun();
 		else if (source == kill) cancelAnimation();
 		else if (source == close) if (tabbed.getTabCount() < 2) processWindowEvent(new WindowEvent(
 			this, WindowEvent.WINDOW_CLOSING));
@@ -949,6 +952,48 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			.append(")\n");
 
 		return text.toString();
+	}
+
+	public void dryRun() {
+		final TextEditorTab tab = getTab();
+		String text = tab.editorPane.getText();
+
+		try {
+			animator.setAnimationText(text);
+			List<RenderingState> renderingStates = animator.getRenderingStates();
+			RenderingState first = renderingStates.get(0);
+			String[] channelPropertyNames = first.getChannelPropertyNames();
+			int cpLength = channelPropertyNames.length;
+			String[] nonChannelPropertyNames = first.getNonChannelPropertyNames();
+			int ncpLength = nonChannelPropertyNames.length;
+			int nChannels = renderer.getNChannels();
+			ResultsTable rt = new ResultsTable();
+			for(int row = 0; row < renderingStates.size(); row++) {
+				int col = 0;
+				RenderingState rs = renderingStates.get(row);
+				for(int ncpIndex = 0; ncpIndex < ncpLength; ncpIndex++) {
+					double value = rs.getNonChannelProperty(ncpIndex);
+					rt.setValue(col, row, value);
+					if(row == 0)
+						rt.setHeading(col, nonChannelPropertyNames[ncpIndex]);
+					col++;
+				}
+				for(int cIndex = 0; cIndex < nChannels; cIndex++) {
+					for(int cpIndex = 0; cpIndex < cpLength; cpIndex++) {
+						double value = rs.getChannelProperty(cIndex, cpIndex);
+						rt.setValue(col, row, value);
+						if(row == 0)
+							rt.setHeading(col, "Channel " + (cIndex + 1) + " " + channelPropertyNames[cpIndex]);
+						col++;
+					}
+				}
+			}
+			rt.show("Frame settings");
+		} catch(Exception ex) {
+			handleException(ex);
+			tab.restore();
+			throw new RuntimeException("Error reading animations", ex);
+		}
 	}
 
 	// TODO respect selection

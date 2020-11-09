@@ -51,6 +51,64 @@ public class ExtendedRenderingState extends RenderingState {
 	public static final int BOUNDINGBOX_BLUE    = 16;
 	public static final int BOUNDINGBOX_WIDTH   = 17;
 
+	private static final String[] channelPropertyNames = {
+			"INTENSITY_MIN",
+			"INTENSITY_MAX",
+			"INTENSITY_GAMMA",
+			"ALPHA_MIN",
+			"ALPHA_MAX",
+			"ALPHA_GAMMA",
+			"WEIGHT",
+			"CHANNEL_COLOR_RED",
+			"CHANNEL_COLOR_GREEN",
+			"CHANNEL_COLOR_BLUE",
+			"BOUNDINGBOX_XMIN",
+			"BOUNDINGBOX_YMIN",
+			"BOUNDINGBOX_ZMIN",
+			"BOUNDINGBOX_XMAX",
+			"BOUNDINGBOX_YMAX",
+			"BOUNDINGBOX_ZMAX",
+			"NEAR",
+			"FAR",
+			"USE_LIGHT",
+			"LIGHT_K_OBJECT",
+			"LIGHT_K_DIFFUSE",
+			"LIGHT_K_SPECULAR",
+			"LIGHT_SHININESS",
+			"USE_LUT",
+	};
+
+	private static final String[] nonChannelPropertyNames = {
+			"BG_COLOR_RED",
+			"BG_COLOR_GREEN",
+			"BG_COLOR_BLUE",
+			"TIMEPOINT",
+			"RENDERING_ALGORITHM",
+			"SHOW_SCALEBAR",
+			"SCALEBAR_RED",
+			"SCALEBAR_GREEN",
+			"SCALEBAR_BLUE",
+			"SCALEBAR_LENGTH",
+			"SCALEBAR_WIDTH",
+			"SCALEBAR_POSITION",
+			"SCALEBAR_OFFSET",
+			"SHOW_BOUNDINGBOX",
+			"BOUNDINGBOX_RED",
+			"BOUNDINGBOX_GREEN",
+			"BOUNDINGBOX_BLUE",
+			"BOUNDINGBOX_WIDTH",
+	};
+
+	@Override
+	public String[] getNonChannelPropertyNames() {
+		return nonChannelPropertyNames;
+	}
+
+	@Override
+	public String[] getChannelPropertyNames() {
+		return channelPropertyNames;
+	}
+
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
 		nonChannelProperties = new double[18];

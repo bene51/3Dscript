@@ -34,12 +34,14 @@ public class Animator {
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	private boolean stopRendering = false;
 	private boolean isExecuting = false;
+	private final List<RenderingState> renderingStates;
 
 	private double progress;
 
 	public Animator(IRenderer3D renderer) {
 		this.renderer = renderer;
 		animations = new ArrayList<Animation>();
+		renderingStates = new ArrayList<RenderingState>();
 	}
 
 	public void addAnimationListener(Listener l) {
@@ -69,32 +71,44 @@ public class Animator {
 		render(text, -1, -1);
 	}
 
-	public void render(String text, int f, int t) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+	/**
+	 * Do not modify this list
+	 * @param frames
+	 * @return
+	 */
+	public List<RenderingState> getRenderingStates() {
+		return renderingStates;
+	}
 
-
+	public void setAnimationText(String text) throws NoSuchMacroException, PreprocessingException {
 		HashMap<String, String> macros = new HashMap<String, String>();
 		ArrayList<String> lines = new ArrayList<String>();
 
 		Preprocessor.preprocess(text, lines, macros);
 
 		float[] rotcenter = renderer.getRotationCenter();
-		clearAnimations();
+		reset();
 		int from = 0;
 		int to = 0;
 
 		for(String line : lines) {
 			ParsingResult pr = new ParsingResult();
 			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
-			// from = Math.min(from, pr.getFrom());
-			to   = Math.max(to, pr.getTo());
+			to = Math.max(to, pr.getTo());
 			Animation ta = pr.getResult();
 			if(ta != null) {
 				ta.pickScripts(macros);
 				addAnimation(ta);
 			}
 		}
+		createRenderingStates(from, to);
+	}
 
-		List<RenderingState> frames = createRenderingStates(from, to);
+	public void render(String text, int f, int t) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+		setAnimationText(text);
+
+		int from = 0;
+		int to = renderingStates.get(renderingStates.size() - 1).frame;
 
 		if(f >= 0)
 			from = f;
@@ -106,38 +120,16 @@ public class Animator {
 
 		ArrayList<RenderingState> filtered = new ArrayList<RenderingState>();
 		for(int i = from; i <= to; i++)
-			filtered.add(frames.get(Math.min(i, frames.size() - 1)));
+			filtered.add(renderingStates.get(Math.min(i, renderingStates.size() - 1)));
 
 		render(filtered);
 	}
 
 	public void render(String text, int[] frameIndices) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
-		HashMap<String, String> macros = new HashMap<String, String>();
-		ArrayList<String> lines = new ArrayList<String>();
-
-		Preprocessor.preprocess(text, lines, macros);
-
-		float[] rotcenter = renderer.getRotationCenter();
-		clearAnimations();
-		int from = 0;
-		int to = 0;
-
-		for(String line : lines) {
-			ParsingResult pr = new ParsingResult();
-			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
-			// from = Math.min(from, pr.getFrom());
-			to   = Math.max(to, pr.getTo());
-			Animation ta = pr.getResult();
-			if(ta != null) {
-				ta.pickScripts(macros);
-				addAnimation(ta);
-			}
-		}
-
-		List<RenderingState> frames = createRenderingStates(from, to);
+		setAnimationText(text);
 		List<RenderingState> filtered = new ArrayList<RenderingState>();
 		for(int fIdx : frameIndices)
-			filtered.add(frames.get(Math.min(fIdx, frames.size() - 1)));
+			filtered.add(renderingStates.get(Math.min(fIdx, renderingStates.size() - 1)));
 		render(filtered);
 	}
 
@@ -191,16 +183,20 @@ public class Animator {
 		return ret;
 	}
 
-	public void clearAnimations() {
+	private void reset() {
 		animations.clear();
+		renderingStates.clear();
+		stopRendering = false;
+		isExecuting = false;
+		progress = 0;
 	}
 
 	public void addAnimation(Animation a) {
 		animations.add(a);
 	}
 
-	public List<RenderingState> createRenderingStates(int from, int to) {
-		List<RenderingState> renderingStates = new ArrayList<RenderingState>();
+	private void createRenderingStates(int from, int to) {
+		renderingStates.clear();
 		RenderingState previous = renderer.getRenderingState();
 		for(int t = from; t <= to; t++) {
 			RenderingState kf = previous.clone();
@@ -211,7 +207,6 @@ public class Animator {
 			renderingStates.add(kf);
 			previous = kf;
 		}
-		return renderingStates;
 	}
 
 	private void fireAnimationFinished(ImagePlus ret) {

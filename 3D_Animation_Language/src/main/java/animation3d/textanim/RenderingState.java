@@ -28,6 +28,14 @@ public class RenderingState implements Comparable<RenderingState> {
 		channelProperties = null;
 	}
 
+	public String[] getNonChannelPropertyNames() {
+		return new String[] {};
+	}
+
+	public String[] getChannelPropertyNames() {
+		return new String[] {};
+	}
+
 	public double getChannelProperty(int channel, int channelProperty) {
 		return channelProperties[channel][channelProperty];
 	}
