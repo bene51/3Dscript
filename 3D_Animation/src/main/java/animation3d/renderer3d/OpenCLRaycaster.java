@@ -251,32 +251,32 @@ public class OpenCLRaycaster {
 					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_MAX]),
 					(float)(channelProperties[c][ExtendedRenderingState.ALPHA_GAMMA]),
 					(float)(channelProperties[c][ExtendedRenderingState.WEIGHT]),
-					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_RED]),
-					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_GREEN]),
-					(int)(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_BLUE]),
-					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMIN]),
-					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMIN]),
-					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMIN]),
-					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMAX]),
-					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMAX]),
-					(int)(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMAX]),
-					(float)(cz * l + channelProperties[c][ExtendedRenderingState.NEAR]),
-					(float)(cz * l + channelProperties[c][ExtendedRenderingState.FAR]),
-					(int)(channelProperties[c][ExtendedRenderingState.USE_LIGHT]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_RED]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_GREEN]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.CHANNEL_COLOR_BLUE]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMIN]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMIN]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMIN]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_XMAX]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_YMAX]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.BOUNDINGBOX_ZMAX]),
+					(float)(cz + channelProperties[c][ExtendedRenderingState.NEAR] / pdOut[2]),
+					(float)(cz + channelProperties[c][ExtendedRenderingState.FAR]  / pdOut[2]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.USE_LIGHT]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_OBJECT]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_SPECULAR]),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_SHININESS]),
-					(int)(channelProperties[c][ExtendedRenderingState.USE_LUT]),
+					(int)Math.round(channelProperties[c][ExtendedRenderingState.USE_LUT]),
 			};
 		}
 		// TODO remove this line and set from GUI
 //		Color bg = Toolbar.getBackgroundColor();
 		Color bg = new Color(
-				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_RED],
-				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_GREEN],
-				(int)nonChannelProperties[ExtendedRenderingState.BG_COLOR_BLUE]);
-		int t = (int)nonChannelProperties[ExtendedRenderingState.TIMEPOINT];
+				(int)Math.round(nonChannelProperties[ExtendedRenderingState.BG_COLOR_RED]),
+				(int)Math.round(nonChannelProperties[ExtendedRenderingState.BG_COLOR_GREEN]),
+				(int)Math.round(nonChannelProperties[ExtendedRenderingState.BG_COLOR_BLUE]));
+		int t = (int)Math.round(nonChannelProperties[ExtendedRenderingState.TIMEPOINT]);
 		t = Math.max(1, Math.min(image.getNFrames(), t));
 		if(t != tIndex) {
 			tIndex = t;
