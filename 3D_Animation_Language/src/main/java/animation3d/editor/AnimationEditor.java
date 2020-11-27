@@ -1156,6 +1156,9 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		ij.io.SaveDialog sd = new ij.io.SaveDialog("Save as...", file.getName(), ".animation.txt");
 		String dir = sd.getDirectory();
 		String name = sd.getFileName();
+		while(name.contains(".animation.animation.txt")) {
+			name = name.replace(".animation.animation.txt", ".animation.txt");
+		}
 		if(dir == null || name == null)
 			return false;
 		final File fileToSave = new File(dir, name);
