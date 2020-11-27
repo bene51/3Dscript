@@ -28,7 +28,7 @@ public class Main implements PlugInFilter {
 
 	public static void main(String[] args) {
 		new ij.ImageJ();
-		ImagePlus imp = ij.IJ.openImage("D:\\flybrain.green.tif");
-		Main.run(imp);
+		ij.IJ.run("AuPbSn 40 (56K)");
+		Main.run(ij.IJ.getImage());
 	}
 }

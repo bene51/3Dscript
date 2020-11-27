@@ -11,12 +11,10 @@ public enum ExtKeyword implements Keyword {
 			new String[] {"<brightness>"},
 			makeBrightnessReplacementMap(),
 			ExtRenderingState.BRIGHTNESS),
-	COLOR("color",
-			new String[] {"<r>", "<g>", "<b>"},
-			makeColorReplacementMap(),
-			ExtRenderingState.COLOR_RED,
-			ExtRenderingState.COLOR_GREEN,
-			ExtRenderingState.COLOR_BLUE);
+	POSITION("scale",
+			new String[] {"<sx>", "<sy>"},
+			ExtRenderingState.SCALE_X,
+			ExtRenderingState.SCALE_Y);
 
 	private final String keyword;
 	private final int[] rsProperties;
@@ -64,17 +62,6 @@ public enum ExtKeyword implements Keyword {
 		map.put("dark",   new double[] {0.3});
 		map.put("normal", new double[] {0.5});
 		map.put("bright", new double[] {1.0});
-		return map;
-	}
-
-	private static Map<String, double[]> makeColorReplacementMap() {
-		HashMap<String, double[]> map = new HashMap<String, double[]>();
-		map.put("red",     new double[] {255.0, 0.0, 0.0});
-		map.put("green",   new double[] {0.0, 255.0, 0.0});
-		map.put("blue",    new double[] {0.0, 0.0, 255.0});
-		map.put("yellow",  new double[] {255.0, 255.0, 0.0});
-		map.put("cyan",    new double[] {0.0, 255.0, 255.0});
-		map.put("magenta", new double[] {255.0, 0.0, 255.0});
 		return map;
 	}
 }

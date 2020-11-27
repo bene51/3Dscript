@@ -1,6 +1,5 @@
 package animation3d.ext;
 
-import animation3d.textanim.CombinedTransform;
 import animation3d.textanim.IKeywordFactory;
 import animation3d.textanim.IRenderer3D;
 import animation3d.textanim.RenderingState;
@@ -11,32 +10,16 @@ public class ExtRenderer implements IRenderer3D{
 
 	private ExtRenderingState rs;
 	private ImagePlus input;
-	private int tgtW;
-	private int tgtH;
+	private ImageProcessor clown;
 
 	// private final ThridPartyRenderer renderer;
 
 	public ExtRenderer(ImagePlus input) {
 		this.input = input;
+		this.clown = ij.IJ.openImage("http://imagej.nih.gov/ij/images/clown.jpg").getProcessor().convertToByte(true);
 		// renderer = new ThirdPartyRenderer();
 
-		float[] pdIn = new float[] {
-				(float)input.getCalibration().pixelWidth,
-				(float)input.getCalibration().pixelHeight,
-				(float)input.getCalibration().pixelDepth
-		};
-
-		float[] pdOut = new float[] {pdIn[0], pdIn[0], pdIn[0]};
-
-		float[] rotcenter = new float[] {
-				input.getWidth()   * pdIn[0] / 2,
-				input.getHeight()  * pdIn[1] / 2,
-				input.getNSlices() * pdIn[2] / 2};
-
-		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
-
-		this.rs = new ExtRenderingState(0,
-				transformation);
+		this.rs = new ExtRenderingState(0);
 	}
 
 	@Override
@@ -51,15 +34,27 @@ public class ExtRenderer implements IRenderer3D{
 
 	@Override
 	public ImageProcessor render(RenderingState rs) {
+		this.rs.setFrom(rs);
 		double brightness = rs.getNonChannelProperty(ExtRenderingState.BRIGHTNESS);
 
-		// renderer.setBrightness(brightness);
-
-		float[] matrix = rs.getFwdTransform().calculateInverseTransform();
-
+		// float[] matrix = rs.getFwdTransform().calculateInverseTransform();
 		// renderer.setTransformation(matrix);
 
-		ImageProcessor output = null;
+		ImageProcessor output = input.getProcessor().duplicate();
+		output.setValue(brightness);
+
+		int rw = (int)Math.round(50 * rs.getNonChannelProperty(ExtRenderingState.SCALE_X));
+		int rh = (int)Math.round(50 * rs.getNonChannelProperty(ExtRenderingState.SCALE_Y));
+
+		if(rw <= 0 || rh <= 0)
+			return output;
+
+		int rx = (input.getWidth()  - rw) / 2;
+		int ry = (input.getHeight() - rh) / 2;
+
+		ImageProcessor insert = clown.resize(rw, rh, true);
+		output.insert(insert, rx, ry);
+		// output.fillRect(rx, ry, rw, rh);
 
 		// output = renderer.render();
 
@@ -68,11 +63,7 @@ public class ExtRenderer implements IRenderer3D{
 
 	@Override
 	public float[] getRotationCenter() {
-		return new float[] {
-				input.getWidth()   * (float)input.getCalibration().pixelWidth  / 2f,
-				input.getHeight()  * (float)input.getCalibration().pixelHeight / 2f,
-				input.getNSlices() * (float)input.getCalibration().pixelDepth  / 2f
-		};
+		return new float[] {0, 0, 0};
 	}
 
 	@Override
@@ -87,17 +78,15 @@ public class ExtRenderer implements IRenderer3D{
 
 	@Override
 	public void setTargetSize(int w, int h) {
-		this.tgtW = w;
-		this.tgtH = h;
 	}
 
 	@Override
 	public int getTargetWidth() {
-		return tgtW;
+		return input.getWidth();
 	}
 
 	@Override
 	public int getTargetHeight() {
-		return tgtH;
+		return input.getHeight();
 	}
 }

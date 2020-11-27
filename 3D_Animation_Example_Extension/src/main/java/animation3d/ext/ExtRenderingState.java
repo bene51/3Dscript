@@ -6,28 +6,30 @@ import animation3d.textanim.RenderingState;
 public class ExtRenderingState extends RenderingState {
 
 	public static final int BRIGHTNESS  = 0;
-	public static final int COLOR_RED   = 1;
-	public static final int COLOR_GREEN = 2;
-	public static final int COLOR_BLUE  = 3;
+	public static final int SCALE_X     = 1;
+	public static final int SCALE_Y     = 2;
 
-	public ExtRenderingState(int frame, CombinedTransform fwdTransform) {
-		super(frame, fwdTransform);
-		nonChannelProperties = new double[4];
+	public ExtRenderingState(int frame) {
+		super(frame, new CombinedTransform(new float[] {1, 1, 1}, new float[] {1, 1, 1}, new float[] {1, 1, 1}));
+		nonChannelProperties = new double[3];
 		channelProperties = null;
 	}
 
 	public ExtRenderingState(
 			int frame,
 			double brightness,
-			CombinedTransform fwdTransform) {
-		this(frame, fwdTransform);
+			double x,
+			double y) {
+		this(frame);
 
 		nonChannelProperties[BRIGHTNESS] = brightness;
+		nonChannelProperties[SCALE_X] = x;
+		nonChannelProperties[SCALE_Y] = y;
 	}
 
 	@Override
 	public ExtRenderingState clone() {
-		ExtRenderingState kf = new ExtRenderingState(0, null);
+		ExtRenderingState kf = new ExtRenderingState(0);
 		kf.setFrom(this);
 		return kf;
 	}
