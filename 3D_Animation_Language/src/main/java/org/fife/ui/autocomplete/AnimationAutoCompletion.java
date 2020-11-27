@@ -1378,6 +1378,8 @@ public class AnimationAutoCompletion extends AutoCompletion {
 			System.out.println("AutoActivationListener.actionPerformed()");
 			Document doc = getTextComponent().getDocument();
 			int dot = getTextComponent().getCaretPosition();
+			if(dot < 0)
+				return;
 			String text = null;
 			try  {
 				text = doc.getText(0, doc.getLength());
