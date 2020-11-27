@@ -174,6 +174,7 @@ public class Interpreter {
 	 */
 	NumberOrMacro[] tuple(ParsingResult result) {
 		lparen(false);
+		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), ""));
 
 		skipSpace();
 		NumberOrMacro a = mor();
