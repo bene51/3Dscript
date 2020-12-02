@@ -46,6 +46,7 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import animation3d.parser.Keyword.GeneralKeyword;
+import animation3d.parser.ParsingException;
 import animation3d.textanim.Animator;
 import animation3d.textanim.CustomDecimalFormat;
 import animation3d.textanim.IRecordingProvider;
@@ -1006,10 +1007,21 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 		try {
 			animator.render(text);
+		} catch(ParsingException pe) {
+			String msg = pe.getMessage();
+			int line = pe.getLine();
+			if(line != -1)
+				tab.editorPane.setErrorMarker(line, msg);
+
+			errorScreen.setText("In line "
+					+ (line < 0 ? "?" : (line + 1))
+					+ ": " + msg);
+			getTab().showErrors();
+			pe.printStackTrace();
 		} catch(Exception ex) {
 			handleException(ex);
+		} finally {
 			tab.restore();
-			throw new RuntimeException("Error reading animations", ex);
 		}
 	}
 
@@ -1032,10 +1044,21 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 		try {
 			animator.render(text, from, to);
+		} catch(ParsingException pe) {
+			String msg = pe.getMessage();
+			int line = pe.getLine();
+			if(line != -1)
+				tab.editorPane.setErrorMarker(line, msg);
+
+			errorScreen.setText("In line "
+					+ (line < 0 ? "?" : (line + 1))
+					+ ": " + msg);
+			getTab().showErrors();
+			pe.printStackTrace();
 		} catch(Exception ex) {
 			handleException(ex);
+		} finally {
 			tab.restore();
-			throw new RuntimeException("Error reading animations", ex);
 		}
 	}
 
@@ -1476,6 +1499,8 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	@Override
 	public void changedUpdate(final DocumentEvent e) {
+		final TextEditorTab tab = getTab();
+		tab.editorPane.clearErrorMarkers();
 		setTitle();
 	}
 

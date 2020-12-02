@@ -36,6 +36,7 @@ import javax.swing.text.JTextComponent;
 
 import animation3d.parser.Interpreter;
 import animation3d.parser.NoSuchMacroException;
+import animation3d.parser.ParsingException;
 import animation3d.parser.ParsingResult;
 import animation3d.parser.Preprocessor;
 import animation3d.parser.Preprocessor.PreprocessingException;
@@ -44,6 +45,7 @@ import animation3d.renderer3d.RecordingProvider;
 import animation3d.renderer3d.Renderer3D;
 import animation3d.textanim.Animation;
 import animation3d.textanim.IRecordingProvider.RecordingItem;
+import animation3d.textanim.NumberedLine;
 import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
 import ij.IJ;
@@ -295,13 +297,16 @@ public class BookmarkPanel extends JPanel {
 		} catch (PreprocessingException e) {
 			IJ.handleException(e);
 			return;
+		} catch (ParsingException e) {
+			IJ.handleException(e);
+			return;
 		}
 
 	}
 
-	public List<RenderingState> computeAnimations(String text, int from, int to) throws NoSuchMacroException, PreprocessingException {
+	public List<RenderingState> computeAnimations(String text, int from, int to) throws NoSuchMacroException, PreprocessingException, ParsingException {
 		HashMap<String, String> macros = new HashMap<String, String>();
-		ArrayList<String> lines = new ArrayList<String>();
+		ArrayList<NumberedLine> lines = new ArrayList<NumberedLine>();
 
 		Preprocessor.preprocess(text, lines, macros);
 
@@ -312,9 +317,14 @@ public class BookmarkPanel extends JPanel {
 				(float)imp.getCalibration().pixelDepth  * imp.getNSlices() / 2
 		};
 		List<Animation> animations = new ArrayList<Animation>();
-		for(String line : lines) {
+		for(NumberedLine line : lines) {
 			ParsingResult pr = new ParsingResult();
-			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
+			try {
+				Interpreter.parse(renderer.getKeywordFactory(), line.text, rotcenter, pr);
+			} catch(ParsingException pa) {
+				pa.setLine(line.lineno);
+				throw pa;
+			}
 			Animation ta = pr.getResult();
 			if(ta != null) {
 				ta.pickScripts(macros);

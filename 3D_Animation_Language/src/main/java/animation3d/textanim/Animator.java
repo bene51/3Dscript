@@ -11,8 +11,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import animation3d.parser.Autocompletion;
 import animation3d.parser.Interpreter;
 import animation3d.parser.NoSuchMacroException;
+import animation3d.parser.ParsingException;
 import animation3d.parser.ParsingResult;
 import animation3d.parser.Preprocessor;
 import animation3d.parser.Preprocessor.PreprocessingException;
@@ -67,7 +69,7 @@ public class Animator {
 		return submitted.get(timeout, unit);
 	}
 
-	public void render(String text) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+	public void render(String text) throws NoSuchMacroException, PreprocessingException, ParsingException, InterruptedException, ExecutionException {
 		render(text, -1, -1);
 	}
 
@@ -80,9 +82,9 @@ public class Animator {
 		return renderingStates;
 	}
 
-	public void setAnimationText(String text) throws NoSuchMacroException, PreprocessingException {
+	public void setAnimationText(String text) throws NoSuchMacroException, PreprocessingException, ParsingException {
 		HashMap<String, String> macros = new HashMap<String, String>();
-		ArrayList<String> lines = new ArrayList<String>();
+		ArrayList<NumberedLine> lines = new ArrayList<NumberedLine>();
 
 		Preprocessor.preprocess(text, lines, macros);
 
@@ -91,9 +93,19 @@ public class Animator {
 		int from = 0;
 		int to = 0;
 
-		for(String line : lines) {
+		for(NumberedLine line : lines) {
+			System.out.println("setAnimationText: line: " + line.lineno + ": " + line.text);
 			ParsingResult pr = new ParsingResult();
-			Interpreter.parse(renderer.getKeywordFactory(), line, rotcenter, pr);
+			try {
+				Interpreter.parse(renderer.getKeywordFactory(), line.text, rotcenter, pr);
+			} catch(ParsingException e) {
+				Autocompletion ac = pr.getAutocompletion();
+				String as = ac == null ? "" : ac.toString();
+				if(as.length() != 0 && !as.equals("''")) // a meaningful autocompletion, replace existing exception
+					e = new ParsingException(e.getPos(), "Expected " + ac);
+				e.setLine(line.lineno);
+				throw e;
+			}
 			to = Math.max(to, pr.getTo());
 			Animation ta = pr.getResult();
 			if(ta != null) {
@@ -104,7 +116,7 @@ public class Animator {
 		createRenderingStates(from, to);
 	}
 
-	public void render(String text, int f, int t) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+	public void render(String text, int f, int t) throws NoSuchMacroException, PreprocessingException, ParsingException, InterruptedException, ExecutionException {
 		setAnimationText(text);
 
 		int from = 0;
@@ -125,7 +137,7 @@ public class Animator {
 		render(filtered);
 	}
 
-	public void render(String text, int[] frameIndices) throws NoSuchMacroException, PreprocessingException, InterruptedException, ExecutionException {
+	public void render(String text, int[] frameIndices) throws NoSuchMacroException, PreprocessingException, ParsingException, InterruptedException, ExecutionException {
 		setAnimationText(text);
 		List<RenderingState> filtered = new ArrayList<RenderingState>();
 		for(int fIdx : frameIndices)

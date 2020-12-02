@@ -15,8 +15,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Set;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -35,6 +38,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.Style;
 import org.fife.ui.rsyntaxtextarea.SyntaxScheme;
 import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.GutterIconInfo;
 import org.fife.ui.rtextarea.IconGroup;
 import org.fife.ui.rtextarea.RTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -186,6 +190,28 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 			@Override
 			public void changedUpdate(DocumentEvent e) {}
 		});
+	}
+
+	private ArrayList<GutterIconInfo> errorMarkers = new ArrayList<GutterIconInfo>();
+	private Icon errorIcon = new ImageIcon(EditorPane.class.getResource("/error.png"));
+	private boolean errorMarkersSet = false;
+
+	public void setErrorMarker(int line, String error) {
+		try {
+			errorMarkers.add(gutter.addLineTrackingIcon(line, errorIcon, error));
+			errorMarkersSet = true;
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void clearErrorMarkers() {
+		if(!errorMarkersSet)
+			return;
+		for(GutterIconInfo tag : errorMarkers)
+			gutter.removeTrackingIcon(tag);
+		errorMarkers.clear();
+		errorMarkersSet = false;
 	}
 
 	public AnimationAutoCompletion getAutoCompletion() {

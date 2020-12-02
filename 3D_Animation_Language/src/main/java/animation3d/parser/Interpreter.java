@@ -37,53 +37,53 @@ public class Interpreter {
 		this.center = center;
 	}
 
-	private void skipSpace() {
+	private void skipSpace() throws ParsingException {
 		while(lexer.getNextToken(TokenType.SPACE, true) != null)
 			;
 	}
 
-	Token letter(boolean optional) {
+	Token letter(boolean optional) throws ParsingException {
 		return lexer.getNextToken(TokenType.LETTER, optional);
 	}
 
-	Token underscore(boolean optional) {
+	Token underscore(boolean optional) throws ParsingException {
 		return lexer.getNextToken(TokenType.UNDERSCORE, optional);
 	}
 
-	Token sign(boolean optional) {
+	Token sign(boolean optional) throws ParsingException {
 		skipSpace();
 		return lexer.getNextToken(TokenType.SIGN, optional);
 	}
 
-	Token digit(boolean optional) {
+	Token digit(boolean optional) throws ParsingException {
 		return lexer.getNextToken(TokenType.DIGIT, optional);
 	}
 
-	Token dot(boolean optional) {
+	Token dot(boolean optional) throws ParsingException {
 		return lexer.getNextToken(TokenType.DOT, optional);
 	}
 
-	Token lparen(boolean optional) {
+	Token lparen(boolean optional) throws ParsingException {
 		skipSpace();
 		return lexer.getNextToken(TokenType.LPAREN, optional);
 	}
 
-	Token rparen(boolean optional) {
+	Token rparen(boolean optional) throws ParsingException {
 		skipSpace();
 		return lexer.getNextToken(TokenType.RPAREN, optional);
 	}
 
-	Token comma(boolean optional) {
+	Token comma(boolean optional) throws ParsingException {
 		skipSpace();
 		return lexer.getNextToken(TokenType.COMMA, optional);
 	}
 
-	Token keyword(Keyword kw, boolean optional) {
+	Token keyword(Keyword kw, boolean optional) throws ParsingException {
 		skipSpace();
 		return lexer.getNextToken(kw, optional);
 	}
 
-	Token space(ParsingResult result, boolean optional) {
+	Token space(ParsingResult result, boolean optional) throws ParsingException {
 		if(!optional)
 			result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), ""));
 		return lexer.getNextToken(TokenType.SPACE, optional);
@@ -92,16 +92,20 @@ public class Interpreter {
 	/**
 	 * integer :: S?D+
 	 */
-	int integer() {
-		StringBuffer buffer = new StringBuffer();
-		Token token;
-		if((token = sign(true)) != null)
-			buffer.append(token.text);
+	int integer() throws ParsingException {
+		try {
+			StringBuffer buffer = new StringBuffer();
+			Token token;
+			if((token = sign(true)) != null)
+				buffer.append(token.text);
 
-		buffer.append(digit(false).text);
-		while((token = digit(true)) != null)
-			buffer.append(token.text);
-		return Integer.parseInt(buffer.toString());
+			buffer.append(digit(false).text);
+			while((token = digit(true)) != null)
+				buffer.append(token.text);
+			return Integer.parseInt(buffer.toString());
+		} catch(ParsingException e) {
+			throw new ParsingException(e.getPos(), "Expected an integer number");
+		}
 	}
 
 	/**
@@ -109,31 +113,35 @@ public class Interpreter {
 	 *    D :: (0|1|2|3|4|5|6|7|8|9)
 	 *    S :: (+|-)
 	 */
-	double real() {
-		StringBuffer buffer = new StringBuffer();
-		Token token;
-		if((token = sign(true)) != null)
-			buffer.append(token.text);
+	double real() throws ParsingException {
+		try {
+			StringBuffer buffer = new StringBuffer();
+			Token token;
+			if((token = sign(true)) != null)
+				buffer.append(token.text);
 
-		buffer.append(digit(false).text);
-		while((token = digit(true)) != null)
-			buffer.append(token.text);
-
-		if((token = dot(true)) != null) {
-			buffer.append(token.text);
-
-			// buffer.append(digit(false).text);
+			buffer.append(digit(false).text);
 			while((token = digit(true)) != null)
 				buffer.append(token.text);
+
+			if((token = dot(true)) != null) {
+				buffer.append(token.text);
+
+				// buffer.append(digit(false).text);
+				while((token = digit(true)) != null)
+					buffer.append(token.text);
+			}
+			return Double.parseDouble(buffer.toString());
+		} catch(ParsingException e) {
+			throw new ParsingException(e.getPos(), "Expected a real number");
 		}
-		return Double.parseDouble(buffer.toString());
 	}
 
 	/**
 	 * mor :: (macro | real)
 	 * @return
 	 */
-	NumberOrMacro mor() {
+	NumberOrMacro mor() throws ParsingException {
 		String functionName = macro();
 		if(functionName != null)
 			return new NumberOrMacro(functionName);
@@ -146,34 +154,42 @@ public class Interpreter {
 	 *    L :: (a-z|A-Z)
 	 *    D :: (0|1|2|3|4|5|6|7|8|9)
 	 */
-	String macro() {
-		StringBuffer buffer = new StringBuffer();
-		Token token;
-		if((token = letter(true)) != null)
-			buffer.append(token.text);
-		else if((token = underscore(true)) != null)
-			buffer.append(token.text);
-		else
-			return null;
-
-		while(true) {
+	String macro() throws ParsingException {
+		try {
+			StringBuffer buffer = new StringBuffer();
+			Token token;
 			if((token = letter(true)) != null)
 				buffer.append(token.text);
 			else if((token = underscore(true)) != null)
 				buffer.append(token.text);
-			else if((token = digit(true)) != null)
-				buffer.append(token.text);
 			else
-				break;
+				return null;
+
+			while(true) {
+				if((token = letter(true)) != null)
+					buffer.append(token.text);
+				else if((token = underscore(true)) != null)
+					buffer.append(token.text);
+				else if((token = digit(true)) != null)
+					buffer.append(token.text);
+				else
+					break;
+			}
+			return buffer.toString();
+		} catch(ParsingException e) {
+			throw new ParsingException(e.getPos(), "Expected a macro name");
 		}
-		return buffer.toString();
 	}
 
 	/**
 	 * tuple :: (real ,real)
 	 */
-	NumberOrMacro[] tuple(ParsingResult result) {
-		lparen(false);
+	NumberOrMacro[] tuple(ParsingResult result) throws ParsingException {
+		try {
+			lparen(false);
+		} catch(ParsingException e) {
+			throw new ParsingException(e.getPos(), "Expected a tuple '(<number>, <number>)'");
+		}
 		result.setAutocompletion(new StringAutocompletion(lexer.getIndex(), ""));
 
 		skipSpace();
@@ -193,9 +209,12 @@ public class Interpreter {
 	/**
 	 * triple :: (real ,real, real)
 	 */
-	NumberOrMacro[] triple(ParsingResult result) {
-		lparen(false);
-
+	NumberOrMacro[] triple(ParsingResult result) throws ParsingException {
+		try {
+			lparen(false);
+		} catch(ParsingException e) {
+			throw new ParsingException(e.getPos(), "Expected a 3-tuple '(<number>, <number>, <number>)'");
+		}
 		skipSpace();
 		NumberOrMacro a = mor();
 		skipSpace();
@@ -215,11 +234,14 @@ public class Interpreter {
 	}
 
 	/**
-	 * triple :: (real ,real, real)
+	 * quadruple :: (real ,real, real, real)
 	 */
-	NumberOrMacro[] quadruple(ParsingResult result) {
-		lparen(false);
-
+	NumberOrMacro[] quadruple(ParsingResult result) throws ParsingException {
+		try {
+			lparen(false);
+		} catch(ParsingException e) {
+			throw new ParsingException(e.getPos(), "Expected a 4-tuple '(<number>, <number>, <number>, <number>)'");
+		}
 		skipSpace();
 		NumberOrMacro a = mor();
 		skipSpace();
@@ -246,7 +268,7 @@ public class Interpreter {
 	/**
 	 * rotation :: rotate by real degrees (horizontally | vertically | around triple)
 	 */
-	RotationAnimation rotation(int from, int to, ParsingResult result, int cursorpos) {
+	RotationAnimation rotation(int from, int to, ParsingResult result, int cursorpos) throws ParsingException {
 		if(keyword(GeneralKeyword.ROTATE, true) == null)
 			return null;
 
@@ -295,7 +317,7 @@ public class Interpreter {
 		return ra;
 	}
 
-	ResetTransformAnimation resetTransform(int from, int to, ParsingResult result, int cursorpos) {
+	ResetTransformAnimation resetTransform(int from, int to, ParsingResult result, int cursorpos) throws ParsingException {
 		if(keyword(GeneralKeyword.RESET_TRANSFORM, true) == null)
 			return null;
 
@@ -305,7 +327,7 @@ public class Interpreter {
 	/**
 	 * translation :: translate (horizontally by X | vertically by Y | by TRIPLE)
 	 */
-	TranslationAnimation translation(int from, int to, ParsingResult result, int cursorpos) {
+	TranslationAnimation translation(int from, int to, ParsingResult result, int cursorpos) throws ParsingException {
 		if(keyword(GeneralKeyword.TRANSLATE, true) == null)
 			return null;
 
@@ -360,7 +382,7 @@ public class Interpreter {
 	/**
 	 * zoom :: zoom by a factor of real
 	 */
-	ScaleAnimation zoom(int from, int to, ParsingResult result) {
+	ScaleAnimation zoom(int from, int to, ParsingResult result) throws ParsingException {
 		if(keyword(GeneralKeyword.ZOOM, true) == null)
 			return null;
 		space(result, false);
@@ -372,7 +394,7 @@ public class Interpreter {
 	/**
 	 * channelproperty :: (color min | color max | color gamma | alpha min | alpha max | alpha gamma | weight | color | alpha)
 	 */
-	Keyword channelproperty(ParsingResult result, int cursorpos) {
+	Keyword channelproperty(ParsingResult result, int cursorpos) throws ParsingException {
 		Keyword[] channelKeywords = kwFactory.getChannelKeywords();
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
@@ -383,7 +405,7 @@ public class Interpreter {
 				return cp;
 			}
 		}
-		throw new RuntimeException("Expected channel property");
+		throw new ParsingException(cursorpos, "Expected channel property");
 	}
 
 	/**
@@ -391,14 +413,14 @@ public class Interpreter {
 	 *                        bounding box min z | bounding box max z | front clipping | back clipping |
 	 *                        bounding box x | bounding box y | bounding box z)
 	 */
-	Keyword nonchannelproperty(ParsingResult result, int cursorpos) {
+	Keyword nonchannelproperty(ParsingResult result, int cursorpos) throws ParsingException {
 		Keyword[] nonChannelKeywords = kwFactory.getNonChannelKeywords();
 		for(Keyword cp : nonChannelKeywords) {
 			if(keyword(cp, true) != null) {
 				return cp;
 			}
 		}
-		throw new RuntimeException("Expected non-channel property");
+		throw new ParsingException(cursorpos, "Expected non-channel property");
 	}
 
 	/**
@@ -407,7 +429,7 @@ public class Interpreter {
 	 * nonchannelproperty :: (bounding box min x | bounding box max x | bounding box min y | bounding box max y |
 	 *                        bounding box min z | bounding box max z | front clipping | back clipping)
 	 */
-	ChangeAnimation change(int from, int to, ParsingResult result, int cursorpos) {
+	ChangeAnimation change(int from, int to, ParsingResult result, int cursorpos) throws ParsingException {
 		if(keyword(GeneralKeyword.CHANGE, true) == null)
 			return null;
 
@@ -559,7 +581,7 @@ public class Interpreter {
 		return ca;
 	}
 
-	float[] transition() {
+	float[] transition() throws ParsingException {
 		if(keyword(Transition.NONE, true) != null)
 			return Transition.NONE.getTransition();
 		if(keyword(Transition.EASE_IN_OUT, true) != null)
@@ -579,7 +601,7 @@ public class Interpreter {
 	 *
 	 * https://www.w3.org/TR/css3-transitions/#transition-timing-function
 	 */
-	void action(int from, int to, ParsingResult result, int cursorpos) {
+	void action(int from, int to, ParsingResult result, int cursorpos) throws ParsingException {
 		result.setAutocompletion(new ChoiceAutocompletion(
 				lexer.getIndex(),
 				lexer.getAutocompletionList(cursorpos, GeneralKeyword.ROTATE, GeneralKeyword.TRANSLATE, GeneralKeyword.ZOOM, GeneralKeyword.RESET_TRANSFORM, GeneralKeyword.CHANGE)));
@@ -596,7 +618,7 @@ public class Interpreter {
 			ta = change(from, to, result, cursorpos);
 
 		if(ta == null)
-			throw new RuntimeException("Expected rotation, translation, zoom or change for action");
+			throw new ParsingException(cursorpos, "Expected rotation, translation, zoom, reset transform or change for action");
 		else
 			result.setResult(ta);
 
@@ -616,7 +638,7 @@ public class Interpreter {
 	/**
 	 * line :: From frame integer to frame integer action
 	 */
-	public void line(ParsingResult result, int cursorpos) {
+	public void line(ParsingResult result, int cursorpos) throws ParsingException {
 		skipSpace();
 
 		result.setAutocompletion(
@@ -654,16 +676,16 @@ public class Interpreter {
 
 	}
 
-	public static void parse(IKeywordFactory kwFactory, String line, int length, float[] center, ParsingResult result) {
+	public static void parse(IKeywordFactory kwFactory, String line, int length, float[] center, ParsingResult result) throws ParsingException {
 		Interpreter i = new Interpreter(kwFactory, line, center);
 		i.line(result, length);
 	}
 
-	public static void parse(IKeywordFactory kwFactory, String line, float[] center, ParsingResult result) {
+	public static void parse(IKeywordFactory kwFactory, String line, float[] center, ParsingResult result) throws ParsingException {
 		parse(kwFactory, line, line.length(), center, result);
 	}
 
-	public static void main(String...args) {
+	public static void main(String...args) throws ParsingException {
 		String input = "From frame 0 to frame 10 rotate by 30 degrees around (1, 0, 0)";
 
 		ParsingResult res = new ParsingResult();

@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import animation3d.textanim.NumberedLine;
+
 public class Preprocessor {
 
 	public static class PreprocessingException extends Exception {
@@ -138,7 +140,7 @@ public class Preprocessor {
         return (st > 0) ? text.substring(st, len) : text;
     }
 
-	public static void preprocess(String ttext, ArrayList<String> lines, HashMap<String, String> scripts) throws PreprocessingException {
+	public static void preprocess(String ttext, ArrayList<NumberedLine> lines, HashMap<String, String> scripts) throws PreprocessingException {
 		lines.clear();
 		scripts.clear();
 		StringBuffer text = new StringBuffer(ttext);
@@ -149,22 +151,24 @@ public class Preprocessor {
 		BufferedReader buf = new BufferedReader(sr);
 		String lastLineWithoutDash = "";
 		String line;
+		int lineno = -1;
 		try {
 			while((line = buf.readLine()) != null) {
-				line = line.trim();
-				if(line.isEmpty())
+				lineno++;
+				// line = line.trim();
+				if(line.trim().isEmpty())
 					continue;
-				if(line.startsWith("//"))
+				if(line.trim().startsWith("//"))
 					continue;
-				if(line.endsWith(":"))
-					lastLineWithoutDash = line.substring(0, line.length() - 1);
+				if(line.trim().endsWith(":"))
+					lastLineWithoutDash = line.trim().substring(0, line.trim().length() - 1);
 				else if(line.startsWith("-")) {
-					line = line.substring(1).trim();
+					line = trimLeading(line.substring(1));
 					line = lastLineWithoutDash + " " + line;
-					lines.add(line);
+					lines.add(new NumberedLine(lineno, line));
 				}
 				else
-					lines.add(line);
+					lines.add(new NumberedLine(lineno, line));
 			}
 		} catch(Exception ex) {
 			throw new PreprocessingException("Error reading animations", ex);

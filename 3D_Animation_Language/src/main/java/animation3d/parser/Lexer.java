@@ -12,7 +12,7 @@ public class Lexer {
 		this.index = 0;
 	}
 
-	public Token getNextToken(Iterable<String> tokens, boolean optional) {
+	public Token getNextToken(Iterable<String> tokens, boolean optional) throws ParsingException {
 		for(String token : tokens) {
 			if(input.regionMatches(true, index, token, 0, token.length())) {
 				int pos = index;
@@ -22,10 +22,10 @@ public class Lexer {
 		}
 		if(optional)
 			return null; // without increasing index;
-		throw new RuntimeException("Error at position " + index + ": Expected one of " + tokens.toString() + " but found end of line.");
+		throw new ParsingException(index, "Expected one of " + tokens.toString());
 	}
 
-	public Token getNextToken(Keyword keyword, boolean optional) {
+	public Token getNextToken(Keyword keyword, boolean optional) throws ParsingException {
 		if(input.regionMatches(true, index, keyword.getKeyword(), 0, keyword.length())) {
 			int pos = index;
 			index += keyword.length();
@@ -33,16 +33,16 @@ public class Lexer {
 		}
 		if(optional)
 			return null; // without increasing index;
-		throw new RuntimeException("Error at position " + index + ": Expected " + keyword + " but found end of line.");
+		throw new ParsingException(index, "Expected " + keyword);
 	}
 
-	public Token getNextToken(TokenType token, boolean optional) {
+	public Token getNextToken(TokenType token, boolean optional) throws ParsingException {
 		if(index >= input.length()) {
 			if(token == TokenType.EOF)
 				return new Token("", TokenType.EOF, index);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found end of line.");
+			throw new ParsingException(index, "Expected " + token);
 		}
 
 		char c = input.charAt(index);
@@ -51,7 +51,7 @@ public class Lexer {
 				return new Token(Character.toString(c), token, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.LETTER) {
@@ -59,7 +59,7 @@ public class Lexer {
 				return new Token(Character.toString(c), token, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.UNDERSCORE) {
@@ -67,7 +67,7 @@ public class Lexer {
 				return new Token(Character.toString(c), token, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.SPACE) {
@@ -75,7 +75,7 @@ public class Lexer {
 				return new Token(Character.toString(c), TokenType.SPACE, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.DOT) {
@@ -83,7 +83,7 @@ public class Lexer {
 				return new Token(Character.toString(c), TokenType.DOT, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.SIGN) {
@@ -91,7 +91,7 @@ public class Lexer {
 				return new Token(Character.toString(c), TokenType.SIGN, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.LPAREN) {
@@ -99,7 +99,7 @@ public class Lexer {
 				return new Token(Character.toString(c), TokenType.LPAREN, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.RPAREN) {
@@ -107,7 +107,7 @@ public class Lexer {
 				return new Token(Character.toString(c), TokenType.RPAREN, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.COMMA) {
@@ -115,7 +115,7 @@ public class Lexer {
 				return new Token(Character.toString(c), TokenType.COMMA, index++);
 			if(optional)
 				return null; // without increasing index;
-			throw new RuntimeException("Error at position " + index + ": Expected " + token + " but found " + c);
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
 		else if(token == TokenType.KEYWORD) {
@@ -123,7 +123,7 @@ public class Lexer {
 		}
 
 		else {
-			throw new RuntimeException("Unknow token type: " + token);
+			throw new ParsingException(index, "Unknow token type: " + token);
 		}
 	}
 

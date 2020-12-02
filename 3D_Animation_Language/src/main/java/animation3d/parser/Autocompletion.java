@@ -16,6 +16,11 @@ public abstract class Autocompletion {
 		this.type = type;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getName();
+	}
+
 	public static class ChoiceAutocompletion extends Autocompletion {
 
 		private String[] options;
@@ -33,6 +38,20 @@ public abstract class Autocompletion {
 
 		public String[] getOptions() {
 			return options;
+		}
+
+		@Override
+		public String toString() {
+			if(options.length == 0)
+				return "empty options"; // this should probably not happen
+			if(options.length == 1)
+				return "'" + options[0] + "'";
+			StringBuilder sb = new StringBuilder();
+			sb.append('\'').append(options[0]).append('\'');
+			for(int i = 1; i < options.length - 1; i++)
+				sb.append(", ").append('\'').append(options[i]).append('\'');
+			sb.append(" or ").append('\'').append(options[options.length - 1]).append('\'');
+			return sb.toString();
 		}
 	}
 
@@ -54,6 +73,11 @@ public abstract class Autocompletion {
 		public String getString() {
 			return string;
 		}
+
+		@Override
+		public String toString() {
+			return "'" + string + "'";
+		}
 	}
 
 	public static class IntegerAutocompletion extends Autocompletion {
@@ -68,6 +92,11 @@ public abstract class Autocompletion {
 		public String getDescription() {
 			return desc;
 		}
+
+		@Override
+		public String toString() {
+			return "an integer number " + desc;
+		}
 	}
 
 	public static class RealAutocompletion extends Autocompletion {
@@ -81,6 +110,11 @@ public abstract class Autocompletion {
 
 		public String getDescription() {
 			return desc;
+		}
+
+		@Override
+		public String toString() {
+			return "a real number " + desc;
 		}
 	}
 
@@ -101,6 +135,11 @@ public abstract class Autocompletion {
 			case 1: return desc2;
 			}
 			return null;
+		}
+
+		@Override
+		public String toString() {
+			return "(" + desc1 + ", " + desc2 + ")";
 		}
 	}
 
@@ -124,6 +163,11 @@ public abstract class Autocompletion {
 			case 2: return desc3;
 			}
 			return null;
+		}
+
+		@Override
+		public String toString() {
+			return "(" + desc1 + ", " + desc2 + ", " + desc3 + ")";
 		}
 	}
 
@@ -150,6 +194,11 @@ public abstract class Autocompletion {
 			case 3: return desc4;
 			}
 			return null;
+		}
+
+		@Override
+		public String toString() {
+			return "(" + desc1 + ", " + desc2 + ", " + desc3 + ", " + desc4 + ")";
 		}
 	}
 }
