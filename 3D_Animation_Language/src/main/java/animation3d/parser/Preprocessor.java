@@ -155,15 +155,15 @@ public class Preprocessor {
 		try {
 			while((line = buf.readLine()) != null) {
 				lineno++;
-				// line = line.trim();
+				line = trimLeading(line);
 				if(line.trim().isEmpty())
 					continue;
-				if(line.trim().startsWith("//"))
+				if(line.startsWith("//"))
 					continue;
 				if(line.trim().endsWith(":"))
 					lastLineWithoutDash = line.trim().substring(0, line.trim().length() - 1);
 				else if(line.startsWith("-")) {
-					line = trimLeading(line.substring(1));
+					line = line.substring(1);
 					line = lastLineWithoutDash + " " + line;
 					lines.add(new NumberedLine(lineno, line));
 				}
