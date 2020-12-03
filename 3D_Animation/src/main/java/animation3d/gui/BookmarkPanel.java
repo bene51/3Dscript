@@ -44,7 +44,6 @@ import animation3d.renderer3d.ExtendedRenderingState;
 import animation3d.renderer3d.RecordingProvider;
 import animation3d.renderer3d.Renderer3D;
 import animation3d.textanim.Animation;
-import animation3d.textanim.IRecordingProvider.RecordingItem;
 import animation3d.textanim.NumberedLine;
 import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
@@ -375,13 +374,8 @@ public class BookmarkPanel extends JPanel {
 			for(int bIndex = 0; bIndex < bookmarks.size(); bIndex++) {
 				Bookmark b = bookmarks.get(bIndex);
 				RecordingProvider recordings = (RecordingProvider) RecordingProvider.getInstance();
-				buf.append("At bookmark " + b.getName() + ":\n");
-				for(RecordingItem ri : recordings) {
-					String r = ri.getRecording(b.getRenderingState());
-					int idx = r.indexOf('\n');
-					r = r.substring(idx + 1);
-					buf.append(r);
-				}
+				buf.append("At bookmark " + b.getName() + ":\n")
+					.append(recordings.getRecordingForEverything(b.getRenderingState()));
 			}
 			Files.write(Paths.get(path), buf.toString().getBytes());
 		} catch(IOException e) {
