@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -26,6 +27,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import animation3d.editor.AnimationEditor;
+import animation3d.editor.EditorPane;
+import animation3d.editor.TextEditorTab;
 import animation3d.gui.AnimationPanel;
 import animation3d.gui.AnimatorDialog;
 import animation3d.gui.Bookmark;
@@ -35,6 +38,7 @@ import animation3d.gui.CroppingPanel;
 import animation3d.gui.OutputPanel;
 import animation3d.gui.RenderingThread;
 import animation3d.gui.TransformationPanel;
+import animation3d.parser.ParsingException;
 import animation3d.renderer3d.ExtendedRenderingState;
 import animation3d.renderer3d.RecordingProvider;
 import animation3d.renderer3d.Renderer3D;
@@ -44,7 +48,9 @@ import animation3d.textanim.CombinedTransform;
 import animation3d.util.Transform;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
+import ij.gui.GenericDialog;
 import ij.gui.ImageCanvas;
 import ij.gui.Roi;
 import ij.gui.TextRoi;
@@ -52,6 +58,7 @@ import ij.gui.Toolbar;
 import ij.measure.Calibration;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 
@@ -666,9 +673,159 @@ macro = macro +
 			IJ.open(tmp.toString());
 		});
 
+		JMenuItem renderMultiChannel = new JMenuItem("Render multiple channels");
+		renderMultiChannel.addActionListener(e -> {
+			int nChannels = renderer.getNChannels();
+			int nPanels = (int)IJ.getNumber("Number of panels", nChannels);
+			if(nPanels == IJ.CANCELED)
+				return;
+
+			GenericDialog gd = new GenericDialog("Render multiple channels");
+			for(int i = 0; i < nPanels; i++) {
+				String def = i < nChannels
+						? Integer.toString(i + 1)
+						: (1 + " - " + (nChannels + 1));
+				gd.addStringField("Panel_" + (i + 1) + "_channels", def);
+			}
+			gd.addMessage("Panel arrangement");
+			gd.addNumericField("Rows", 1, 0);
+			gd.addNumericField("Columns", nPanels, 0);
+			gd.showDialog();
+			if(gd.wasCanceled())
+				return;
+
+			String text = editor.getTab().getEditorPane().getText();
+
+			ImagePlus[] rendered = new ImagePlus[nPanels];
+			for(int i = 0; i < nPanels; i++) {
+				String range = gd.getNextString();
+				if(range.isEmpty()) {
+					rendered[i] = null;
+					continue;
+				}
+				boolean[] channelOn = new boolean[nChannels];
+				parseRange(range, channelOn);
+				boolean allChannelsOff = true;
+				String text2 = text + "\nAt frame 0:\n";
+				for(int channel = 0; channel < nChannels; channel++) {
+					if(!channelOn[channel]) {
+						text2 = text2 + "- change channel " + (channel + 1) + " weight to 0\n";
+					} else {
+						allChannelsOff = false;
+					}
+				}
+				if(allChannelsOff) {
+					rendered[i] = null;
+					continue;
+				}
+
+				// see editor.runText:
+				final TextEditorTab tab = editor.getTab();
+				tab.showOutput();
+				tab.prepare();
+
+				try {
+					animator.render(text2);
+					rendered[i] = animator.waitForRendering(10, TimeUnit.MINUTES);
+				} catch(ParsingException pe) {
+					String msg = pe.getMessage();
+					int line = pe.getLine();
+					if(line != -1)
+						((EditorPane)tab.getEditorPane()).setErrorMarker(line, msg);
+
+					editor.getErrorScreen().setText("In line "
+							+ (line < 0 ? "?" : (line + 1))
+							+ ": " + msg);
+					tab.showErrors();
+					pe.printStackTrace();
+					return;
+				} catch(Exception ex) {
+					editor.handleException(ex);
+					return;
+				} finally {
+					tab.restore();
+				}
+			}
+			int nrows = (int)gd.getNextNumber();
+			int ncols = (int)gd.getNextNumber();
+			merge(rendered, nrows, ncols).show();
+			for(ImagePlus imp : rendered)
+				if(imp != null)
+					imp.close();
+		});
+
+
 		extrasMenu.add(createIJ1Macro);
+		extrasMenu.add(renderMultiChannel);
 		mbar.add(extrasMenu);
 		editor.setVisible(true);
+	}
+
+	// assume equal dimensions
+	private ImagePlus merge(ImagePlus[] images, int nrows, int ncols) {
+		int sampleIdx = 0;
+		while(images[sampleIdx] == null)
+			sampleIdx++;
+
+		int w = images[sampleIdx].getWidth();
+		int h = images[sampleIdx].getHeight();
+		final int gap = 5;
+		int W = ncols * h + (ncols + 1) * gap;
+		int H = nrows * w + (nrows + 1) * gap;
+		int D = images[sampleIdx].getStackSize();
+		ImageProcessor[] tgt = new ImageProcessor[D];
+		for(int z = 0; z < D; z++) {
+			tgt[z] = new ColorProcessor(W, H);
+			tgt[z].setColor(Color.WHITE);
+			tgt[z].fill();
+		}
+
+		for(int i = 0; i < images.length; i++) {
+			if(images[i] == null)
+				continue;
+			int rIdx = i / ncols;
+			int cIdx = i % ncols;
+			int offsx = cIdx * w + (cIdx + 1) * gap;
+			int offsy = rIdx * h + (rIdx + 1) * gap;
+
+			for(int z = 0; z < D; z++) {
+				tgt[z].insert(images[i].getStack().getProcessor(z + 1), offsx, offsy);
+			}
+		}
+
+		ImageStack stack = new ImageStack(W, H);
+		for(int z = 0; z < D; z++)
+			stack.addSlice(tgt[z]);
+		ImagePlus ret = new ImagePlus(images[sampleIdx].getTitle(), stack);
+		ret.setCalibration(images[sampleIdx].getCalibration().copy());
+		return ret;
+	}
+
+	private static void parseRange(String s, boolean[] inRange) {
+		Arrays.fill(inRange, false);
+		String[] toks = s.split(",");
+		for(String tok : toks) {
+			if(tok.trim().isEmpty())
+				continue;
+			// single value:
+			if(tok.indexOf('-') == -1) {
+				int idx = Integer.parseInt(tok) - 1;
+				if(idx >= 0 && idx < inRange.length)
+					inRange[idx] = true;
+			}
+			else {
+				String[] toks2 = tok.split("-");
+				if(toks2.length != 2)
+					throw new RuntimeException("Expected something like 1-4");
+				int from = Integer.parseInt(toks2[0]);
+				int to = Integer.parseInt(toks2[1]);
+				for(int j = from; j <= to; j++) {
+					int idx = j - 1;
+					if(idx >= 0 && idx < inRange.length)
+						inRange[idx] = true;
+				}
+			}
+		}
 	}
 
 	private void calculateChannelMinAndMax() {
