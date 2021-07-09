@@ -8,13 +8,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>17.1.1</version>
+		<version>26.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_BDV</artifactId>
-	<version>0.1</version>
+	<version>0.1.1-SNAPSHOT</version>
 
 	<name>3D Animation BDV Viewer</name>
 	<description>Adapter to use the BigDataViewer with the textbased animation plugin 3D_Animation.</description>

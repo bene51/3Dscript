@@ -1,10 +1,8 @@
 package animation3d.bdv;
 
 import java.awt.Color;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.io.File;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 
 import animation3d.textanim.CombinedTransform;
@@ -13,15 +11,17 @@ import animation3d.textanim.IRenderer3D;
 import animation3d.textanim.RenderingState;
 import animation3d.util.Transform;
 import bdv.BigDataViewer;
-import bdv.ij.util.ProgressWriterIJ;
+import bdv.img.cache.VolatileGlobalCellCache;
+import bdv.cache.CacheControl;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.tools.brightness.SetupAssignments;
+import bdv.util.Affine3DHelpers;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.Interpolation;
-import bdv.viewer.ViewerFrame;
-import bdv.viewer.ViewerOptions;
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.VisibilityAndGrouping;
+import bdv.viewer.animate.RotationAnimator;
+import bdv.viewer.render.MultiResolutionRenderer;
 import bdv.viewer.state.ViewerState;
 import ij.CompositeImage;
 import ij.IJ;
@@ -29,20 +29,36 @@ import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
 import mpicbg.spim.data.SpimDataException;
+import net.imglib2.Cursor;
 import net.imglib2.RealPoint;
+import net.imglib2.display.screenimage.awt.ARGBScreenImage;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.ui.PainterThread;
+import net.imglib2.ui.RenderTarget;
+import net.imglib2.util.LinAlgHelpers;
 
 public class BDVRenderer implements IRenderer3D {
-
-//	private int tgtW;
-//	private int tgtH;
-
+	
 	private BDVRenderingState rs;
-	private BigDataViewer viewer;
-	private ViewerOptions options;
+	private int tgtW;
+	private int tgtH;
+	private final ViewerPanel viewer;
+	private final SetupAssignments setupAssignments;
 
-	float[] rotationCenter;
+	final float[] rotationCenter;
+	
+	private float[] calculateRotationCenter() {
+		final RealPoint gPos = new RealPoint(3);
+		viewer.displayToGlobalCoordinates(tgtW/2, tgtH/2, gPos);
+
+		float[] ret = new float[3];
+		gPos.localize(ret);
+		
+		return ret;
+	}
 
 	private static float[] calculateForwardTransform(CombinedTransform ct) {
 		float scale = ct.getScale();
@@ -67,30 +83,31 @@ public class BDVRenderer implements IRenderer3D {
 		return ret;
 	}
 
-	// public BDVRenderer(ImagePlus input) {
-	public BDVRenderer(File xmlFile) throws SpimDataException {
-		openBDV(xmlFile);
-//		this.tgtW = 0; // TODO
-//		this.tgtH = 0; // TODO
+	public BDVRenderer(final BigDataViewer bdv) throws SpimDataException {
+		viewer = bdv.getViewer();
+		
+		tgtW = viewer.getDisplay().getWidth();
+		tgtH = viewer.getDisplay().getHeight();
 
+		setupAssignments = bdv.getSetupAssignments();
+			
 		float[] pdOut = new float[] {1, 1, 1};
 		float[] pdIn  = new float[] {1, 1, 1};
 
-		this.rotationCenter = calculateRotationCenter();
-		System.out.println("rotcenter: " + Arrays.toString(rotationCenter));
-		float[] rotcenter = rotationCenter.clone();
+		rotationCenter = calculateRotationCenter();
+		System.out.println("rotc: " + Arrays.toString(rotationCenter));
 
-		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
-		DisplayMode mode = viewer.getViewer().getVisibilityAndGrouping().getDisplayMode();
-		int tp = viewer.getViewer().getState().getCurrentTimepoint();
-		Interpolation interpolation = viewer.getViewer().getState().getInterpolation();
-		int currentSource = viewer.getViewer().getState().getCurrentSource();
-		int nSources = viewer.getViewer().getState().numSources();
+		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotationCenter);
+		DisplayMode mode = viewer.getVisibilityAndGrouping().getDisplayMode();
+		ViewerState state = viewer.getState();
+		int tp = state.getCurrentTimepoint();
+		Interpolation interpolation = state.getInterpolation();
+		int currentSource = state.getCurrentSource();
+		int nSources = state.numSources();
 		double[] min = new double[nSources];
 		double[] max = new double[nSources];
 		Color[] colors = new Color[nSources];
 
-		SetupAssignments setupAssignments = viewer.getSetupAssignments();
 		for(int s = 0; s < nSources; s++) {
 			final ConverterSetup setup = setupAssignments.getConverterSetups().get(s);
 			colors[s] = new Color(setup.getColor().get());
@@ -98,7 +115,8 @@ public class BDVRenderer implements IRenderer3D {
 			max[s] = setup.getDisplayRangeMax();
 		}
 
-		this.rs = new BDVRenderingState(0,
+		this.rs = 
+				new BDVRenderingState(0,
 				mode,
 				tp,
 				interpolation,
@@ -121,12 +139,57 @@ public class BDVRenderer implements IRenderer3D {
 	}
 
 	@Override
-	public ImageProcessor render(RenderingState kf) {
+	public ImageProcessor render(RenderingState rs) {
+		final ViewerState renderState = viewer.getState();
+		
+		final CombinedTransform transform = rs.getFwdTransform();
+		float[] tmp = transform.calculateForwardTransform();
+		final AffineTransform3D fwd = new AffineTransform3D();
+		fwd.set(toDouble(tmp));
+		
+		final AffineTransform3D c = new AffineTransform3D();
+		renderState.getViewerTransform(c);
+		
+		final double[] qTarget = new double[ 4 ];
+		Affine3DHelpers.extractRotation( fwd, qTarget );
+		viewer.setTransformAnimator(
+				new RotationAnimator(c, tgtW/2, tgtH/2, qTarget, 0));
+		
+		/*
+		CombinedTransform transform = rs.getFwdTransform();
+		float[] translation = transform.getTranslation();
+		float[] rotation    = transform.getRotation();
+		float scale         = transform.getScale();
+		
+		final AffineTransform3D c = new AffineTransform3D();
+		renderState.getViewerTransform(c);
+		
+		double rcw = rotationCenter[0];
+		double rch = rotationCenter[1];
+		//NOTE extract?
+		viewer.setTransformAnimator(
+				new RotationAnimator(c, rcw, rch, toDouble(rotation), 0));
+		*/
+			
+		/*
+		double rw = 2 * rotationCenter[0];
+		double rh = 2 * rotationCenter[1];
+		double scaleX = tgtW / rw;
+		double scaleY = tgtH / rh;
+		double scale = Math.min(scaleX, scaleY);
+		affine.scale(scale);
+		
+		rw *= scale;
+		rh *= scale;
+		double tx = (tgtW - rw) / 2;
+		double ty = (tgtH - rh) / 2;
+		affine.translate(tx, ty, 0);
+		*/
+		//viewer.setCurrentViewerTransform(affine);
+		
+		/*
 		BDVRenderingState bkf = (BDVRenderingState)kf;
-		ViewerPanel panel = viewer.getViewer();
-		ViewerState state = panel.getState();
-
-		SetupAssignments setupAssignments = viewer.getSetupAssignments();
+					
 		for(int s = 0; s < state.numSources(); s++) {
 			final ConverterSetup setup = setupAssignments.getConverterSetups().get(s);
 			setup.setColor(new ARGBType(bkf.getChannelColor(s).getRGB()));
@@ -137,30 +200,26 @@ public class BDVRenderer implements IRenderer3D {
 		Interpolation interpolation = bkf.getInterpolation();
 		int timepoint = bkf.getTimepoint();
 		int currentSource = bkf.getCurrentSource();
-
-		panel.setDisplayMode(displaymode);
+		
+		viewer.setDisplayMode(displaymode);
 		if(state.getInterpolation() != interpolation)
-			panel.toggleInterpolation();
-		panel.setTimepoint(timepoint);
-		panel.getVisibilityAndGrouping().setCurrentSource(currentSource);
+			viewer.toggleInterpolation();
+		viewer.setTimepoint(timepoint);
+		viewer.getVisibilityAndGrouping().setCurrentSource(currentSource);
 
 		CombinedTransform transform = kf.getFwdTransform();
 
 		float[] tmp = calculateForwardTransform(transform);
 
-
-		int w = panel.getWidth();
-		int h = panel.getHeight();
-
 		double rw = 2 * rotationCenter[0];
 		double rh = 2 * rotationCenter[1];
-		double scaleX = w / rw;
-		double scaleY = h / rh;
+		double scaleX = tgtW / rw;
+		double scaleY = tgtH / rh;
 		double scale = Math.min(scaleX, scaleY);
 		rw = rw * scale;
 		rh = rh * scale;
-		double tx = (w - rw) / 2;
-		double ty = (h - rh) / 2;
+		double tx = (tgtW - rw) / 2;
+		double ty = (tgtH - rh) / 2;
 
 		AffineTransform3D affine = new AffineTransform3D();
 
@@ -169,40 +228,115 @@ public class BDVRenderer implements IRenderer3D {
 		affine.scale(scale);
 		affine.translate(tx, ty, 0);
 
-		panel.setCurrentViewerTransform(affine);
+		viewer.setCurrentViewerTransform(affine);
+		*/
 
 		return takeSnapshot().getProcessor();
 	}
 
 	public ImagePlus takeSnapshot() {
-		ViewerFrame win = viewer.getViewerFrame();
-		win.toFront();
-		IJ.wait(500);
-		Rectangle bounds = win.getBounds();
-		Rectangle r = bounds;
-		ImagePlus imp = null;
-		Image img = null;
-		try {
-			Robot robot = new Robot();
-			img = robot.createScreenCapture(r);
-		} catch(Exception e) { }
-		if (img != null) {
-			imp = new ImagePlus("", img);
+		System.out.println("takeSnapshot()");
+		final ViewerState renderState = viewer.getState();
+		
+		final AffineTransform3D tGV = new AffineTransform3D();
+		renderState.getViewerTransform( tGV );
+		/*
+		tGV.set( tGV.get( 0, 3 ) - canvasW / 2, 0, 3 );
+		tGV.set( tGV.get( 1, 3 ) - canvasH / 2, 1, 3 );
+		tGV.scale( ( double ) width / canvasW );
+		tGV.set( tGV.get( 0, 3 ) + width / 2, 0, 3 );
+		tGV.set( tGV.get( 1, 3 ) + height / 2, 1, 3 );
+		*/
+		
+		final AffineTransform3D affine = new AffineTransform3D();
+		
+		// get voxel width transformed to current viewer coordinates
+		final AffineTransform3D tSV = new AffineTransform3D();
+		renderState.getSources().get( 0 ).getSpimSource().getSourceTransform( 0, 0, tSV );
+		final double[] sO = new double[] { 0, 0, 0 };
+		final double[] sX = new double[] { 1, 0, 0 };
+		final double[] vO = new double[ 3 ];
+		final double[] vX = new double[ 3 ];
+		tSV.apply( sO, vO );
+		tSV.apply( sX, vX );
+		LinAlgHelpers.subtract( vO, vX, vO );
+		final double dd = LinAlgHelpers.length( vO );
+		
+		// MIP renderer
+		class MyTarget implements RenderTarget {
+			final ARGBScreenImage accumulated;
+			
+			public MyTarget() {
+				accumulated = new ARGBScreenImage(tgtW, tgtH);
+			}
+			
+			public void clear() {
+				for (final ARGBType acc : accumulated) {
+					acc.setZero();
+				}
+			}
+			
+			@Override
+			public BufferedImage setBufferedImage(final BufferedImage bufferedImage) {
+				final Img< ARGBType > argbs = ArrayImgs.argbs( ( ( DataBufferInt ) bufferedImage.getData().getDataBuffer() ).getData(), tgtW, tgtH );
+				final Cursor< ARGBType > c = argbs.cursor();
+				for ( final ARGBType acc : accumulated )
+				{
+					final int current = acc.get();
+					final int in = c.next().get();
+					acc.set( ARGBType.rgba(
+							Math.max( ARGBType.red( in ), ARGBType.red( current ) ),
+							Math.max( ARGBType.green( in ), ARGBType.green( current ) ),
+							Math.max( ARGBType.blue( in ), ARGBType.blue( current ) ),
+							Math.max( ARGBType.alpha( in ), ARGBType.alpha( current ) )	) );
+				}
+				return null;
+			}
+			
+			@Override
+			public final int getWidth() {
+				return tgtW;
+			}
+
+			@Override
+			public int getHeight() {
+				return tgtH;
+			}
 		}
-		return imp;
-	}
-
-	private float[] calculateRotationCenter() {
-		ViewerPanel panel = viewer.getViewer();
-		final RealPoint gPos = new RealPoint(3);
-
-		panel.displayToGlobalCoordinates(panel.getWidth() / 2, panel.getHeight() / 2, gPos);
-
-		float[] ret = new float[3];
-		gPos.localize(ret);
-
-		System.out.println("rotc is " + ret[0] + ", " + ret[1] + ", " + ret[2]);
-		return ret;
+		
+		final MyTarget target = new MyTarget();
+		final MultiResolutionRenderer renderer = new MultiResolutionRenderer(
+				target, 
+				new PainterThread( null ), 
+				new double[] { 1 }, 
+				0, 
+				false, 
+				16, //1, // n_rendering_thread 
+				null, 
+				false,
+				viewer.getOptionValues().getAccumulateProjectorFactory(), 
+				//new CacheControl.Dummy() 
+				new VolatileGlobalCellCache(1, 8) // cache (n_mip_level, n_thread)
+			);
+		
+		//FIXME
+		final int numStep = 500;
+		final int stepSize = 1;
+		
+		target.clear();
+		for (int step = 0; step < numStep; ++step) {
+			affine.set(
+					1, 0, 0, 0,
+					0, 1, 0, 0,
+					0, 0, 1, -dd * stepSize * step );
+			affine.concatenate( tGV );
+			renderState.setViewerTransform( affine );
+			renderer.requestRepaint();
+			renderer.paint( renderState );
+		}
+		
+		final BufferedImage bImage = target.accumulated.image();
+		return new ImagePlus("Snapshot", bImage);
 	}
 
 	@Override
@@ -217,158 +351,25 @@ public class BDVRenderer implements IRenderer3D {
 
 	@Override
 	public int getNChannels() {
-		ViewerPanel panel = viewer.getViewer();
-		ViewerState state = panel.getState();
+		ViewerState state = viewer.getState();
 		return state.numSources();
 	}
 
 	@Override
 	public void setTargetSize(int w, int h) {
-//		this.tgtW = w;
-//		this.tgtH = h;
-		// TODO
+		tgtW = w;
+		tgtH = h;
 	}
 
 	@Override
 	public int getTargetWidth() {
-		return viewer.getViewer().getWidth();
+		return tgtW;
 	}
 
 	@Override
 	public int getTargetHeight() {
-		return viewer.getViewer().getHeight();
+		return tgtH;
 	}
-
-	public void openBDV(File xmlFile) throws SpimDataException {
-		options = ViewerOptions.options();
-		viewer = BigDataViewer.open(xmlFile.getAbsolutePath(), xmlFile.getName(), new ProgressWriterIJ(), options);
-	}
-
-//	public void openBDV(ImagePlus imp) {
-//		if (ij.Prefs.setIJMenuBar)
-//			System.setProperty("apple.laf.useScreenMenuBar", "true");
-//
-//		// make sure there is one
-//		if (imp == null) {
-//			IJ.showMessage("Please open an image first.");
-//			return;
-//		}
-//
-//		// check the image type
-//		switch (imp.getType()) {
-//		case ImagePlus.GRAY8:
-//		case ImagePlus.GRAY16:
-//		case ImagePlus.GRAY32:
-//		case ImagePlus.COLOR_RGB:
-//			break;
-//		default:
-//			IJ.showMessage("Only 8, 16, 32-bit images and RGB images are supported currently!");
-//			return;
-//		}
-//
-//		// check the image dimensionality
-//		if (imp.getNDimensions() < 3) {
-//			IJ.showMessage("Image must be at least 3-dimensional!");
-//			return;
-//		}
-//
-//		// get calibration and image size
-//		final double pw = imp.getCalibration().pixelWidth;
-//		final double ph = imp.getCalibration().pixelHeight;
-//		final double pd = imp.getCalibration().pixelDepth;
-//		String punit = imp.getCalibration().getUnit();
-//		if (punit == null || punit.isEmpty())
-//			punit = "px";
-//		final FinalVoxelDimensions voxelSize = new FinalVoxelDimensions(punit, pw, ph, pd);
-//		final int w = imp.getWidth();
-//		final int h = imp.getHeight();
-//		final int d = imp.getNSlices();
-//		final FinalDimensions size = new FinalDimensions(new int[] { w, h, d });
-//
-//		// propose reasonable mipmap settings
-//		// final ExportMipmapInfo autoMipmapSettings =
-//		// ProposeMipmaps.proposeMipmaps( new BasicViewSetup( 0, "", size,
-//		// voxelSize ) );
-//
-//		// imp.getDisplayRangeMin();
-//		// imp.getDisplayRangeMax();
-//
-//		// create ImgLoader wrapping the image
-//		final BasicImgLoader imgLoader;
-//		if (imp.getStack().isVirtual()) {
-//			switch (imp.getType()) {
-//			case ImagePlus.GRAY8:
-//				imgLoader = VirtualStackImageLoader.createUnsignedByteInstance(imp);
-//				break;
-//			case ImagePlus.GRAY16:
-//				imgLoader = VirtualStackImageLoader.createUnsignedShortInstance(imp);
-//				break;
-//			case ImagePlus.GRAY32:
-//				imgLoader = VirtualStackImageLoader.createFloatInstance(imp);
-//				break;
-//			case ImagePlus.COLOR_RGB:
-//			default:
-//				imgLoader = VirtualStackImageLoader.createARGBInstance(imp);
-//				break;
-//			}
-//		} else {
-//			switch (imp.getType()) {
-//			case ImagePlus.GRAY8:
-//				imgLoader = ImageStackImageLoader.createUnsignedByteInstance(imp);
-//				break;
-//			case ImagePlus.GRAY16:
-//				imgLoader = ImageStackImageLoader.createUnsignedShortInstance(imp);
-//				break;
-//			case ImagePlus.GRAY32:
-//				imgLoader = ImageStackImageLoader.createFloatInstance(imp);
-//				break;
-//			case ImagePlus.COLOR_RGB:
-//			default:
-//				imgLoader = ImageStackImageLoader.createARGBInstance(imp);
-//				break;
-//			}
-//		}
-//
-//		final int numTimepoints = imp.getNFrames();
-//		final int numSetups = imp.getNChannels();
-//
-//		// create setups from channels
-//		final HashMap<Integer, BasicViewSetup> setups = new HashMap<>(numSetups);
-//		for (int s = 0; s < numSetups; ++s) {
-//			final BasicViewSetup setup = new BasicViewSetup(s, String.format("channel %d", s + 1), size, voxelSize);
-//			setup.setAttribute(new Channel(s + 1));
-//			setups.put(s, setup);
-//		}
-//
-//		// create timepoints
-//		final ArrayList<TimePoint> timepoints = new ArrayList<>(numTimepoints);
-//		for (int t = 0; t < numTimepoints; ++t)
-//			timepoints.add(new TimePoint(t));
-//		final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal(new TimePoints(timepoints), setups,
-//				imgLoader, null);
-//
-//		// create ViewRegistrations from the images calibration
-//		final AffineTransform3D sourceTransform = new AffineTransform3D();
-//		sourceTransform.set(pw, 0, 0, 0, 0, ph, 0, 0, 0, 0, pd, 0);
-//		final ArrayList<ViewRegistration> registrations = new ArrayList<>();
-//		for (int t = 0; t < numTimepoints; ++t)
-//			for (int s = 0; s < numSetups; ++s)
-//				registrations.add(new ViewRegistration(t, s, sourceTransform));
-//
-//		final File basePath = new File(".");
-//		final SpimDataMinimal spimData = new SpimDataMinimal(basePath, seq, new ViewRegistrations(registrations));
-//		WrapBasicImgLoader.wrapImgLoaderIfNecessary(spimData);
-//
-//		options = ViewerOptions.options();
-//		viewer = BigDataViewer.open(spimData, "BigDataViewer", new ProgressWriterIJ(),
-//				options);
-//		final SetupAssignments sa = viewer.getSetupAssignments();
-//		final VisibilityAndGrouping vg = viewer.getViewer().getVisibilityAndGrouping();
-//		if (imp.isComposite())
-//			transferChannelSettings((CompositeImage) imp, sa, vg);
-//		else
-//			transferImpSettings(imp, sa);
-//	}
 
 	protected void transferChannelSettings(final CompositeImage ci, final SetupAssignments setupAssignments,
 			final VisibilityAndGrouping visibility) {

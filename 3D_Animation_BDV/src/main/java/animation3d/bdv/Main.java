@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
+import org.scijava.command.Command;
+import org.scijava.plugin.Plugin;
+
 import animation3d.editor.AnimationEditor;
 import animation3d.textanim.Default3DRecordingProvider;
 import bdv.BigDataViewer;
@@ -17,16 +20,15 @@ import bdv.ij.util.ProgressWriterIJ;
 import bdv.viewer.ViewerOptions;
 import ij.IJ;
 import ij.Prefs;
-import ij.plugin.PlugIn;
 import mpicbg.spim.data.SpimDataException;
 
-public class Main implements PlugIn {
-
+@Plugin(type = Command.class, menuPath = "Plugins>3D Animation>By BigDataViewer")
+public class Main implements Command {
+	
 	static String lastDatasetPath = "./export.xml";
 
-	// Parts are copied from https://github.com/bigdataviewer/bigdataviewer_fiji/blob/master/src/main/java/bdv/ij/BigDataViewerPlugIn.java
 	@Override
-	public void run(String arg) {
+	public void run() {
 		if (ij.Prefs.setIJMenuBar)
 			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
 
@@ -110,8 +112,21 @@ public class Main implements PlugIn {
 		final String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 		return (OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0);
 	}
-
+	
 	public static void run(File xmlFile) {
+		try {
+			final BigDataViewer bdv = BigDataViewer.open(xmlFile.getAbsolutePath(), xmlFile.getName(), new ProgressWriterIJ(),
+					ViewerOptions.options());
+
+			BDVRenderer renderer = new BDVRenderer(bdv);
+			AnimationEditor editor = new AnimationEditor(renderer, Default3DRecordingProvider.getInstance());
+			editor.setVisible(true);
+		} catch (final SpimDataException e) {
+			e.printStackTrace();
+			IJ.handleException(e);
+		}
+		
+		/*
 		BDVRenderer renderer;
 		try {
 			renderer = new BDVRenderer(xmlFile);
@@ -121,21 +136,15 @@ public class Main implements PlugIn {
 			e.printStackTrace();
 			IJ.handleException(e);
 		}
+		*/
 	}
 
 	public static void main(String[] args) {
-		if ( ij.Prefs.setIJMenuBar )
-			System.setProperty( "apple.laf.useScreenMenuBar", "true" );
+		System.setProperty( "apple.laf.userScreenMenuBar", "true");
 		new ij.ImageJ();
-//		ImagePlus imp = ij.IJ.openImage("/Users/bene/flybrain.tif");
-//		imp.getCalibration().pixelWidth = 2;
-//		imp.getCalibration().pixelHeight = 2;
-//		imp.getCalibration().pixelDepth = 4;
-//		imp.show();
-//		ImagePlus imp = ij.IJ.openImage("/Users/bene/head.tif");
-//		ImagePlus imp = ij.IJ.openImage("/Users/bene/Downloads/HisYFP-SPIM/downsampled/fused.tif");
-		File xmlFile = new File("/Users/bene/Downloads/HisYFP-SPIM/downsampled/dataset.xml");
-		// File xmlFile = new File("/Users/bene/fijiplugins/3Dscript/export.xml");
+		//File xmlFile = new File("C:\\Users\\Andy\\Desktop\\E145_lung_2x2_1hd5\\dataset.xml");
+		//File xmlFile = new File("C:\\Users\\Andy\\Desktop\\t1-head\\dataset.xml");
+		File xmlFile = new File("C:\\Users\\Andy\\Desktop\\12Rays\\dataset.xml");
 		Main.run(xmlFile);
 	}
 }
