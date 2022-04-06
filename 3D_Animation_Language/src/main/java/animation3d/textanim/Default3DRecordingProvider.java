@@ -43,44 +43,49 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 		StringBuffer text = new StringBuffer();
 		// rotate around x-axis (vertically)
 		text.append("- reset transformation\n");
-		text.append("- ")
-			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(euler[0] * 180 / (float)Math.PI, 1)).append(" ")
-			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
-			.append("vertically\n");
+		if(euler[0] != 0) {
+			text.append("- ")
+					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(euler[0] * 180 / (float) Math.PI, 1)).append(" ")
+					.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+					.append("vertically\n");
+		}
 
 		// rotate around z-axis
-		text.append("- ")
-			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(euler[2] * 180 / (float)Math.PI, 1)).append(" ")
-			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
-			.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
-			.append("(")
-			.append(0).append(", ")
-			.append(0).append(", ")
-			.append(1)
-			.append(")\n");
+		if(euler[2] != 0) {
+			text.append("- ")
+					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(euler[2] * 180 / (float) Math.PI, 1)).append(" ")
+					.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+					.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
+					.append("(0, 0, 1)\n");
+		}
 
 		// rotate around y-axis
-		text.append("- ")
-			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(euler[1] * 180 / (float)Math.PI, 1)).append(" ")
-			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
-			.append("horizontally\n");
+		if(euler[1] != 0) {
+			text.append("- ")
+					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(euler[1] * 180 / (float) Math.PI, 1)).append(" ")
+					.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+					.append("horizontally\n");
+		}
 
-
-		text.append("- ")
-			.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(scale, 1))
-			.append("\n");
-		text.append("- ")
-			.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
-			.append(GeneralKeyword.BY.getKeyword()).append(" ")
-			.append("(")
-			.append(CustomDecimalFormat.format(dx, 1)).append(", ")
-			.append(CustomDecimalFormat.format(dy, 1)).append(", ")
-			.append(CustomDecimalFormat.format(dz, 1))
-			.append(")\n");
+		if(scale != 1) {
+			text.append("- ")
+					.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(scale, 1))
+					.append("\n");
+		}
+		if(dx != 0 || dy != 0 || dz != 0) {
+			text.append("- ")
+					.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
+					.append(GeneralKeyword.BY.getKeyword()).append(" ")
+					.append("(")
+					.append(CustomDecimalFormat.format(dx, 1)).append(", ")
+					.append(CustomDecimalFormat.format(dy, 1)).append(", ")
+					.append(CustomDecimalFormat.format(dz, 1))
+					.append(")\n");
+		}
 
 		return text.toString();
 	}
