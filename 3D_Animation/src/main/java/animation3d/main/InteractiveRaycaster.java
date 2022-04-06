@@ -632,6 +632,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 			@Override
 			public void animationFinished(ImagePlus result) {
 				setGUIFromRenderingState(renderer.getRenderingState());
+				push();
 			}
 		});
 		AnimationEditor editor = new AnimationEditor(renderer, animator, RecordingProvider.getInstance());
