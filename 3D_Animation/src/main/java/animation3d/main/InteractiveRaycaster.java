@@ -460,8 +460,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 		bookmarkPanel.addBookmarkPanelListener(new BookmarkPanel.Listener() {
 			@Override
 			public void gotoBookmark(Bookmark bookmark) {
-				ExtendedRenderingState rs = bookmark.getRenderingState();
-				push(rs);
+				ExtendedRenderingState rs = bookmark.getRenderingState().clone();
+				renderer.getRenderingState().setFrom(rs);
+
+				// need to adjust the transformation of the bookmark's rendering state,
+				// in case the output size was changed.
+				// see also setOutputSize()
+				setOutputSize(renderer.getTargetWidth(), renderer.getTargetHeight());
 				setGUIFromRenderingState(rs);
 			}
 		});
