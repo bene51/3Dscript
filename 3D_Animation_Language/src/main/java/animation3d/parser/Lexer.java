@@ -54,6 +54,14 @@ public class Lexer {
 			throw new ParsingException(index, "Expected " + token + " but found " + c);
 		}
 
+		else if(token == TokenType.EXP) {
+			if(c == 'e' || c == 'E')
+				return new Token(Character.toString(c), token, index++);
+			if(optional)
+				return null; // without increasing index
+			throw new ParsingException(index, "Expected " + token + " but found " + c);
+		}
+
 		else if(token == TokenType.LETTER) {
 			if(Character.isLetter(c))
 				return new Token(Character.toString(c), token, index++);

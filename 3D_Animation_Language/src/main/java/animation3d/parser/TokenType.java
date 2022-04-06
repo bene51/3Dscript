@@ -2,6 +2,7 @@ package animation3d.parser;
 
 public enum TokenType {
     DIGIT("a digit (0-9)"),
+    EXP("exponent"),
     DOT("'.'"),
     SIGN("'+' or '-'"),
     LPAREN("'('"),

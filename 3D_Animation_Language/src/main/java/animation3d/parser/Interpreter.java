@@ -55,6 +55,10 @@ public class Interpreter {
 		return lexer.getNextToken(TokenType.SIGN, optional);
 	}
 
+	Token exp(boolean optional) throws ParsingException {
+		return lexer.getNextToken(TokenType.EXP, optional);
+	}
+
 	Token digit(boolean optional) throws ParsingException {
 		return lexer.getNextToken(TokenType.DIGIT, optional);
 	}
@@ -109,28 +113,47 @@ public class Interpreter {
 	}
 
 	/**
-	 * real :: S?D+(.D*)?
+	 * real :: S?D+(.D+)?(ES?D+)?
 	 *    D :: (0|1|2|3|4|5|6|7|8|9)
 	 *    S :: (+|-)
+	 *    E :: (e|E)
 	 */
 	double real() throws ParsingException {
 		try {
 			StringBuffer buffer = new StringBuffer();
 			Token token;
+
+			// [-+]?
 			if((token = sign(true)) != null)
 				buffer.append(token.text);
 
+			// [0-9]+
 			buffer.append(digit(false).text);
 			while((token = digit(true)) != null)
 				buffer.append(token.text);
 
 			if((token = dot(true)) != null) {
+				// [.]?
 				buffer.append(token.text);
-
-				// buffer.append(digit(false).text);
+				// [0-9]+
+				buffer.append(digit(false).text);
 				while((token = digit(true)) != null)
 					buffer.append(token.text);
 			}
+
+			if((token = exp(true)) != null) {
+				// [eE]
+				buffer.append(token.text);
+				// [-+]?
+				if((token = sign(true)) != null)
+					buffer.append(token.text);
+				// [0-9]+
+				buffer.append(digit(false).text);
+				while((token = digit(true)) != null)
+					buffer.append(token.text);
+
+			}
+
 			return Double.parseDouble(buffer.toString());
 		} catch(ParsingException e) {
 			throw new ParsingException(e.getPos(), "Expected a real number");
