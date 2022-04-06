@@ -754,7 +754,10 @@ macro = macro +
 			}
 			int nrows = (int)gd.getNextNumber();
 			int ncols = (int)gd.getNextNumber();
-			merge(rendered, nrows, ncols).show();
+			final Color gapColor = renderer.getRenderingState().getBackgroundColor() == Color.WHITE
+					? Color.BLACK
+					: Color.WHITE;
+			merge(rendered, nrows, ncols, gapColor).show();
 			for(ImagePlus imp : rendered)
 				if(imp != null)
 					imp.close();
@@ -768,7 +771,7 @@ macro = macro +
 	}
 
 	// assume equal dimensions
-	private ImagePlus merge(ImagePlus[] images, int nrows, int ncols) {
+	private ImagePlus merge(ImagePlus[] images, int nrows, int ncols, Color borderColor) {
 		int sampleIdx = 0;
 		while(images[sampleIdx] == null)
 			sampleIdx++;
@@ -782,7 +785,7 @@ macro = macro +
 		ImageProcessor[] tgt = new ImageProcessor[D];
 		for(int z = 0; z < D; z++) {
 			tgt[z] = new ColorProcessor(W, H);
-			tgt[z].setColor(Color.WHITE);
+			tgt[z].setColor(borderColor);
 			tgt[z].fill();
 		}
 
