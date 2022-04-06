@@ -41,6 +41,7 @@ public class RenderingThread {
 		cal.setUnit(raycaster.getImage().getCalibration().getUnit());
 		rs.getFwdTransform().adjustOutputCalibration(cal);
 		out.show();
+		out.getCanvas().disablePopupMenu(true);
 
 		thread = new Thread("3D-Animation rendering thread") {
 			@Override
