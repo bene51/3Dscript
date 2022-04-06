@@ -703,6 +703,7 @@ macro = macro +
 					rendered[i] = null;
 					continue;
 				}
+				ExtendedRenderingState originalState = renderer.getRenderingState().clone();
 				boolean[] channelOn = new boolean[nChannels];
 				parseRange(range, channelOn);
 				boolean allChannelsOff = true;
@@ -744,6 +745,11 @@ macro = macro +
 					return;
 				} finally {
 					tab.restore();
+					// reset the channel weights
+					ExtendedRenderingState current = renderer.getRenderingState();
+					final int P = ExtendedRenderingState.WEIGHT;
+					for (int channel = 0; channel < nChannels; channel++)
+						current.setChannelProperty(channel, P, originalState.getChannelProperty(channel, P));
 				}
 			}
 			int nrows = (int)gd.getNextNumber();
