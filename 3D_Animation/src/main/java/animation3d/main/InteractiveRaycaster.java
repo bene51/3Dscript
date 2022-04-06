@@ -684,7 +684,7 @@ macro = macro +
 			for(int i = 0; i < nPanels; i++) {
 				String def = i < nChannels
 						? Integer.toString(i + 1)
-						: (1 + " - " + (nChannels + 1));
+						: (1 + "-" + nChannels);
 				gd.addStringField("Panel_" + (i + 1) + "_channels", def);
 			}
 			gd.addMessage("Panel arrangement");
