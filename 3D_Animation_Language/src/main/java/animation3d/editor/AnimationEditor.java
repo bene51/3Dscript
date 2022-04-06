@@ -1019,9 +1019,8 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			getTab().showErrors();
 			pe.printStackTrace();
 		} catch(Exception ex) {
+			animationFinished(null);
 			handleException(ex);
-		} finally {
-			tab.restore();
 		}
 	}
 
@@ -1056,9 +1055,8 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 			getTab().showErrors();
 			pe.printStackTrace();
 		} catch(Exception ex) {
+			animationFinished(null);
 			handleException(ex);
-		} finally {
-			tab.restore();
 		}
 	}
 
