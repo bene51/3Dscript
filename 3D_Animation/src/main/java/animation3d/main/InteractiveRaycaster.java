@@ -811,7 +811,8 @@ macro = macro +
 		Arrays.fill(inRange, false);
 		String[] toks = s.split(",");
 		for(String tok : toks) {
-			if(tok.trim().isEmpty())
+			tok = tok.trim();
+			if(tok.isEmpty())
 				continue;
 			// single value:
 			if(tok.indexOf('-') == -1) {
@@ -823,8 +824,8 @@ macro = macro +
 				String[] toks2 = tok.split("-");
 				if(toks2.length != 2)
 					throw new RuntimeException("Expected something like 1-4");
-				int from = Integer.parseInt(toks2[0]);
-				int to = Integer.parseInt(toks2[1]);
+				int from = Integer.parseInt(toks2[0].trim());
+				int to = Integer.parseInt(toks2[1].trim());
 				for(int j = from; j <= to; j++) {
 					int idx = j - 1;
 					if(idx >= 0 && idx < inRange.length)
