@@ -266,10 +266,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 		run = addToMenu(runMenu, "Run", KeyEvent.VK_R, ctrl);
 
-		runFromTo = addToMenu(runMenu, "Run from ... to ...", 0, 0);
+		runFromTo = addToMenu(runMenu, "Run from ... to ...", KeyEvent.VK_R, ctrl | shift);
 
 		runSelection =
-			addToMenu(runMenu, "Run selected code", KeyEvent.VK_R, ctrl | shift);
+			addToMenu(runMenu, "Run selected code", 0, 0);
 		runSelection.setMnemonic(KeyEvent.VK_S);
 
 		dryRun = addToMenu(runMenu, "Dry run (only show frame rendering settings)", 0, 0);
