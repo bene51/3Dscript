@@ -732,6 +732,10 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	private RenderingState rsRecordStart = null;
 
+	private static boolean equals(double v1, double v2) {
+		return Math.abs(v1 - v2) < 1e-5;
+	}
+
 	public void recordTransitionStart() {
 		rsRecordStart = renderer.getRenderingState().clone();
 	}
@@ -740,12 +744,14 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		GenericDialog gd = new GenericDialog("");
 		gd.addNumericField("Transition_start", 0, 0);
 		gd.addNumericField("Transition_end", 20, 0);
+		gd.addCheckbox("Record start state", false);
 		gd.showDialog();
 		if(gd.wasCanceled())
 			return;
 
 		int tStart = (int)gd.getNextNumber();
 		int tEnd   = (int)gd.getNextNumber();
+		boolean recordStart = gd.getNextBoolean();
 
 		float[] rotcenter = renderer.getRotationCenter();
 
@@ -790,46 +796,69 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		float[] euler = new float[3];
 		Transform.guessEulerAngles(m, euler);
 
-		StringBuffer text = new StringBuffer(recordTransformation(rsRecordStart, Integer.toString(tStart)));
+		StringBuffer text = new StringBuffer();
 
 		text.append("From frame " + tStart + " to frame " + tEnd + ":\n");
+		boolean noChange = true;
 		// rotate around x-axis (vertically)
-		text.append("- ")
-			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(euler[0] * 180 / (float)Math.PI, 1)).append(" ")
-			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
-			.append("vertically\n");
+		if(!equals(euler[0], 0)) {
+			text.append("- ")
+					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(euler[0] * 180 / (float) Math.PI, 1)).append(" ")
+					.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+					.append("vertically\n");
+			noChange = false;
+		}
 
 		// rotate around z-axis
-		text.append("- ")
-			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(euler[2] * 180 / (float)Math.PI, 1)).append(" ")
-			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
-			.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
-			.append("(")
-			.append(0).append(", ")
-			.append(0).append(", ")
-			.append(1)
-			.append(")\n");
+		if(euler[2] != 0) {
+			text.append("- ")
+					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(euler[2] * 180 / (float) Math.PI, 1)).append(" ")
+					.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+					.append(GeneralKeyword.AROUND.getKeyword()).append(" ")
+					.append("(0, 0, 1)\n");
+			noChange = false;
+		}
 
 		// rotate around y-axis
-		text.append("- ")
-			.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(euler[1] * 180 / (float)Math.PI, 1)).append(" ")
-			.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
-			.append("horizontally\n");
-		text.append("- ")
-			.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
-			.append(CustomDecimalFormat.format(scale, 1))
-			.append("\n");
-		text.append("- ")
-			.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
-			.append(GeneralKeyword.BY.getKeyword()).append(" ")
-			.append("(")
-			.append(CustomDecimalFormat.format(dx, 1)).append(", ")
-			.append(CustomDecimalFormat.format(dy, 1)).append(", ")
-			.append(CustomDecimalFormat.format(dz, 1))
-			.append(")\n");
+		if(!equals(euler[1], 0)) {
+			text.append("- ")
+					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(euler[1] * 180 / (float) Math.PI, 1)).append(" ")
+					.append(GeneralKeyword.DEGREES.getKeyword()).append(" ")
+					.append("horizontally\n");
+			noChange = false;
+		}
+
+		if(!equals(scale, 1)) {
+			text.append("- ")
+					.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
+					.append(CustomDecimalFormat.format(scale, 1))
+					.append("\n");
+			noChange = false;
+		}
+
+		if(!(equals(dx, 0) && equals(dy, 0) && equals(dz, 0))) { // dx != 0 || dy != 0 || dz != 0) {
+			text.append("- ")
+					.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
+					.append(GeneralKeyword.BY.getKeyword()).append(" ")
+					.append("(")
+					.append(CustomDecimalFormat.format(dx, 1)).append(", ")
+					.append(CustomDecimalFormat.format(dy, 1)).append(", ")
+					.append(CustomDecimalFormat.format(dz, 1))
+					.append(")\n");
+			noChange = false;
+		}
+
+		if(noChange)
+			text.setLength(0);
+
+		if(recordStart)
+			text.insert(0, recordTransformation(rsRecordStart, Integer.toString(tStart)));
+
+		if(text.length() > 0)
+			text.insert(0, "// Recorded transition" + System.lineSeparator());
 
 		final TextEditorTab tab = getTab();
 		StringBuffer originalText = new StringBuffer(tab.editorPane.getText());
@@ -854,8 +883,9 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	public void handleCustomRecording(int i) {
 		RecordingItem ri = recordingProvider.get(i);
+		String comment = "// " + ri.getCommand() + System.lineSeparator();
 		String text = ri.getRecording(renderer.getRenderingState());
-		addRecording(text);
+		addRecording(comment + text);
 	}
 
 	public void addRecording(String s) {

@@ -13,6 +13,10 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 
 	private final List<RecordingItem> recordingItems = new ArrayList<RecordingItem>();
 
+	private static boolean equals(double v1, double v2) {
+		return Math.abs(v1 - v2) < 1e-5;
+	}
+
 	public String getRecordingForTransformation(RenderingState rs) {
 		CombinedTransform t = rs.fwdTransform;
 		float[] rotcenter = t.getCenter();
@@ -43,7 +47,7 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 		StringBuffer text = new StringBuffer();
 		// rotate around x-axis (vertically)
 		text.append("- reset transformation\n");
-		if(euler[0] != 0) {
+		if(!equals(euler[0], 0)) {
 			text.append("- ")
 					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
 					.append(CustomDecimalFormat.format(euler[0] * 180 / (float) Math.PI, 1)).append(" ")
@@ -52,7 +56,7 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 		}
 
 		// rotate around z-axis
-		if(euler[2] != 0) {
+		if(!equals(euler[2], 0)) {
 			text.append("- ")
 					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
 					.append(CustomDecimalFormat.format(euler[2] * 180 / (float) Math.PI, 1)).append(" ")
@@ -62,7 +66,7 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 		}
 
 		// rotate around y-axis
-		if(euler[1] != 0) {
+		if(!equals(euler[1], 0)) {
 			text.append("- ")
 					.append(GeneralKeyword.ROTATE.getKeyword()).append(" ")
 					.append(CustomDecimalFormat.format(euler[1] * 180 / (float) Math.PI, 1)).append(" ")
@@ -70,13 +74,13 @@ public class Default3DRecordingProvider implements IRecordingProvider {
 					.append("horizontally\n");
 		}
 
-		if(scale != 1) {
+		if(!equals(scale, 1)) {
 			text.append("- ")
 					.append(GeneralKeyword.ZOOM.getKeyword()).append(" ")
 					.append(CustomDecimalFormat.format(scale, 1))
 					.append("\n");
 		}
-		if(dx != 0 || dy != 0 || dz != 0) {
+		if(!(equals(dx, 0) && equals(dy, 0) && equals(dz, 0))) { // dx != 0 || dy != 0 || dz != 0) {
 			text.append("- ")
 					.append(GeneralKeyword.TRANSLATE.getKeyword()).append(" ")
 					.append(GeneralKeyword.BY.getKeyword()).append(" ")
