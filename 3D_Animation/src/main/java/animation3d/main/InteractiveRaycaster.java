@@ -180,7 +180,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 		contrastPanel = dialog.addContrastPanel(
 				histo8,
 				min, max,
-				rs.clone().getChannelProperties(),
+				rs.clone().getChannelProperties().clone(),
 				Color.BLACK);
 
 		transformationPanel = dialog.addTransformationPanel(0, 0, 0, 0, 0, 0, 1);
@@ -622,7 +622,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 
 	public void setGUIFromRenderingState(ExtendedRenderingState rs) {
 		// Contrast Panel
-		this.contrastPanel.setRenderingSettings(rs.getChannelProperties());
+		this.contrastPanel.setRenderingSettings(rs.clone().getChannelProperties());
 		this.contrastPanel.setBackground(rs.getBackgroundColor());
 		this.contrastPanel.setRenderingAlgorithm(rs.getRenderingAlgorithm());
 
