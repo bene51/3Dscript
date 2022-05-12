@@ -75,7 +75,6 @@ public class Animator {
 
 	/**
 	 * Do not modify this list
-	 * @param frames
 	 * @return
 	 */
 	public List<RenderingState> getRenderingStates() {
@@ -114,6 +113,35 @@ public class Animator {
 			}
 		}
 		createRenderingStates(from, to);
+	}
+
+	public static int[] getEnclosingInterval(String text, IRenderer3D renderer) throws PreprocessingException, ParsingException {
+		HashMap<String, String> macros = new HashMap<String, String>();
+		ArrayList<NumberedLine> lines = new ArrayList<NumberedLine>();
+
+		Preprocessor.preprocess(text, lines, macros);
+
+		float[] rotcenter = renderer.getRotationCenter();
+		int from = Integer.MAX_VALUE;
+		int to = 0;
+
+		for(NumberedLine line : lines) {
+			System.out.println("setAnimationText: line: " + line.lineno + ": " + line.text);
+			ParsingResult pr = new ParsingResult();
+			try {
+				Interpreter.parse(renderer.getKeywordFactory(), line.text, rotcenter, pr);
+			} catch(ParsingException e) {
+				Autocompletion ac = pr.getAutocompletion();
+				String as = ac == null ? "" : ac.toString();
+				if(as.length() != 0 && !as.equals("''")) // a meaningful autocompletion, replace existing exception
+					e = new ParsingException(e.getPos(), "Expected " + ac);
+				e.setLine(line.lineno);
+				throw e;
+			}
+			to = Math.max(to, pr.getTo());
+			from = Math.min(from, pr.getFrom());
+		}
+		return new int[] { from, to };
 	}
 
 	public void render(String text, int f, int t) throws NoSuchMacroException, PreprocessingException, ParsingException, InterruptedException, ExecutionException {
