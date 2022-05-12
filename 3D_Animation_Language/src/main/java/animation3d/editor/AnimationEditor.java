@@ -1497,9 +1497,11 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 
 	@Override
 	public void changedUpdate(final DocumentEvent e) {
-		final TextEditorTab tab = getTab();
-		tab.editorPane.clearErrorMarkers();
-		setTitle();
+		if(tabbed.getSelectedIndex() >= 0) {
+			final TextEditorTab tab = getTab();
+			tab.editorPane.clearErrorMarkers();
+			setTitle();
+		}
 	}
 
 }

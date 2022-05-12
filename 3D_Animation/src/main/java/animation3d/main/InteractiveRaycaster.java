@@ -1,8 +1,13 @@
 package animation3d.main;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -12,6 +17,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,6 +94,7 @@ public class InteractiveRaycaster implements PlugInFilter {
 	private BookmarkPanel bookmarkPanel;
 	private OutputPanel outputPanel;
 	private AnimationPanel animationPanel;
+	private AnimationEditor editor;
 
 	private Renderer3D renderer;
 	private RenderingThread worker;
@@ -521,6 +528,22 @@ public class InteractiveRaycaster implements PlugInFilter {
 			}
 		});
 
+		dialog.setDropTarget(new DropTarget() {
+			public synchronized void drop(DropTargetDropEvent evt) {
+				try {
+					evt.acceptDrop(DnDConstants.ACTION_COPY);
+					List<File> droppedFiles = (List<File>)
+							evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+					for (File file : droppedFiles) {
+						System.out.println("Dropped file " + file.getAbsolutePath());
+						openAnimationFile(file);
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
+
 
 		dialog.setModal(false);
 		dialog.pack();
@@ -625,8 +648,17 @@ public class InteractiveRaycaster implements PlugInFilter {
 		outputPanel.updateGui();
 	}
 
+	public void openAnimationFile(File file) {
+		startTextBasedAnimation();
+		editor.open(file);
+	}
+
 	public void startTextBasedAnimation() {
 		setAsActiveRaycaster();
+		if(editor != null) {
+			editor.toFront();
+			return;
+		}
 		Animator animator = new Animator(renderer);
 		animator.addAnimationListener(new Animator.Listener() {
 			@Override
@@ -635,7 +667,13 @@ public class InteractiveRaycaster implements PlugInFilter {
 				push();
 			}
 		});
-		AnimationEditor editor = new AnimationEditor(renderer, animator, RecordingProvider.getInstance());
+		editor = new AnimationEditor(renderer, animator, RecordingProvider.getInstance());
+		editor.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				editor = null;
+			}
+		});
 		JMenuBar mbar = editor.getJMenuBar();
 		JMenu extrasMenu = new JMenu("Extras");
 		extrasMenu.setMnemonic(KeyEvent.VK_E);
