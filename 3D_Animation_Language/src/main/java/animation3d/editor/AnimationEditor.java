@@ -1060,10 +1060,22 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		tab.prepare();
 
 		String text = tab.editorPane.getText();
+		int defaultFrom = -1;
+		int defaultTo = -1;
+
+		String selectedText = getTextArea().getSelectedText();
+		if (selectedText == null)
+			selectedText = text;
+
+		try {
+			int[] fromTo = Animator.getEnclosingInterval(selectedText, renderer);
+			defaultFrom = fromTo[0];
+			defaultTo = fromTo[1];
+		} catch(Exception ignored) {}
 
 		GenericDialog gd = new GenericDialog("Run from ... to ...");
-		gd.addNumericField("From frame", -1, 0);
-		gd.addNumericField("To frame", -1, 0);
+		gd.addNumericField("From frame", defaultFrom, 0);
+		gd.addNumericField("To frame", defaultTo, 0);
 		gd.showDialog();
 		if(gd.wasCanceled())
 			return;
