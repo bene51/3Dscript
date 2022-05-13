@@ -59,6 +59,7 @@ import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.measure.ResultsTable;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 
 
 @SuppressWarnings("serial")
@@ -867,10 +868,13 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		try {
 			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
 		} catch(Exception e) {}
-		originalText.insert(offset, text.toString());
 
 		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
-		tab.editorPane.setText(originalText.toString());
+		try {
+			tab.editorPane.getRSyntaxDocument().insertString(offset, text.toString(), null);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
 
 		int xStart = text.indexOf("X") + offset;
@@ -897,10 +901,13 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 		try {
 			offset = tab.editorPane.getLineStartOffset(lineOfCursor + 1);
 		} catch(Exception e) {}
-		originalText.insert(offset, s);
 
 		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(false);
-		tab.editorPane.setText(originalText.toString());
+		try {
+			tab.editorPane.getRSyntaxDocument().insertString(offset, s, null);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		tab.editorPane.getAutoCompletion().setAutoActivationEnabled(true);
 
 
@@ -1175,6 +1182,11 @@ public class AnimationEditor extends JFrame implements ActionListener, ChangeLis
 				tab.editorPane.loadPreferences();
 				tab.editorPane.getDocument().addDocumentListener(this);
 				addDefaultAccelerators(tab.editorPane);
+
+
+				FoldParserManager.get().addFoldParserMapping("text/animation", new AnimationFoldParser());
+				tab.editorPane.setSyntaxEditingStyle("text/animation");
+				tab.editorPane.setCodeFoldingEnabled(true);
 			}
 			synchronized (tab.editorPane) { // tab is never null at this location.
 				tab.editorPane.open(file);

@@ -117,7 +117,13 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				Document d = e.getDocument();
+				String inserted = null;
+				try {
+					inserted = getDocument().getText(e.getOffset(), e.getLength());
+				} catch (BadLocationException badLocationException) {
+					badLocationException.printStackTrace();
+				}
+				final Document d = e.getDocument();
 				String ttext = null;
 				try {
 					ttext = d.getText(0, d.getLength());
@@ -129,6 +135,10 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 				if(dot <= 0)
 					return;
 
+				if(dot + 1 != e.getOffset() + e.getLength()) {
+					return;
+				}
+
 				char lastCharacter = ttext.charAt(dot);
 				System.out.println("EditorPane: insertUpdate(): lastCharacter = " + lastCharacter + "(" + Integer.toHexString(lastCharacter) + ")");
 				if(!isNewline(lastCharacter))
@@ -137,11 +147,14 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 				String prevLine = getLineForPosition(ttext, dot).trim();
 				System.out.println("EditorPane: insertUpdate(): prevLine = " + prevLine);
 				if(prevLine.endsWith(":") || prevLine.startsWith("-")) {
-					final String text = new StringBuffer(ttext).insert(dot + 1, "- ").toString();
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							setText(text);
+							try {
+								getRSyntaxDocument().insertString(dot + 1, "- ", null);
+							} catch (Exception exception) {
+								exception.printStackTrace();
+							}
 							setCaretPosition(dot + 3);
 						}
 					});
@@ -177,8 +190,16 @@ public class EditorPane extends RSyntaxTextArea implements DocumentListener {
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							setText(text + toAppend.toString());
-							setCaretPosition(dot + 1);
+							int offs = getRSyntaxDocument().getLength();
+							getAutoCompletion().setAutoActivationEnabled(false);
+							int dot = getCaretPosition();
+							try {
+								getRSyntaxDocument().insertString(offs, toAppend.toString(), null);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							setCaretPosition(dot);
+							getAutoCompletion().setAutoActivationEnabled(true);
 						}
 					});
 				}
