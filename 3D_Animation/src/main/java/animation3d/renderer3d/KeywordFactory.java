@@ -32,6 +32,7 @@ public class KeywordFactory implements IKeywordFactory {
 		ALPHA("alpha",             new String[] {"<min>", "<max>", "<gamma>"},  ExtendedRenderingState.ALPHA_MIN, ExtendedRenderingState.ALPHA_MAX, ExtendedRenderingState.ALPHA_GAMMA),
 
 		COLOR("color", new String[] {"<red>", "<green>", "<blue>"}, makeColorMap(), ExtendedRenderingState.CHANNEL_COLOR_RED, ExtendedRenderingState.CHANNEL_COLOR_GREEN, ExtendedRenderingState.CHANNEL_COLOR_BLUE),
+		IMAGE_LUT("lookup table", new String[] {"<LUT mode>"}, makeLUTMap(), ExtendedRenderingState.USE_LUT),
 
 		WEIGHT("weight",           new String[] {"<weight>"},  ExtendedRenderingState.WEIGHT),
 
@@ -166,6 +167,13 @@ public class KeywordFactory implements IKeywordFactory {
 		map.put("cyan",    new double[] {0.0, 255.0, 255.0});
 		map.put("magenta", new double[] {255.0, 0.0, 255.0});
 		map.put("white",   new double[] {255.0, 255.0, 255.0});
+		return map;
+	}
+
+	private static Map<String, double[]> makeLUTMap() {
+		HashMap<String, double[]> map = new HashMap<String, double[]>();
+		map.put("fixed channel color", new double[] {0.0});
+		map.put("image lookup table", new double[] {1.0});
 		return map;
 	}
 

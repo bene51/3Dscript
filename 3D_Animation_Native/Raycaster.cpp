@@ -454,9 +454,9 @@ Raycaster<T>::clearColorLUT(int channel)
 
 template<typename T>
 void
-Raycaster<T>::setColorLUT(int channel, const unsigned int * const lut)
+Raycaster<T>::setColorLUT(int channel, const unsigned int * const lut, int l)
 {
-	int l = 2 << bitsPerSample_;
+	// int l = 2 << bitsPerSample_;
 	cl_int err = 0;
 	// TODO reuse
 	if(colorLUT_[channel] != NULL)

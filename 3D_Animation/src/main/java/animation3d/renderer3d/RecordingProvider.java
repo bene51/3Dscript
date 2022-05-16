@@ -199,6 +199,14 @@ public class RecordingProvider extends Default3DRecordingProvider {
 				.append(kf.getChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_GREEN)).append(", ")
 				.append(kf.getChannelProperty(c, ExtendedRenderingState.CHANNEL_COLOR_BLUE))
 				.append(")\n");
+			String useLUT = kf.getChannelProperty(c, ExtendedRenderingState.USE_LUT) > 0 ? "image lookup table" : "fixed channel color";
+			text.append("- change channel ")
+					.append(c + 1)
+					.append(" ")
+					.append(KeywordFactory.ChannelKeyword.IMAGE_LUT.getKeyword())
+					.append(" to ")
+					.append(useLUT)
+					.append("\n");
 			text.append("- change channel ")
 				.append(c + 1)
 				.append(" ")

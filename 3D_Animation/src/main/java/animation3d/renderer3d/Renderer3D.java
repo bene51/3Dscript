@@ -20,6 +20,10 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 
 	private final IKeywordFactory kwFactory = new KeywordFactory();
 
+	private final boolean[] useLUTInitially;
+
+	private boolean alreadyRendered = false;
+
 	public Renderer3D(ImagePlus image, int wOut, int hOut) {
 		this(image, wOut, hOut, null);
 	}
@@ -27,6 +31,9 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 	public Renderer3D(ImagePlus image, int wOut, int hOut, Progress loadingProgress) {
 		super(image, wOut, hOut, loadingProgress);
 		this.rs = makeDefaultRenderingState(image);
+		useLUTInitially = new boolean[image.getNChannels()];
+		for(int c = 0; c < useLUTInitially.length; c++)
+			useLUTInitially[c] = rs.getChannelProperty(c, ExtendedRenderingState.USE_LUT) > 0;
 	}
 
 	public ExtendedRenderingState makeDefaultRenderingState(ImagePlus image) {
@@ -63,6 +70,8 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 					0, 0, 0,
 					image.getWidth(), image.getHeight(), image.getNSlices(),
 					near, far);
+			boolean isFixedColorLUT = isFixedColor(luts[c]);
+			renderingSettings[c].useLUT = !isFixedColorLUT;
 		}
 		Color[] channelColors = calculateChannelColors();
 
@@ -118,8 +127,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_DIFFUSE,  0);
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_K_SPECULAR, 0);
 			rs.setChannelProperty(c, ExtendedRenderingState.LIGHT_SHININESS,  5);
-			// rs.setChannelProperty(c, ExtendedRenderingState.USE_LUT, 0);
-			// TODO useLUT (for now, just leave it as it is)
+			rs.setChannelProperty(c, ExtendedRenderingState.USE_LUT, useLUTInitially[c] ? 1 : 0);
 		}
 		rs.setNonChannelProperty(ExtendedRenderingState.RENDERING_ALGORITHM, RenderingAlgorithm.INDEPENDENT_TRANSPARENCY.ordinal());
 	}
@@ -139,6 +147,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		ExtendedRenderingState kf = (ExtendedRenderingState)kf2;
 		adjustProgram(kf);
 		rs.setFrom(kf);
+		alreadyRendered = true;
 		return super.project(kf);
 	}
 
@@ -151,7 +160,7 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		boolean[] nUseLUT = next.useLUT();
 		RenderingAlgorithm nAlgorithm = next.getRenderingAlgorithm();
 
-		if(Arrays.equals(pUseLights, nUseLights) && Arrays.equals(pUseLUT, nUseLUT) && pAlgorithm.equals(nAlgorithm))
+		if(Arrays.equals(pUseLights, nUseLights) && Arrays.equals(pUseLUT, nUseLUT) && pAlgorithm.equals(nAlgorithm) && alreadyRendered)
 			return;
 
 		String program = null;
@@ -169,14 +178,14 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 		setProgram(program);
 
 		for(int c = 0; c < nChannels; c++) {
-			if(nUseLUT[c] && !pUseLUT[c]) // lut switched on for channel c
-				setLookupTable(c, makeRandomLUT());
-			else if(!nUseLUT[c] && pUseLUT[c]) // lut switched of for channel c
+			if(nUseLUT[c] && (!pUseLUT[c] || !alreadyRendered))      // lut switched on for channel c
+				setLookupTable(c, readLUTFromImage(c));
+			else if(!nUseLUT[c] && (pUseLUT[c] || !alreadyRendered)) // lut switched of for channel c
 				setLookupTable(c, null);
 
-			if(nUseLights[c] && !pUseLights[c]) // light switched on for channel c
+			if(nUseLights[c] && (!pUseLights[c] || !alreadyRendered)) // light switched on for channel c
 				super.calculateGradients(c);
-			else if(!nUseLights[c] && pUseLights[c]) // light switched of for channel c
+			else if(!nUseLights[c] && (pUseLights[c] || !alreadyRendered)) // light switched of for channel c
 				super.clearGradients(c);
 		}
 	}
@@ -229,6 +238,24 @@ public class Renderer3D extends OpenCLRaycaster implements IRenderer3D  {
 			channelColors[c] = getLUTColor(((CompositeImage)image).getChannelLut(c + 1));
 		}
 		return channelColors;
+	}
+
+	private boolean isFixedColor(LUT lut) {
+		// see LUT.createLutFromColor
+		Color color = getLUTColor(lut);
+		int red = color.getRed();
+		int green = color.getGreen();
+		int blue = color.getBlue();
+		double rIncr = ((double)red)/255d;
+		double gIncr = ((double)green)/255d;
+		double bIncr = ((double)blue)/255d;
+		int l = lut.getMapSize();
+		for(int i = 0; i < l; i++) {
+			if(lut.getRed(i)   != (int)(i * rIncr)) return false;
+			if(lut.getGreen(i) != (int)(i * gIncr)) return false;
+			if(lut.getBlue(i)  != (int)(i * bIncr)) return false;
+		}
+		return true;
 	}
 
 	private Color getLUTColor(LUT lut) {

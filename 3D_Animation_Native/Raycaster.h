@@ -64,7 +64,7 @@ public:
 	void setBackground(const unsigned int * const data, int w, int h);
 	void clearBackground();
 
-	void setColorLUT(int channel, const unsigned int * const lut);
+	void setColorLUT(int channel, const unsigned int * const lut, int l);
 	void clearColorLUT(int channel);
 
 	void calculateGradients(int channel, float dzByDx);

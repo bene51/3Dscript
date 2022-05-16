@@ -295,8 +295,10 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 			"		float2 minAlphaColor,\n" +
 			"		float2 dAlphaColor,\n" +
 			"		float2 gammaAlphaColor,\n" +
-			"		float alphacorr) {\n" +
+			"		float alphacorr, bool dbg) {\n" +
 	        "	float v0 = maxv * read_imagef(texture, sampler, (float4)(p0 + 0.5f, 0)).x;\n" +
+			"	if(dbg)\n" +
+			"		printf(\"sample(%f, %f, %f) = %f\\n\", p0.x, p0.y, p0.z, v0);\n" +
 	        "	float2 rAlphaColor = pow(\n" +
 	        "	        clamp((v0 - minAlphaColor) / dAlphaColor, 0.0f, 1.0f),\n" +
 	        "	        gammaAlphaColor);\n" +
@@ -315,15 +317,27 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 			"		__read_only image3d_t texture,\n" +
 			"		sampler_t sampler,\n" +
 			"		float maxv,\n" +
+			"		float2 minAlphaColor,\n" +
+			"		float2 dAlphaColor,\n" +
+			"		float2 gammaAlphaColor,\n" +
+			"		float alphacorr,\n" +
 			"		image1d_buffer_t textureLUT,\n" +
 			"		bool dbg) {\n" +
-			"	float v0 = maxv * read_imagef(texture, sampler, (float4)(p0 + 0.5f, 0)).x;\n" +
-			"	if(v0 == 0)\n" +
-			"		return (float4)(0.0f);\n" +
-			"	int idx = clamp((uint)round(v0), (uint)0, (uint)maxv);\n" +
+			"	float2 sampled = sample(p0, texture, sampler, maxv, minAlphaColor, dAlphaColor, gammaAlphaColor, alphacorr, dbg);\n" +
+//			"	float v0 = maxv * read_imagef(texture, sampler, (float4)(p0 + 0.5f, 0)).x;\n" +
+//			"	if(v0 == 0)\n" +
+//			"		return (float4)(0.0f);\n" +
+//			"	int idx = clamp((uint)round(v0), (uint)0, (uint)maxv);\n" +
+
+			"	int idx = (uint)round(255 * sampled.y);\n" +
+			"	if(idx > 255)\n" +
+			"		printf(\"***** idx = %d\\n\", idx);\n" +
 			"	if(dbg)\n" +
-			"		printf(\"v0 = %f, idx = %d\", v0, idx);\n" +
-			"	float4 color = (float4)(1.0f, convert_float3(read_imageui(textureLUT, idx).xyz) / 255.0f);\n" +
+			"		printf(\"sampled = %f, idx = %d\", sampled.y, idx);\n" +
+			"	float opacity = sampled.x;\n" +
+//			"	if(idx == 0)\n" +
+//			"		opacity = 0;\n" +
+			"	float4 color = (float4)(opacity, convert_float3(read_imageui(textureLUT, idx).zyx) / 255.0f);\n" +
 			"	return color;\n" +
 			"}\n" +
 			"\n";
@@ -512,7 +526,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		}
 
 		source = source +
-			"		bool dbg = x == 80 && y == 170;\n";
+			"		bool dbg = x == 128 && y == 128;\n";
 
 
 		source = source +
@@ -537,7 +551,9 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			if(colorLUT[c]) {
 				source = source +
 			"				float4 rAlphaColor" + c + " = sampleWithColorLUT(p0,\n" +
-			"						texture" + c + ", nnsampler, maxv, textureLUT" + c + ", dbg);\n" +
+			"						texture" + c + ", nnsampler, maxv,\n" +
+			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr,\n" +
+			"						textureLUT" + c + ", dbg);\n" +
 			"				if(dbg) {\n" +
 			"					float3 col = (float3)(rAlphaColor" + c + ".yzw);\n" +
 			"					printf(\"color = %f, %f, %f\\n\", col.x, col.y, col.z);\n" +
@@ -552,7 +568,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 				source = source +
 			"				float2 rAlphaColor" + c + " = sample(p0,\n" +
 			"						texture" + c + ", lisampler, maxv,\n" +
-			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr);\n";
+			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr, dbg);\n";
 			}
 			source = source + "\n";
 

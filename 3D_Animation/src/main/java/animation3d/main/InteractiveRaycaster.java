@@ -345,6 +345,14 @@ public class InteractiveRaycaster implements PlugInFilter {
 			public void colorChanged(int channel, Color color) {
 				ExtendedRenderingState kf = renderer.getRenderingState().clone();
 				kf.setColor(channel, color);
+				kf.setChannelProperty(channel, ExtendedRenderingState.USE_LUT, 0);
+				push(kf, -1, -1);
+			}
+
+			@Override
+			public void useLookupTableChanged(int channel, boolean useImageLUT) {
+				ExtendedRenderingState kf = renderer.getRenderingState().clone();
+				kf.setChannelProperty(channel, ExtendedRenderingState.USE_LUT, useImageLUT ? 1 : 0);
 				push(kf, -1, -1);
 			}
 

@@ -1,14 +1,8 @@
 package animation3d.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Panel;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -30,6 +24,9 @@ public class ColorPicker extends PlugInDialog {
 
 	private Color foreground = Color.WHITE;
 	private Color background = Color.BLACK;
+	private boolean useImageLUT = false;
+
+	private final Checkbox imageLUTCheckBox;
 
 	public interface BackgroundColorListener {
 		public void backgroundColorChanged(Color bg);
@@ -39,8 +36,13 @@ public class ColorPicker extends PlugInDialog {
 		public void foregroundColorChanged(Color fg);
 	}
 
+	public interface LUTListener {
+		void useImageLUTChanged(boolean useImageLUT);
+	}
+
 	private ArrayList<BackgroundColorListener> bgListener = new ArrayList<BackgroundColorListener>();
 	private ArrayList<ForegroundColorListener> fgListener = new ArrayList<ForegroundColorListener>();
+	private ArrayList<LUTListener>            lutListener = new ArrayList<>();
 
 	private void fireForegroundColorChanged(Color c) {
 		for(ForegroundColorListener l : fgListener)
@@ -52,6 +54,11 @@ public class ColorPicker extends PlugInDialog {
 			l.backgroundColorChanged(c);
 	}
 
+	private void fireUseImageLUTChanged(boolean useImageLUT) {
+		for(LUTListener l : lutListener)
+			l.useImageLUTChanged(useImageLUT);
+	}
+
 	public void addForegroundColorListener(ForegroundColorListener l) {
 		fgListener.add(l);
 	}
@@ -60,10 +67,15 @@ public class ColorPicker extends PlugInDialog {
 		bgListener.add(l);
 	}
 
-    public ColorPicker(Color foreground, Color background) {
+	public void addLUTListener(LUTListener l) {
+		lutListener.add(l);
+	}
+
+    public ColorPicker(Color foreground, Color background, boolean useImageLUT) {
 		super("CP");
 		this.foreground = foreground;
 		this.background = background;
+		this.useImageLUT = useImageLUT;
 		WindowManager.addWindow(this);
         int colorWidth = 22;
         int colorHeight = 16;
@@ -77,7 +89,19 @@ public class ColorPicker extends PlugInDialog {
         cg.drawColors(colorWidth, colorHeight, columns, rows);
         Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
         Panel panel = new Panel();
-        panel.add(colorCanvas);
+        GridBagLayout gridbag = new GridBagLayout();
+        panel.setLayout(gridbag);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.insets = new Insets(3, 3, 3, 3);
+        imageLUTCheckBox = new Checkbox("Use image LUT", useImageLUT);
+        imageLUTCheckBox.addItemListener(e -> {
+			setUseImageLUT(imageLUTCheckBox.getState());
+		});
+        panel.add(imageLUTCheckBox, c);
+        c.gridy++;
+        panel.add(colorCanvas, c);
         add(panel);
 		setResizable(false);
 		pack();
@@ -90,6 +114,10 @@ public class ColorPicker extends PlugInDialog {
     }
 
     private void setForegroundColor(Color c) {
+		if(useImageLUT) {
+			setUseImageLUT(false);
+			imageLUTCheckBox.setState(false);
+		}
     	foreground = c;
     	fireForegroundColorChanged(c);
     }
@@ -98,6 +126,11 @@ public class ColorPicker extends PlugInDialog {
     	background = c;
     	fireBackgroundColorChanged(c);
     }
+
+    private void setUseImageLUT(boolean useImageLUT) {
+		this.useImageLUT = useImageLUT;
+		fireUseImageLUTChanged(useImageLUT);
+	}
 
     public Color getForegroundColor() {
     	return foreground;

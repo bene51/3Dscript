@@ -44,7 +44,7 @@ RaycasterJNI<T>::setColorLUT(
 		return;
 	}
 	env->GetIntArrayRegion(lut, 0, l, (jint *)cArray);
-	raycaster->setColorLUT(channel, cArray);
+	raycaster->setColorLUT(channel, cArray, l);
 }
 
 template<typename T>

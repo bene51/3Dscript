@@ -1,6 +1,7 @@
 package animation3d.renderer3d;
 
 import java.awt.Color;
+import java.awt.image.IndexColorModel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,7 @@ import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import ij.process.LUT;
 
 /*
  * TODOs
@@ -208,6 +210,19 @@ public class OpenCLRaycaster {
 		lut[2] = new Color(0, 255, 0).getRGB();
 		lut[3] = new Color(0, 0, 255).getRGB();
 		return lut;
+	}
+
+	public int[] readLUTFromImage(int channel) {
+		LUT lut = image.getLuts()[channel];
+		IndexColorModel cm;
+		if(lut == null)
+			cm = image.getProcessor().getDefaultColorModel();
+		else
+			cm = lut.getColorModel();
+		int[] ret = new int[256];
+		for(int i = 0; i < ret.length; i++)
+			ret[i] = cm.getRGB(i);
+		return ret;
 	}
 
 	// TODO take a RenderingState object as an argument

@@ -87,6 +87,7 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		public void lightsChanged(int channel, boolean useLight, double kObj, double kDiff, double kSpec, double shininess);
 		public void weightsChanged(int channel, double weight);
 		public void colorChanged(int channel, Color c);
+		public void useLookupTableChanged(int channel, boolean useImageLUT);
 		public void backgroundChanged(Color bg);
 		public void channelChanged();
 		public void renderingSettingsReset();
@@ -306,11 +307,17 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 							(int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN],
 							(int)renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]
 							);
-					ColorPicker cp = new ColorPicker(fg, ContrastPanel.this.background);
+					boolean useLUT = renderingSettings[ch][ExtendedRenderingState.USE_LUT] > 0;
+					ColorPicker cp = new ColorPicker(fg, ContrastPanel.this.background, useLUT);
+					cp.addLUTListener(useImageLUT -> {
+						renderingSettings[ch][ExtendedRenderingState.USE_LUT] = useImageLUT ? 1 : 0;
+						fireUseLookupTableChanged(ch, useImageLUT);
+					});
 					cp.addForegroundColorListener(c -> {
 						int red   = c.getRed();
 						int green = c.getGreen();
 						int blue  = c.getBlue();
+						renderingSettings[ch][ExtendedRenderingState.USE_LUT] = 0;
 						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = red;
 						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = green;
 						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = blue;
@@ -378,13 +385,17 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 		this.renderingSettings = rs;
 		setChannel(channel);
 		for(int i = 0; i < renderingSettings.length; i++) {
+			Color color = Color.BLACK;
 			final int ch = i;
-			int red   = (int)rs[ch][ExtendedRenderingState.CHANNEL_COLOR_RED];
-			int green = (int)rs[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN];
-			int blue  = (int)rs[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE];
-			Color color = new Color(red, green, blue);
-			if (red >= 100 && green >= 100 && blue >= 100)
-				color = Color.black;
+			boolean useImageLUT = rs[ch][ExtendedRenderingState.USE_LUT] > 0;
+			if(!useImageLUT) {
+				int red = (int) rs[ch][ExtendedRenderingState.CHANNEL_COLOR_RED];
+				int green = (int) rs[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN];
+				int blue = (int) rs[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE];
+				color = new Color(red, green, blue);
+				if (red >= 100 && green >= 100 && blue >= 100)
+					color = Color.black;
+			}
 
 			double weight = rs[ch][ExtendedRenderingState.WEIGHT];
 
@@ -467,6 +478,11 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 	private void fireColorChanged(int channel, Color c) {
 		for(Listener l : listeners)
 			l.colorChanged(channel, c);
+	}
+
+	private void fireUseLookupTableChanged(int channel, boolean useImageLUT) {
+		for(Listener l : listeners)
+			l.useLookupTableChanged(channel, useImageLUT);
 	}
 
 	private void fireLightsChanged() {
@@ -640,14 +656,18 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 			this.min = min;
 			this.max = max;
 			this.renderingSettings = r;
-			int red   = (int)r[ExtendedRenderingState.CHANNEL_COLOR_RED];
-			int green = (int)r[ExtendedRenderingState.CHANNEL_COLOR_GREEN];
-			int blue  = (int)r[ExtendedRenderingState.CHANNEL_COLOR_BLUE];
-			if (red < 100 || green < 100 || blue < 100)
-				this.color = new Color(red, green, blue);
-			else
-				this.color = Color.black;
-
+			boolean useLUT = r[ExtendedRenderingState.USE_LUT] > 0;
+			if(useLUT)
+				color = Color.black;
+			else {
+				int red = (int) r[ExtendedRenderingState.CHANNEL_COLOR_RED];
+				int green = (int) r[ExtendedRenderingState.CHANNEL_COLOR_GREEN];
+				int blue = (int) r[ExtendedRenderingState.CHANNEL_COLOR_BLUE];
+				if (red < 100 || green < 100 || blue < 100)
+					this.color = new Color(red, green, blue);
+				else
+					this.color = Color.black;
+			}
 		}
 
 		public void update() {
