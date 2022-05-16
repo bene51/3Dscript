@@ -71,38 +71,38 @@ public class ColorPicker extends PlugInDialog {
 		lutListener.add(l);
 	}
 
-    public ColorPicker(Color foreground, Color background, boolean useImageLUT) {
+	public ColorPicker(Color foreground, Color background, boolean useImageLUT) {
 		super("CP");
 		this.foreground = foreground;
 		this.background = background;
 		this.useImageLUT = useImageLUT;
 		WindowManager.addWindow(this);
-        int colorWidth = 22;
-        int colorHeight = 16;
-        int columns = 5;
-        int rows = 20;
-        int width = columns*colorWidth;
-        int height = rows*colorHeight;
-        addKeyListener(IJ.getInstance());
+		int colorWidth = 22;
+		int colorHeight = 16;
+		int columns = 5;
+		int rows = 20;
+		int width = columns*colorWidth;
+		int height = rows*colorHeight;
+		addKeyListener(IJ.getInstance());
 		setLayout(new BorderLayout());
-        ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
-        cg.drawColors(colorWidth, colorHeight, columns, rows);
-        Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
-        Panel panel = new Panel();
-        GridBagLayout gridbag = new GridBagLayout();
-        panel.setLayout(gridbag);
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 0;
-        c.insets = new Insets(3, 3, 3, 3);
-        imageLUTCheckBox = new Checkbox("Use image LUT", useImageLUT);
-        imageLUTCheckBox.addItemListener(e -> {
+		ColorGenerator cg = new ColorGenerator(width, height, new int[width*height]);
+		cg.drawColors(colorWidth, colorHeight, columns, rows);
+		Canvas colorCanvas = new ColorCanvas(width, height, null, cg);
+		Panel panel = new Panel();
+		GridBagLayout gridbag = new GridBagLayout();
+		panel.setLayout(gridbag);
+		GridBagConstraints c = new GridBagConstraints();
+		c.gridx = 0;
+		c.gridy = 0;
+		c.insets = new Insets(3, 3, 3, 3);
+		imageLUTCheckBox = new Checkbox("Use image LUT", useImageLUT);
+		imageLUTCheckBox.addItemListener(e -> {
 			setUseImageLUT(imageLUTCheckBox.getState());
 		});
-        panel.add(imageLUTCheckBox, c);
-        c.gridy++;
-        panel.add(colorCanvas, c);
-        add(panel);
+		panel.add(imageLUTCheckBox, c);
+		c.gridy++;
+		panel.add(colorCanvas, c);
+		add(panel);
 		setResizable(false);
 		pack();
 		Point loc = Prefs.getLocation(LOC_KEY);
@@ -111,124 +111,124 @@ public class ColorPicker extends PlugInDialog {
 		else
 			GUI.center(this);
 		show();
-    }
+	}
 
-    private void setForegroundColor(Color c) {
+	private void setForegroundColor(Color c) {
 		if(useImageLUT) {
 			setUseImageLUT(false);
 			imageLUTCheckBox.setState(false);
 		}
-    	foreground = c;
-    	fireForegroundColorChanged(c);
-    }
+		foreground = c;
+		fireForegroundColorChanged(c);
+	}
 
-    private void setBackgroundColor(Color c) {
-    	background = c;
-    	fireBackgroundColorChanged(c);
-    }
+	private void setBackgroundColor(Color c) {
+		background = c;
+		fireBackgroundColorChanged(c);
+	}
 
-    private void setUseImageLUT(boolean useImageLUT) {
+	private void setUseImageLUT(boolean useImageLUT) {
 		this.useImageLUT = useImageLUT;
 		fireUseImageLUTChanged(useImageLUT);
 	}
 
-    public Color getForegroundColor() {
-    	return foreground;
-    }
+	public Color getForegroundColor() {
+		return foreground;
+	}
 
-    public Color getBackgroundColor() {
-    	return background;
-    }
+	public Color getBackgroundColor() {
+		return background;
+	}
 
-    @Override
+	@Override
 	public void close() {
-	 	super.close();
+		super.close();
 		Prefs.saveLocation(LOC_KEY, getLocation());
 	}
 
 	class ColorGenerator extends ColorProcessor {
-	    private int w, h;
-	    private int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
+		private int w, h;
+		private int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
 
-	    public ColorGenerator(int width, int height, int[] pixels) {
-	        super(width, height, pixels);
-	        setAntialiasedText(true);
-	    }
+		public ColorGenerator(int width, int height, int[] pixels) {
+			super(width, height, pixels);
+			setAntialiasedText(true);
+		}
 
-	    void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
-	        w = colorWidth;
-	        h = colorHeight;
-	        setColor(0xffffff);
-	        setRoi(0, 0, 110, 320);
-	        fill();
-	        drawRamp();
-	        resetBW();
-	        flipper();
-	        drawLine(0, 256, 110, 256);
+		void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
+			w = colorWidth;
+			h = colorHeight;
+			setColor(0xffffff);
+			setRoi(0, 0, 110, 320);
+			fill();
+			drawRamp();
+			resetBW();
+			flipper();
+			drawLine(0, 256, 110, 256);
 
-	        int x = 1;
-	        int y = 0;
-	        refreshBackground(false);
-	        refreshForeground(false);
+			int x = 1;
+			int y = 0;
+			refreshBackground(false);
+			refreshForeground(false);
 
-	        Color c;
-	        float hue, saturation=1f, brightness=1f;
-	        double w=colorWidth, h=colorHeight;
-	        for ( x=2; x<10; x++) {
-	            for ( y=0; y<32; y++) {
-	                hue = (float)(y/(2*h)-.15);
-	                if (x<6) {
-	                    saturation = 1f;
-	                    brightness = (float)(x*4/w);
-	                } else {
-	                    saturation = 1f - ((float)((5-x)*-4/w));
-	                    brightness = 1f;
-	                }
-	                c = Color.getHSBColor(hue, saturation, brightness);
-	                setRoi(x*(int)(w/2), y*(int)(h/2), (int)w/2, (int)h/2);
-	                setColor(c);
-	                fill();
-	            }
-	        }
-	        drawSpectrum(h);
-	        resetRoi();
-	    }
+			Color c;
+			float hue, saturation=1f, brightness=1f;
+			double w=colorWidth, h=colorHeight;
+			for ( x=2; x<10; x++) {
+				for ( y=0; y<32; y++) {
+					hue = (float)(y/(2*h)-.15);
+					if (x<6) {
+						saturation = 1f;
+						brightness = (float)(x*4/w);
+					} else {
+						saturation = 1f - ((float)((5-x)*-4/w));
+						brightness = 1f;
+					}
+					c = Color.getHSBColor(hue, saturation, brightness);
+					setRoi(x*(int)(w/2), y*(int)(h/2), (int)w/2, (int)h/2);
+					setColor(c);
+					fill();
+				}
+			}
+			drawSpectrum(h);
+			resetRoi();
+		}
 
-	    void drawColor(int x, int y, Color c) {
-	        setRoi(x*w, y*h, w, h);
-	        setColor(c);
-	        fill();
-	    }
+		void drawColor(int x, int y, Color c) {
+			setRoi(x*w, y*h, w, h);
+			setColor(c);
+			fill();
+		}
 
-	    public void refreshBackground(boolean backgroundInFront) {
-	        //Boundary for Background Selection
-	        setColor(0x444444);
-	        drawRect((w*2)-12, 276, (w*2)+4, (h*2)+4);
-	        setColor(0x999999);
-	        drawRect((w*2)-11, 277, (w*2)+2, (h*2)+2);
-	        setRoi((w*2)-10, 278, w*2, h*2);//Paints the Background Color
-	        Color bg = getBackgroundColor();
-	        setColor(bg);
-	        fill();
-	        if (backgroundInFront)
-	        	drawLabel("B", bg, w*4-18, 278+h*2);
-	    }
+		public void refreshBackground(boolean backgroundInFront) {
+			//Boundary for Background Selection
+			setColor(0x444444);
+			drawRect((w*2)-12, 276, (w*2)+4, (h*2)+4);
+			setColor(0x999999);
+			drawRect((w*2)-11, 277, (w*2)+2, (h*2)+2);
+			setRoi((w*2)-10, 278, w*2, h*2);//Paints the Background Color
+			Color bg = getBackgroundColor();
+			setColor(bg);
+			fill();
+			if (backgroundInFront)
+				drawLabel("B", bg, w*4-18, 278+h*2);
+		}
 
-	    public void refreshForeground(boolean backgroundInFront) {
-	        //Boundary for Foreground Selection
-	        setColor(0x444444);
-	        drawRect(8, 266, (w*2)+4, (h*2)+4);
-	        setColor(0x999999);
-	        drawRect(9, 267, (w*2)+2, (h*2)+2);
-	        setRoi(10, 268, w*2, h*2); //Paints the Foreground Color
-	        Color fg = getForegroundColor();
-	        setColor(fg);
-	        fill();
-	        if (backgroundInFront)
-	        	drawLabel("F", fg, 12, 268+14);
-	    }
+		public void refreshForeground(boolean backgroundInFront) {
+			//Boundary for Foreground Selection
+			setColor(0x444444);
+			drawRect(8, 266, (w*2)+4, (h*2)+4);
+			setColor(0x999999);
+			drawRect(9, 267, (w*2)+2, (h*2)+2);
+			setRoi(10, 268, w*2, h*2); //Paints the Foreground Color
+			Color fg = getForegroundColor();
+			setColor(fg);
+			fill();
+			if (backgroundInFront)
+				drawLabel("F", fg, 12, 268+14);
+		}
 
-	    private void drawLabel(String label, Color c, int x, int y) {
+		private void drawLabel(String label, Color c, int x, int y) {
 			int intensity = (c.getRed()+c.getGreen()+c.getBlue())/3;
 			c = intensity<128?Color.white:Color.black;
 			setColor(c);
@@ -266,40 +266,40 @@ public class ColorPicker extends PlugInDialog {
 			fill();
 		}
 
-	    void drawRamp() {
-	        int r,g,b;
-	        for (int x=0; x<w; x++) {
-	             for (double y=0; y<(h*16); y++) {
-	                r = g = b = (byte)y;
-	                pixels[(int)y*width+x] = 0xff000000 | ((r<<16)&0xff0000) | ((g<<8)&0xff00) | (b&0xff);
-	            }
-	        }
-	    }
+		void drawRamp() {
+			int r,g,b;
+			for (int x=0; x<w; x++) {
+				 for (double y=0; y<(h*16); y++) {
+					r = g = b = (byte)y;
+					pixels[(int)y*width+x] = 0xff000000 | ((r<<16)&0xff0000) | ((g<<8)&0xff00) | (b&0xff);
+				}
+			}
+		}
 
-	    void resetBW() {   //Paints the Color Reset Button
-	        setColor(0x000000);
-	        drawRect(92, 300, 9, 7);
-	        setColor(0x000000);
-	        setRoi(88, 297, 9, 7);
-	        fill();
-	    }
+		void resetBW() {   //Paints the Color Reset Button
+			setColor(0x000000);
+			drawRect(92, 300, 9, 7);
+			setColor(0x000000);
+			setRoi(88, 297, 9, 7);
+			fill();
+		}
 
-	    void flipper() {   //Paints the Flipper Button
-	        int xa = 90;
-	        int ya = 272;
-	        setColor(0x000000);
-	        drawLine(xa, ya, xa+9, ya+9);//Main Body
-	        drawLine(xa+1, ya, xa+9, ya+8);
-	        drawLine(xa, ya+1, xa+8, ya+9);
-	        drawLine(xa, ya, xa, ya+5);//Upper Arrow
-	        drawLine(xa+1, ya+1, xa+1, ya+6);
-	        drawLine(xa, ya, xa+5, ya);
-	        drawLine(xa+1, ya+1, xa+6, ya+1);
-	        drawLine(xa+9, ya+9, xa+9, ya+4);//Lower Arrow
-	        drawLine(xa+8, ya+8, xa+8, ya+3);
-	        drawLine(xa+9, ya+9, xa+4, ya+9);
-	        drawLine(xa+8, ya+8, xa+3, ya+8);
-	    }
+		void flipper() {   //Paints the Flipper Button
+			int xa = 90;
+			int ya = 272;
+			setColor(0x000000);
+			drawLine(xa, ya, xa+9, ya+9);//Main Body
+			drawLine(xa+1, ya, xa+9, ya+8);
+			drawLine(xa, ya+1, xa+8, ya+9);
+			drawLine(xa, ya, xa, ya+5);//Upper Arrow
+			drawLine(xa+1, ya+1, xa+1, ya+6);
+			drawLine(xa, ya, xa+5, ya);
+			drawLine(xa+1, ya+1, xa+6, ya+1);
+			drawLine(xa+9, ya+9, xa+9, ya+4);//Lower Arrow
+			drawLine(xa+8, ya+8, xa+8, ya+3);
+			drawLine(xa+9, ya+9, xa+4, ya+9);
+			drawLine(xa+8, ya+8, xa+3, ya+8);
+		}
 
 	}
 
@@ -315,8 +315,8 @@ public class ColorPicker extends PlugInDialog {
 			this.width=width; this.height=height;
 			this.ip = ip;
 			addMouseListener(this);
-	 		addMouseMotionListener(this);
-	        addKeyListener(IJ.getInstance());
+			addMouseMotionListener(this);
+			addKeyListener(IJ.getInstance());
 			setSize(width, height);
 		}
 
