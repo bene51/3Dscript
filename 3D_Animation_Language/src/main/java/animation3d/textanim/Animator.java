@@ -37,13 +37,19 @@ public class Animator {
 	private boolean stopRendering = false;
 	private boolean isExecuting = false;
 	private final List<RenderingState> renderingStates;
+	private final boolean autoShow;
 
 	private double progress;
 
 	public Animator(IRenderer3D renderer) {
+		this(renderer, true);
+	}
+
+	public Animator(IRenderer3D renderer, boolean autoShow) {
 		this.renderer = renderer;
 		animations = new ArrayList<Animation>();
 		renderingStates = new ArrayList<RenderingState>();
+		this.autoShow = autoShow;
 	}
 
 	public void addAnimationListener(Listener l) {
@@ -210,9 +216,10 @@ public class Animator {
 				ret = new ImagePlus(renderer.getTitle() + ".avi", stack);
 				// frames.get(0).getFwdTransform().adjustOutputCalibration(ret.getCalibration());
 				// ret.getCalibration().setUnit(renderer.getCalibrationUnit());
-				ret.show();
+				if(autoShow)
+					ret.show();
 			}
-			if(ret != null) {
+			if(ret != null && autoShow) {
 				ret.setSlice(stack.size());
 				ret.updateAndDraw();
 			}
