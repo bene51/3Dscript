@@ -274,6 +274,8 @@ if(GRADIENT_MODE == GRADIENT_MODE_TEXTURE || GRADIENT_MODE == GRADIENT_MODE_DOWN
 		return source;
 	}
 
+	public static boolean useLinearInterpolationWithLookupTables = false;
+
 	@SuppressWarnings("unused")
 	public static String makeSource(int channels, boolean backgroundTexture, boolean combinedAlpha, boolean mip, boolean[] useLights, boolean[] colorLUT) {
 		boolean useLightsAtAll = false;
@@ -549,9 +551,10 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"			if(ch" + c + " && alpha" + c + " < 0.99f) {\n";
 //			"			if(ch" + c + ") {\n";
 			if(colorLUT[c]) {
+				String sampler = useLinearInterpolationWithLookupTables ? "lisampler" : "nnsampler";
 				source = source +
 			"				float4 rAlphaColor" + c + " = sampleWithColorLUT(p0,\n" +
-			"						texture" + c + ", nnsampler, maxv,\n" +
+			"						texture" + c + ", " + sampler + ", maxv,\n" +
 			"						minAlphaColor" + c + ", dAlphaColor" + c + ", gammaAlphaColor" + c + ", alphacorr,\n" +
 			"						textureLUT" + c + ", dbg);\n" +
 			"				if(dbg) {\n" +
