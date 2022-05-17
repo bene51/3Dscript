@@ -309,32 +309,39 @@ public class ContrastPanel extends JPanel implements NumberField.Listener, Focus
 							);
 					boolean useLUT = renderingSettings[ch][ExtendedRenderingState.USE_LUT] > 0;
 					ColorPicker cp = new ColorPicker(fg, ContrastPanel.this.background, useLUT);
-					cp.addLUTListener(useImageLUT -> {
-						renderingSettings[ch][ExtendedRenderingState.USE_LUT] = useImageLUT ? 1 : 0;
-						fireUseLookupTableChanged(ch, useImageLUT);
-					});
-					cp.addForegroundColorListener(c -> {
-						int red   = c.getRed();
-						int green = c.getGreen();
-						int blue  = c.getBlue();
-						renderingSettings[ch][ExtendedRenderingState.USE_LUT] = 0;
-						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = red;
-						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = green;
-						renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = blue;
-						if(red < 100 || green < 100 || blue < 100)
-							wslider.setColor(c);
-						else
-							wslider.setColor(Color.BLACK);
-						fireColorChanged(ch, c);
-						setChannel(channel);
-					});
-					cp.addBackgroundColorListener(c -> {
-						int red   = c.getRed();
-						int green = c.getGreen();
-						int blue  = c.getBlue();
-						Color bg = new Color(red, green, blue);
-						fireBackgroundColorChanged(bg);
-						ContrastPanel.this.background = bg;
+					cp.addListener(new ColorPicker.Listener() {
+						@Override
+						public void backgroundColorChanged(Color c) {
+							int red   = c.getRed();
+							int green = c.getGreen();
+							int blue  = c.getBlue();
+							Color bg = new Color(red, green, blue);
+							fireBackgroundColorChanged(bg);
+							ContrastPanel.this.background = bg;
+						}
+
+						@Override
+						public void foregroundColorChanged(Color c) {
+							int red   = c.getRed();
+							int green = c.getGreen();
+							int blue  = c.getBlue();
+							renderingSettings[ch][ExtendedRenderingState.USE_LUT] = 0;
+							renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_RED]   = red;
+							renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_GREEN] = green;
+							renderingSettings[ch][ExtendedRenderingState.CHANNEL_COLOR_BLUE]  = blue;
+							if(red < 100 || green < 100 || blue < 100)
+								wslider.setColor(c);
+							else
+								wslider.setColor(Color.BLACK);
+							fireColorChanged(ch, c);
+							setChannel(channel);
+						}
+
+						@Override
+						public void useImageLUTChanged(boolean useImageLUT) {
+							renderingSettings[ch][ExtendedRenderingState.USE_LUT] = useImageLUT ? 1 : 0;
+							fireUseLookupTableChanged(ch, useImageLUT);
+						}
 					});
 				}
 			});

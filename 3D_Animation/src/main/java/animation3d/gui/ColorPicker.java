@@ -1,8 +1,6 @@
 package animation3d.gui;
 
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -28,47 +26,33 @@ public class ColorPicker extends PlugInDialog {
 
 	private final Checkbox imageLUTCheckBox;
 
-	public interface BackgroundColorListener {
-		public void backgroundColorChanged(Color bg);
-	}
+	public interface Listener {
+		void backgroundColorChanged(Color bg);
 
-	public interface ForegroundColorListener {
-		public void foregroundColorChanged(Color fg);
-	}
+		void foregroundColorChanged(Color fg);
 
-	public interface LUTListener {
 		void useImageLUTChanged(boolean useImageLUT);
 	}
 
-	private ArrayList<BackgroundColorListener> bgListener = new ArrayList<BackgroundColorListener>();
-	private ArrayList<ForegroundColorListener> fgListener = new ArrayList<ForegroundColorListener>();
-	private ArrayList<LUTListener>            lutListener = new ArrayList<>();
+	private ArrayList<Listener> listeners = new ArrayList<>();
 
 	private void fireForegroundColorChanged(Color c) {
-		for(ForegroundColorListener l : fgListener)
+		for(Listener l : listeners)
 			l.foregroundColorChanged(c);
 	}
 
 	private void fireBackgroundColorChanged(Color c) {
-		for(BackgroundColorListener l : bgListener)
+		for(Listener l : listeners)
 			l.backgroundColorChanged(c);
 	}
 
 	private void fireUseImageLUTChanged(boolean useImageLUT) {
-		for(LUTListener l : lutListener)
+		for(Listener l : listeners)
 			l.useImageLUTChanged(useImageLUT);
 	}
 
-	public void addForegroundColorListener(ForegroundColorListener l) {
-		fgListener.add(l);
-	}
-
-	public void addBackgroundColorListener(BackgroundColorListener l) {
-		bgListener.add(l);
-	}
-
-	public void addLUTListener(LUTListener l) {
-		lutListener.add(l);
+	public void addListener(Listener l) {
+		listeners.add(l);
 	}
 
 	public ColorPicker(Color foreground, Color background, boolean useImageLUT) {
@@ -92,6 +76,7 @@ public class ColorPicker extends PlugInDialog {
 		GridBagLayout gridbag = new GridBagLayout();
 		panel.setLayout(gridbag);
 		GridBagConstraints c = new GridBagConstraints();
+
 		c.gridx = 0;
 		c.gridy = 0;
 		c.insets = new Insets(3, 3, 3, 3);
@@ -100,6 +85,7 @@ public class ColorPicker extends PlugInDialog {
 			setUseImageLUT(imageLUTCheckBox.getState());
 		});
 		panel.add(imageLUTCheckBox, c);
+
 		c.gridy++;
 		panel.add(colorCanvas, c);
 		add(panel);
