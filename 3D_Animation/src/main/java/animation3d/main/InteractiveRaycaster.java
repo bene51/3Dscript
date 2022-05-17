@@ -806,7 +806,8 @@ macro = macro +
 			}
 			int nrows = (int)gd.getNextNumber();
 			int ncols = (int)gd.getNextNumber();
-			final Color gapColor = renderer.getRenderingState().getBackgroundColor() == Color.WHITE
+			final Color bg = renderer.getRenderingState().getBackgroundColor();
+			final Color gapColor = bg.getRed() > 230 && bg.getGreen() > 230 && bg.getBlue() > 230
 					? Color.BLACK
 					: Color.WHITE;
 			merge(rendered, nrows, ncols, gapColor).show();
@@ -831,8 +832,8 @@ macro = macro +
 		int w = images[sampleIdx].getWidth();
 		int h = images[sampleIdx].getHeight();
 		final int gap = 5;
-		int W = ncols * w + (ncols + 1) * gap;
-		int H = nrows * h + (nrows + 1) * gap;
+		int W = ncols * w + (ncols - 1) * gap;
+		int H = nrows * h + (nrows - 1) * gap;
 		int D = images[sampleIdx].getStackSize();
 		ImageProcessor[] tgt = new ImageProcessor[D];
 		for(int z = 0; z < D; z++) {
@@ -846,8 +847,8 @@ macro = macro +
 				continue;
 			int rIdx = i / ncols;
 			int cIdx = i % ncols;
-			int offsx = cIdx * w + (cIdx + 1) * gap;
-			int offsy = rIdx * h + (rIdx + 1) * gap;
+			int offsx = cIdx * w + cIdx * gap;
+			int offsy = rIdx * h + rIdx * gap;
 
 			for(int z = 0; z < D; z++) {
 				tgt[z].insert(images[i].getStack().getProcessor(z + 1), offsx, offsy);
