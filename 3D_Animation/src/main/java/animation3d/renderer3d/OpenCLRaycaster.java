@@ -2,6 +2,7 @@ package animation3d.renderer3d;
 
 import java.awt.Color;
 import java.awt.image.IndexColorModel;
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +12,7 @@ import animation3d.textanim.CombinedTransform;
 import animation3d.util.Transform;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.Prefs;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
@@ -27,7 +29,18 @@ import ij.process.LUT;
 public class OpenCLRaycaster {
 
 	static {
-		System.loadLibrary("OpenCLRaycaster");
+		String ijhome = Prefs.getImageJDir();
+		String libpath = "";
+		if(IJ.isWindows())
+			libpath = ijhome + File.separator + "lib" + File.separator + "win64"   + File.separator + "OpenCLRaycaster.dll";
+		else if(IJ.isLinux())
+			libpath = ijhome + File.separator + "lib" + File.separator + "linux64" + File.separator + "libOpenCLRaycaster.so";
+		else if(IJ.isMacOSX())
+			libpath = ijhome + File.separator + "lib" + File.separator + "macosx"  + File.separator + "libOpenCLRaycaster.jnilib";
+		else
+			throw new RuntimeException("Unknow Operating System");
+		System.load(libpath);
+		// System.loadLibrary("OpenCLRaycaster");
 	}
 
 	public static native String getUNCForPath(String path);
