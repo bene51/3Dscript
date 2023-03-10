@@ -702,6 +702,10 @@ public class InteractiveRaycaster implements PlugInFilter {
 			String text = editor.getTab().getEditorPane().getText();
 			String[] lines = text.split("\\r?\\n");
 			String macro =
+"//#@File file              // <-- If you want to open the input image from file instead\n" +
+"//open(file);              //     of using the active ImageJ image, remove the leading slashes in\n" +
+"//title = getTitle();      //     front of these three lines, and in front of the very last line of this macro\n" +
+"\n\n" +
 "function makeAnimation() {\n" +
 "	return \"\"";
 for(String line : lines) {
@@ -713,7 +717,11 @@ macro = macro +
 "File.saveString(makeAnimation(), path);\n" +
 "run(\"Batch Animation\",\n" +
 "	\"animation=\" + path + \" \" +\n" +
-"	\"output_width=" + ow + " output_height=" + oh + "\");";
+"	\"output_width=" + ow + " output_height=" + oh + "\");\n" +
+"\n\n" +
+"//close(title);       // <-- If you want to open the input image from file instead\n" +
+"                      //     of using the active ImageJ image, remove the leading slashes in\n" +
+"                      //     front of 'close(title)' to close the input image after running the macro\n";
 			Path tmp = null;
 			try {
 				tmp = Files.createTempFile("ijmacro", ".ijm");
