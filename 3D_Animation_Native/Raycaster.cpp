@@ -481,7 +481,8 @@ Raycaster<T>::setColorLUT(int channel, const unsigned int * const lut, int l)
 			0,
 			0,
 			tmp};
-	colorLUT_[channel] = clCreateImage(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &format, &desc, (void *)lut, &err);
+	// colorLUT_[channel] = clCreateImage(context, CL_MEM_READ_ONLY, &format, &desc, (void *)lut, &err);
+	colorLUT_[channel] = clCreateImage(context, CL_MEM_READ_ONLY, &format, &desc, NULL, &err);
 	checkOpenCLErrors(err);
 }
 
