@@ -272,6 +272,7 @@ public class OpenCLRaycaster {
 
 		float[][] channelSettings = new float[channelProperties.length][];
 		for(int c = 0; c < channelSettings.length; c++) {
+			double lightWeight = channelProperties[c][ExtendedRenderingState.USE_LIGHT];
 			channelSettings[c] = new float[] {
 					(float)(channelProperties[c][ExtendedRenderingState.INTENSITY_MIN]),
 					(float)(channelProperties[c][ExtendedRenderingState.INTENSITY_MAX]),
@@ -292,9 +293,9 @@ public class OpenCLRaycaster {
 					(float)(cz * l + channelProperties[c][ExtendedRenderingState.NEAR]),
 					(float)(cz * l + channelProperties[c][ExtendedRenderingState.FAR]),
 					(int)Math.round(channelProperties[c][ExtendedRenderingState.USE_LIGHT]),
-					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_OBJECT]),
-					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE]),
-					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_SPECULAR]),
+					(float)(1 + (channelProperties[c][ExtendedRenderingState.LIGHT_K_OBJECT] - 1) * lightWeight),
+					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_DIFFUSE] * lightWeight),
+					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_K_SPECULAR] * lightWeight),
 					(float)(channelProperties[c][ExtendedRenderingState.LIGHT_SHININESS]),
 					(int)Math.round(channelProperties[c][ExtendedRenderingState.USE_LUT]),
 			};
