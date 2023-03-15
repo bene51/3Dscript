@@ -605,7 +605,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"\n" +
 			"				float a" + c + " = alpha" + c; //  + ";\n";
 			// if(combinedAlpha) {
-				for (int oc = 0; oc < channels - 1; oc++)
+				for (int oc = 0; oc < channels; oc++)
 					if (oc != c)
 						source = source + " + combinedAlphaWeight * alpha" + oc;
 			// }
