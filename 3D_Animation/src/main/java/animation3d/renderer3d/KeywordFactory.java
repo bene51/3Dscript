@@ -188,7 +188,7 @@ public class KeywordFactory implements IKeywordFactory {
 		HashMap<String, double[]> map = new HashMap<String, double[]>();
 		for(RenderingAlgorithm algo : RenderingAlgorithm.values()) {
 			String name = algo.toString().toLowerCase().replace('_', ' ');
-			map.put(name, new double[] {algo.ordinal()});
+			map.put(name, new double[] { algo.toDouble() });
 		}
 		return map;
 	}

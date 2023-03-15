@@ -204,6 +204,7 @@ jintArray RaycasterJNI<T>::project(
 		JNIEnv *env,
 		jfloatArray inverseTransform,
 		jfloat alphacorr,
+		jfloat combinedAlphaWeight,
 		jobjectArray channelSettings,
 		jint bgred, jint bggreen, jint bgblue)
 {
@@ -229,7 +230,7 @@ jintArray RaycasterJNI<T>::project(
 
 	float *mat = (float *)env->GetFloatArrayElements(inverseTransform, NULL);
 
-	const unsigned int * theresult = raycaster->cast(mat, alphacorr, ci, bgred, bggreen, bgblue);
+	const unsigned int * theresult = raycaster->cast(mat, alphacorr, combinedAlphaWeight, ci, bgred, bggreen, bgblue);
 
 	env->ReleaseFloatArrayElements(inverseTransform, mat, JNI_ABORT);
 	for(int ch = 0; ch < nChannels; ch++)

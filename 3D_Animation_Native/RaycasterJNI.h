@@ -48,6 +48,7 @@ public:
 		JNIEnv *env,
 		jfloatArray inverseTransform,
 		jfloat alphacorr,
+		jfloat combinedAlphaWeight,
 		jobjectArray channelSettings,
 		jint bgred, jint bggreen, jint bgblue);
 };

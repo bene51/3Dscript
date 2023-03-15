@@ -67,7 +67,7 @@ JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_setTargetSize
  * Signature: (I[FFFFFFFFF)[B
  */
 JNIEXPORT jintArray JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_cast
-  (JNIEnv *, jclass, jfloatArray, float, jobjectArray channelSettings,
+  (JNIEnv *, jclass, jfloatArray, float, float, jobjectArray channelSettings,
 		jint bgr, jint bgg, jint bgb);
 
 JNIEXPORT void JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_white

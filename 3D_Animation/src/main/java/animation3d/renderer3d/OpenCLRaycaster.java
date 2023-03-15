@@ -73,6 +73,7 @@ public class OpenCLRaycaster {
 	private static native int[] cast(
 			float[] inverseTransform,
 			float alphacorr,
+			float combinedAlphaWeight,
 			float[][] channelSettings,
 			int bgred, int bggreen, int bgblue);
 
@@ -311,7 +312,8 @@ public class OpenCLRaycaster {
 			image.setT(tIndex);
 			setImage(image);
 		}
-		int[] result = cast(invTransform, alphacorr, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
+		float combinedAlphaWeight = (float)kf.getCombinedAlphaWeight();
+		int[] result = cast(invTransform, alphacorr, combinedAlphaWeight, channelSettings, bg.getRed(), bg.getGreen(), bg.getBlue());
 
 		ColorProcessor ret = new ColorProcessor(wOut, hOut, result);
 

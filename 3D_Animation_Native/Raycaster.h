@@ -104,6 +104,7 @@ public:
 	cast(
 		const float * const inverseTransform,
 		float alphacorr,
+		float combinedAlphaWeight,
 		const ChannelInfo *const *const channels,
 		int bgr, int bgg, int bgb);
 

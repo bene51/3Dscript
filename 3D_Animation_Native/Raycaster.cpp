@@ -556,6 +556,7 @@ const unsigned int *
 Raycaster<T>::cast(
 		const float * const inverseTransform,
 		float alphacorr,
+		float combinedAlphaWeight,
 		const ChannelInfo *const *const channels,
 		int bgr, int bgg, int bgb)
 {
@@ -621,6 +622,7 @@ Raycaster<T>::cast(
 		cl_float4 light = {channels[c]->k_o, channels[c]->k_d, channels[c]->k_s, channels[c]->shininess};
 		checkOpenCLErrors(clSetKernelArg(kernel, argIdx++, sizeof(cl_float4), &light));
 	}
+	checkOpenCLErrors(clSetKernelArg(kernel, argIdx++, sizeof(cl_float), &combinedAlphaWeight));
 	checkOpenCLErrors(clSetKernelArg(kernel, argIdx++, sizeof(cl_float), &alphacorr));
 	checkOpenCLErrors(clSetKernelArg(kernel, argIdx++, sizeof(cl_float3), &inc));
 

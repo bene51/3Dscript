@@ -425,6 +425,10 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			"		float zstart" + c + ", float zend" + c + ",\n" +
 			"		float4 light" + c + ",\n";
 		}
+//		if(combinedAlpha) {
+			source = source +
+			"		float combinedAlphaWeight,\n";
+//		}
 		source = source +
 			"		float alphacorr,\n" +
 			"		float3 inc,\n";
@@ -528,7 +532,7 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		}
 
 		source = source +
-			"		bool dbg = x == 128 && y == 128;\n";
+			"		bool dbg = false; // x == 128 && y == 128;\n";
 
 
 		source = source +
@@ -596,13 +600,25 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 			}
 
 			source = source + "\n";
-			if(combinedAlpha) {
-				source = source +
-			"				float a" + c + " = (" + sum("alpha", channels) + ") / " + 1 + ";\n";
-			} else {
-				source = source +
-			"				float a" + c + " = alpha" + c + ";\n";
-			}
+
+			source = source +
+			"\n" +
+			"				float a" + c + " = alpha" + c; //  + ";\n";
+			// if(combinedAlpha) {
+				for (int oc = 0; oc < channels - 1; oc++)
+					if (oc != c)
+						source = source + " + combinedAlphaWeight * alpha" + oc;
+			// }
+			source = source + ";\n";
+
+
+//			if(combinedAlpha) {
+//				source = source +
+//			"				float a" + c + " = (" + sum("alpha", channels) + ") / " + 1 + ";\n";
+//			} else {
+//				source = source +
+//			"				float a" + c + " = alpha" + c + ";\n";
+//			}
 			source = source +
 			"				float tmp" + c + " = weight" + c + " * (1 - a" + c + ") * rAlphaColor" + c + ".x;\n";
 			if(useLights[c]) {

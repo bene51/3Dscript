@@ -111,8 +111,8 @@ public class ExtendedRenderingState extends RenderingState {
 
 	public ExtendedRenderingState(int frame, CombinedTransform fwdTransform, int nChannels) {
 		super(frame, fwdTransform);
-		nonChannelProperties = new double[18];
-		channelProperties = new double[nChannels][24];
+		nonChannelProperties = new double[nonChannelPropertyNames.length];
+		channelProperties = new double[nChannels][channelPropertyNames.length];
 	}
 
 	public ExtendedRenderingState(
@@ -267,12 +267,15 @@ public class ExtendedRenderingState extends RenderingState {
 	}
 
 	public RenderingAlgorithm getRenderingAlgorithm() {
-		int algo = (int)nonChannelProperties[RENDERING_ALGORITHM];
-		return RenderingAlgorithm.values()[algo];
+		return RenderingAlgorithm.fromDouble(nonChannelProperties[RENDERING_ALGORITHM]);
 	}
 
 	public void setRenderingAlgorithm(RenderingAlgorithm algorithm) {
-		nonChannelProperties[RENDERING_ALGORITHM] = algorithm.ordinal();
+		nonChannelProperties[RENDERING_ALGORITHM] = algorithm.toDouble();
+	}
+
+	public double getCombinedAlphaWeight() {
+		return RenderingAlgorithm.getCombinedAlphaWeight(nonChannelProperties[RENDERING_ALGORITHM]);
 	}
 
 	public boolean[] useLights() {

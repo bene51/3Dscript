@@ -283,6 +283,7 @@ JNIEXPORT jintArray JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_cast (
 		jclass,
 	       	jfloatArray inverseTransform,
 		jfloat alphacorr,
+		jfloat combinedAlphaWeight,
 		jobjectArray channelSettings,
 		jint bgr, jint bgg, jint bgb)
 {
@@ -291,6 +292,7 @@ JNIEXPORT jintArray JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_cast (
 			return raycaster8->project(env,
 					inverseTransform,
 					alphacorr,
+					combinedAlphaWeight,
 					channelSettings,
 					bgr, bgg, bgb);
 		}
@@ -298,6 +300,7 @@ JNIEXPORT jintArray JNICALL Java_animation3d_renderer3d_OpenCLRaycaster_cast (
 			return raycaster16->project(env,
 					inverseTransform,
 					alphacorr,
+					combinedAlphaWeight,
 					channelSettings,
 					bgr, bgg, bgb);
 		} else {
