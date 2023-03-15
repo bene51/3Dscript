@@ -127,44 +127,35 @@ public class RecordingProvider extends Default3DRecordingProvider {
 	public String getRecordingForCropping(RenderingState rs) {
 		ExtendedRenderingState kf = (ExtendedRenderingState)rs;
 		StringBuffer text = new StringBuffer();
-		for(int c = 0; c < kf.getNChannels(); c++) {
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_X.getKeyword())
-				.append(" to (")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_XMIN))
-				.append(", ")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_XMAX))
-				.append(")\n");
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_Y.getKeyword())
-				.append(" to (")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_YMIN))
-				.append(", ")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_YMAX))
-				.append(")\n");
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_Z.getKeyword())
-				.append(" to (")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMIN))
-				.append(", ")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMAX))
-				.append(")\n");
-			text.append("- change channel ")
-				.append(c + 1)
-				.append(" ")
-				.append(KeywordFactory.ChannelKeyword.FRONT_BACK_CLIPPING.getKeyword())
-				.append(" to (")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.NEAR))
-				.append(", ")
-				.append(kf.getChannelProperty(c, ExtendedRenderingState.FAR))
-				.append(")\n");
-		}
+		int c = 0;
+		text.append("- change all channels' ")
+			.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_X.getKeyword())
+			.append(" to (")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_XMIN))
+			.append(", ")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_XMAX))
+			.append(")\n");
+		text.append("- change all channels' ")
+			.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_Y.getKeyword())
+			.append(" to (")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_YMIN))
+			.append(", ")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_YMAX))
+			.append(")\n");
+		text.append("- change all channels' ")
+			.append(KeywordFactory.ChannelKeyword.BOUNDING_BOX_Z.getKeyword())
+			.append(" to (")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMIN))
+			.append(", ")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.BOUNDINGBOX_ZMAX))
+			.append(")\n");
+		text.append("- change all channels' ")
+			.append(KeywordFactory.ChannelKeyword.FRONT_BACK_CLIPPING.getKeyword())
+			.append(" to (")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.NEAR))
+			.append(", ")
+			.append(kf.getChannelProperty(c, ExtendedRenderingState.FAR))
+			.append(")\n");
 		return text.toString();
 	}
 
