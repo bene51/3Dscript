@@ -60,7 +60,8 @@
 
 	<mailingLists>
 		<mailingList>
-			<name>none</name>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tag/fiji</archive>
 		</mailingList>
 	</mailingLists>
 	
