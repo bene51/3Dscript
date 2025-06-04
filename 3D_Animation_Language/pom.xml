@@ -14,7 +14,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_Language</artifactId>
-	<version>0.2</version>
+	<version>0.2.3-SNAPSHOT</version>
 
 	<name>3D Animation Language</name>
 	<description>Parser and editor for the language based 3D animation plugin</description>

@@ -14,7 +14,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_Povray</artifactId>
-	<version>0.1</version>
+	<version>0.2.3-SNAPSHOT</version>
 
 	<name>3D Animation Povray</name>
 	<description>Povray adapter for the 3D Animation plugin</description>
