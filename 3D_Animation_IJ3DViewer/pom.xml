@@ -14,7 +14,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_IJ3DViewer</artifactId>
-	<version>0.2.3-SNAPSHOT</version>
+	<version>0.2.3</version>
 
 	<name>3D Animation IJ3D Viewer</name>
 	<description>Adapter to use ImageJ's 3D Viewer with the textbased animation plugin 3D_Animation.</description>
