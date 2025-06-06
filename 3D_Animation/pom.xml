@@ -14,7 +14,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation</artifactId>
-	<version>0.2.3</version>
+	<version>0.2.4-SNAPSHOT</version>
 
 	<name>3D Animation</name>
 	<description>Animate image stacks three-dimensionally by a natural language based animation description</description>

@@ -14,7 +14,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_Povray</artifactId>
-	<version>0.2.3</version>
+	<version>0.2.4-SNAPSHOT</version>
 
 	<name>3D Animation Povray</name>
 	<description>Povray adapter for the 3D Animation plugin</description>
@@ -82,7 +82,6 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Benjamin Schmid</license.copyrightOwners>
 	</properties>
-
 	
 	<dependencies>
 		<dependency>

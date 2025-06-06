@@ -14,7 +14,7 @@
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>3D_Animation_BDV</artifactId>
-	<version>0.2.3</version>
+	<version>0.2.4-SNAPSHOT</version>
 
 	<name>3D Animation BDV Viewer</name>
 	<description>Adapter to use the BigDataViewer with the textbased animation plugin 3D_Animation.</description>
