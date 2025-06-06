@@ -6,14 +6,14 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 
-import org.scijava.java3d.Canvas3D;
-import org.scijava.java3d.GraphicsConfigTemplate3D;
-import org.scijava.java3d.ImageComponent;
-import org.scijava.java3d.ImageComponent2D;
-import org.scijava.java3d.Screen3D;
-import org.scijava.java3d.Transform3D;
-import org.scijava.java3d.TransformGroup;
-import org.scijava.vecmath.Color3f;
+import org.jogamp.java3d.Canvas3D;
+import org.jogamp.java3d.GraphicsConfigTemplate3D;
+import org.jogamp.java3d.ImageComponent;
+import org.jogamp.java3d.ImageComponent2D;
+import org.jogamp.java3d.Screen3D;
+import org.jogamp.java3d.Transform3D;
+import org.jogamp.java3d.TransformGroup;
+import org.jogamp.vecmath.Color3f;
 
 import animation3d.textanim.CombinedTransform;
 import animation3d.textanim.IKeywordFactory;
@@ -70,7 +70,7 @@ public class IJ3DRenderer implements IRenderer3D {
 				input.getNSlices() * pdIn[2] / 2};
 
 		CombinedTransform transformation = new CombinedTransform(pdIn, pdOut, rotcenter);
-		Color color = content.getColor() == null ? null : content.getColor().get();
+		Color color = content.getColor() == null ? null : toAWT(content.getColor());
 		this.rs = new IJ3DRenderingState(0,
 				content.getType(),
 				color,
@@ -80,6 +80,10 @@ public class IJ3DRenderer implements IRenderer3D {
 
 		defaultOrientation.setIdentity();
 		defaultOrientation.rotX(Math.PI);
+	}
+
+	private static Color toAWT(Color3f color) {
+		return new Color(color.x, color.y, color.z);
 	}
 
 	@Override
