@@ -722,10 +722,12 @@ if(GRADIENT_MODE == GRADIENT_MODE_ONTHEFLY) {
 		}
 		source = source +
 			"		float alpha = clamp(" + sum("alpha", channels) + ", 0.0f, 1.0f);\n" +
+			"		unsigned int out_a;\n" +
+			"		out_a = (unsigned int) (255 * alpha);\n" +
 			"		out_r = (unsigned int)(clamp(alpha * out_r + (1 - alpha) * background.x, 0.0f, 255.0f));\n" +
 			"		out_g = (unsigned int)(clamp(alpha * out_g + (1 - alpha) * background.y, 0.0f, 255.0f));\n" +
 			"		out_b = (unsigned int)(clamp(alpha * out_b + (1 - alpha) * background.z, 0.0f, 255.0f));\n" +
-			"		d_result[idx_out] = (unsigned int)((out_r << 16) | (out_g << 8) | out_b);\n" +
+			"		d_result[idx_out] = (unsigned int)((out_a << 24) | (out_r << 16) | (out_g << 8) | out_b);\n" +
 			"	}\n" +
 			"}";
 		return source;
