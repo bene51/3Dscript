@@ -79,6 +79,7 @@
 	</ciManagement>
 	
 	<properties>
+		<automatic-module-name>animation3d</automatic-module-name>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Benjamin Schmid</license.copyrightOwners>
 	</properties>
